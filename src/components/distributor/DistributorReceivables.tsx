@@ -9,7 +9,10 @@ import {
   RetailerAgeingLedger,
   formatINR,
   getDaysUntil,
+  formatLocation,
 } from "@/lib/mock";
+import { Badge, StatusChip } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const DistributorReceivables: React.FC = () => {
   const {
@@ -291,21 +294,21 @@ export const DistributorReceivables: React.FC = () => {
       {/* Top Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+          <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
             <span>Finance</span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-slate-900 font-bold">Receivables</span>
+            <span className="text-ink font-bold">Receivables</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Receivables</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="text-2xl font-bold text-ink tracking-tight">Receivables</h1>
+          <p className="text-xs text-ink-muted">
             Money owed to you by retailers, dynamically reconciled from issued wholesale invoices.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 font-medium">As of {formattedDate}</span>
+          <span className="text-xs text-ink-muted font-medium">As of {formattedDate}</span>
           <button
             onClick={handleExportCSV}
-            className="h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            className="h-9 px-3.5 rounded-xl bg-surface border border-border hover:bg-surface-raised text-ink font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-soft-sm"
             type="button"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
@@ -316,7 +319,7 @@ export const DistributorReceivables: React.FC = () => {
               setReceiptPrefillRetailerId(null);
               setIsReceiptModalOpen(true);
             }}
-            className="h-9 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer active:scale-98"
+            className="h-9 px-4 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer active:scale-98"
             type="button"
           >
             <span className="material-symbols-outlined text-[16px]">add</span>
@@ -328,177 +331,177 @@ export const DistributorReceivables: React.FC = () => {
       {/* Summary Metric Cards (4 Bento Grids) - Totals ₹18,64,700 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Owed */}
-        <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col justify-between">
+        <div className="bg-surface p-5 rounded-md shadow-soft-sm border border-border flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-ink-muted font-mono">
               Total Owed
             </span>
-            <span className="material-symbols-outlined text-slate-400 text-[20px]">
+            <span className="material-symbols-outlined text-ink-muted text-[20px]">
               account_balance_wallet
             </span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-2xl font-black text-slate-900 tracking-tight font-mono">
+            <span className="text-2xl font-black text-ink tracking-tight font-mono num">
               {formatINR(kpis.receivables)}
             </span>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-ink-muted">
               Gross outstanding across all {allLedgers.length} active accounts
             </span>
           </div>
         </div>
 
         {/* Overdue */}
-        <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 border-l-4 border-l-rose-500 flex flex-col justify-between">
+        <div className="bg-surface p-5 rounded-md shadow-soft-sm border border-border border-l-4 border-l-danger flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-600">
+            <span className="text-xs font-bold uppercase tracking-wider text-danger font-mono">
               Overdue
             </span>
-            <span className="material-symbols-outlined text-rose-500 text-[20px]">
+            <span className="material-symbols-outlined text-danger text-[20px]">
               error_outline
             </span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-2xl font-black text-rose-600 tracking-tight font-mono">
+            <span className="text-2xl font-black text-danger tracking-tight font-mono num">
               {formatINR(kpis.overdue)}
             </span>
-            <span className="text-[11px] text-rose-700 font-semibold">
+            <span className="text-[11px] text-danger font-semibold">
               {Math.round((kpis.overdue / (kpis.receivables || 1)) * 100)}% of total owed past credit terms
             </span>
           </div>
         </div>
 
         {/* Not Yet Due */}
-        <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col justify-between">
+        <div className="bg-surface p-5 rounded-md shadow-soft-sm border border-border flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-ink-muted font-mono">
               Not Yet Due
             </span>
-            <span className="material-symbols-outlined text-emerald-600 text-[20px]">
+            <span className="material-symbols-outlined text-success text-[20px]">
               schedule
             </span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-2xl font-black text-slate-900 tracking-tight font-mono">
+            <span className="text-2xl font-black text-ink tracking-tight font-mono num">
               {formatINR(ageing.notYetDue)}
             </span>
-            <span className="text-[11px] text-slate-500">
-              Within active credit grace window ({Math.round((ageing.notYetDue / (kpis.receivables || 1)) * 100)}%)
+            <span className="text-[11px] text-ink-muted">
+              Within active payment terms window ({Math.round((ageing.notYetDue / (kpis.receivables || 1)) * 100)}%)
             </span>
           </div>
         </div>
 
         {/* Open Invoices Count */}
-        <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col justify-between">
+        <div className="bg-surface p-5 rounded-md shadow-soft-sm border border-border flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-ink-muted font-mono">
               Open Invoices
             </span>
-            <span className="material-symbols-outlined text-slate-400 text-[20px]">receipt</span>
+            <span className="material-symbols-outlined text-ink-muted text-[20px]">receipt</span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-2xl font-black text-slate-900 tracking-tight font-mono">
+            <span className="text-2xl font-black text-ink tracking-tight font-mono num">
               {kpis.openInvoicesCount}
             </span>
-            <span className="text-[11px] text-slate-500 font-medium">
+            <span className="text-[11px] text-ink-muted font-medium">
               Reconciled across {allLedgers.length} retailers
             </span>
           </div>
         </div>
       </div>
 
-      {/* Requirement 5: Overdue by Age Stacked Bar Widget (Must NOT clip or wrap awkwardly) */}
-      <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col gap-3.5">
+      {/* Aging Breakdown Widget with Tokens */}
+      <div className="bg-surface p-5 rounded-md shadow-soft-sm border border-border flex flex-col gap-3.5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-sm text-slate-900">Aging Breakdown</span>
-            <span className="text-xs text-slate-400">• Click segment to filter</span>
+            <span className="font-bold text-sm text-ink font-sans">Aging Breakdown</span>
+            <span className="text-xs text-ink-muted">• Click segment to filter</span>
           </div>
-          {/* Responsive legend pills that never clip */}
+          {/* Responsive legend pills */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <button
               onClick={() => setAgeFilter(ageFilter === "not_due" ? "all" : "not_due")}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer text-left ${
                 ageFilter === "not_due"
-                  ? "bg-blue-50 border-blue-300 text-blue-900 font-bold"
-                  : "bg-slate-50 border-slate-200/70 text-slate-700 hover:bg-slate-100"
+                  ? "bg-success/10 border-success/30 text-success font-bold"
+                  : "bg-surface-raised border-border text-ink-muted hover:text-ink"
               }`}
               type="button"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-success shrink-0"></span>
               <span className="truncate">
-                Not yet due: <strong className="font-mono">{formatINR(ageing.notYetDue)}</strong> ({ageing.notYetDuePct}%)
+                Not yet due: <strong className="font-mono num">{formatINR(ageing.notYetDue)}</strong> ({ageing.notYetDuePct}%)
               </span>
             </button>
 
             <button
               onClick={() => setAgeFilter(ageFilter === "1-30" ? "all" : "1-30")}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer text-left ${
                 ageFilter === "1-30"
-                  ? "bg-amber-50 border-amber-300 text-amber-900 font-bold"
-                  : "bg-slate-50 border-slate-200/70 text-slate-700 hover:bg-slate-100"
+                  ? "bg-warning/10 border-warning/30 text-warning font-bold"
+                  : "bg-surface-raised border-border text-ink-muted hover:text-ink"
               }`}
               type="button"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-warning shrink-0"></span>
               <span className="truncate">
-                1–30 days: <strong className="font-mono">{formatINR(ageing.d1_30)}</strong> ({ageing.d1_30Pct}%)
+                1–30 days: <strong className="font-mono num">{formatINR(ageing.d1_30)}</strong> ({ageing.d1_30Pct}%)
               </span>
             </button>
 
             <button
               onClick={() => setAgeFilter(ageFilter === "31-60" ? "all" : "31-60")}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer text-left ${
                 ageFilter === "31-60"
-                  ? "bg-orange-50 border-orange-300 text-orange-900 font-bold"
-                  : "bg-slate-50 border-slate-200/70 text-slate-700 hover:bg-slate-100"
+                  ? "bg-accent/10 border-accent/30 text-accent font-bold"
+                  : "bg-surface-raised border-border text-ink-muted hover:text-ink"
               }`}
               type="button"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-600 shrink-0"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0"></span>
               <span className="truncate">
-                31–60 days: <strong className="font-mono">{formatINR(ageing.d31_60)}</strong> ({ageing.d31_60Pct}%)
+                31–60 days: <strong className="font-mono num">{formatINR(ageing.d31_60)}</strong> ({ageing.d31_60Pct}%)
               </span>
             </button>
 
             <button
               onClick={() => setAgeFilter(ageFilter === "60+" ? "all" : "60+")}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-colors cursor-pointer text-left ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer text-left ${
                 ageFilter === "60+"
-                  ? "bg-rose-50 border-rose-300 text-rose-900 font-bold"
-                  : "bg-slate-50 border-slate-200/70 text-slate-700 hover:bg-slate-100"
+                  ? "bg-danger/10 border-danger/30 text-danger font-bold"
+                  : "bg-surface-raised border-border text-ink-muted hover:text-ink"
               }`}
               type="button"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-danger shrink-0"></span>
               <span className="truncate">
-                60+ days: <strong className="font-mono">{formatINR(ageing.d60_plus)}</strong> ({ageing.d60_plusPct}%)
+                60+ days: <strong className="font-mono num">{formatINR(ageing.d60_plus)}</strong> ({ageing.d60_plusPct}%)
               </span>
             </button>
           </div>
         </div>
 
-        {/* The Bar Visual */}
-        <div className="w-full h-3.5 rounded-full bg-slate-100 flex overflow-hidden cursor-pointer shadow-inner">
+        {/* The Bar Visual with Tokens */}
+        <div className="w-full h-3.5 rounded-full bg-surface-raised flex overflow-hidden cursor-pointer shadow-inner border border-border">
           <div
-            className="h-full bg-blue-600 hover:opacity-90 transition-opacity"
+            className="h-full bg-success hover:opacity-90 transition-opacity"
             style={{ width: `${ageing.notYetDuePct}%` }}
             title={`Not yet due: ${formatINR(ageing.notYetDue)}`}
             onClick={() => setAgeFilter(ageFilter === "not_due" ? "all" : "not_due")}
           ></div>
           <div
-            className="h-full bg-amber-500 hover:opacity-90 transition-opacity"
+            className="h-full bg-warning hover:opacity-90 transition-opacity"
             style={{ width: `${ageing.d1_30Pct}%` }}
             title={`1-30 days overdue: ${formatINR(ageing.d1_30)}`}
             onClick={() => setAgeFilter(ageFilter === "1-30" ? "all" : "1-30")}
           ></div>
           <div
-            className="h-full bg-orange-600 hover:opacity-90 transition-opacity"
+            className="h-full bg-accent hover:opacity-90 transition-opacity"
             style={{ width: `${ageing.d31_60Pct}%` }}
             title={`31-60 days overdue: ${formatINR(ageing.d31_60)}`}
             onClick={() => setAgeFilter(ageFilter === "31-60" ? "all" : "31-60")}
           ></div>
           <div
-            className="h-full bg-rose-600 hover:opacity-90 transition-opacity"
+            className="h-full bg-danger hover:opacity-90 transition-opacity"
             style={{ width: `${ageing.d60_plusPct}%` }}
             title={`60+ days overdue: ${formatINR(ageing.d60_plus)}`}
             onClick={() => setAgeFilter(ageFilter === "60+" ? "all" : "60+")}
@@ -510,11 +513,11 @@ export const DistributorReceivables: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative w-72">
-            <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-[18px]">
+            <span className="material-symbols-outlined absolute left-3 top-2.5 text-ink-muted text-[18px]">
               search
             </span>
             <input
-              className="w-full h-10 pl-9 pr-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-xs"
+              className="w-full h-10 pl-9 pr-3 bg-surface border border-border rounded-xl text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-soft-sm"
               placeholder="Search retailer, code, or town..."
               type="text"
               value={searchQuery}
@@ -532,7 +535,7 @@ export const DistributorReceivables: React.FC = () => {
                 setDistrictFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              className="h-10 px-3 bg-surface border border-border rounded-xl text-xs font-semibold text-ink shadow-soft-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
             >
               <option value="all">District: All districts</option>
               {districts.map(d => (
@@ -548,7 +551,7 @@ export const DistributorReceivables: React.FC = () => {
                 setAgeFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="h-10 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              className="h-10 px-3 bg-surface border border-border rounded-xl text-xs font-semibold text-ink shadow-soft-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
             >
               <option value="all">Overdue Age: All</option>
               <option value="1-30">1–30 days overdue</option>
@@ -560,7 +563,7 @@ export const DistributorReceivables: React.FC = () => {
         </div>
 
         {/* Page Size Selector */}
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+        <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
           <span>Show:</span>
           <select
             value={pageSize}
@@ -569,7 +572,7 @@ export const DistributorReceivables: React.FC = () => {
               setPageSize(val);
               setCurrentPage(1);
             }}
-            className="h-9 px-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 shadow-xs focus:outline-none cursor-pointer"
+            className="h-9 px-2.5 bg-surface border border-border rounded-xl text-xs font-semibold text-ink shadow-soft-sm focus:outline-none cursor-pointer"
           >
             <option value={10}>10 per page</option>
             <option value={25}>25 per page</option>
@@ -580,12 +583,12 @@ export const DistributorReceivables: React.FC = () => {
 
       {/* Requirement 1: Bulk Action Floating Bar when rows are selected */}
       {selectedRowIds.length > 0 && (
-        <div className="bg-slate-900 text-white rounded-2xl px-5 py-3 shadow-2xl flex flex-wrap items-center justify-between gap-4 border border-slate-700 animate-in fade-in slide-in-from-bottom-2">
+        <div className="bg-ink text-surface rounded-2xl px-5 py-3 shadow-2xl flex flex-wrap items-center justify-between gap-4 border border-border animate-in fade-in slide-in-from-bottom-2">
           <div className="flex items-center gap-3">
-            <span className="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-bold text-xs border border-blue-400/30">
+            <span className="px-2.5 py-1 rounded-full bg-primary/100/20 text-blue-300 font-bold text-xs border border-blue-400/30">
               {selectedRowIds.length} retailers selected
             </span>
-            <span className="text-xs text-slate-300 font-medium">
+            <span className="text-xs text-ink-muted font-medium">
               Total Selected Balance: <strong className="text-white font-mono text-sm">{formatINR(selectedTotalOwed)}</strong>
             </span>
           </div>
@@ -602,7 +605,7 @@ export const DistributorReceivables: React.FC = () => {
 
             <button
               onClick={handleBulkRecordReceipt}
-              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/100 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
               type="button"
             >
               <span className="material-symbols-outlined text-[16px]">receipt_long</span>
@@ -612,7 +615,7 @@ export const DistributorReceivables: React.FC = () => {
             {/* Requirement 6: Credit Hold Bulk Action */}
             <button
               onClick={handleBulkToggleHold}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700"
+              className="px-3 py-2 rounded-xl bg-surface-raised hover:bg-surface text-ink-muted font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-border"
               type="button"
             >
               <span className="material-symbols-outlined text-[16px]">lock</span>
@@ -621,7 +624,7 @@ export const DistributorReceivables: React.FC = () => {
 
             <button
               onClick={() => setSelectedRowIds([])}
-              className="px-3 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-xl text-ink-muted hover:text-white text-xs font-semibold transition-colors cursor-pointer"
               type="button"
             >
               Clear
@@ -633,11 +636,11 @@ export const DistributorReceivables: React.FC = () => {
       {/* Split View: Table (Left) + Detail Drawer (Right, when selected) */}
       <div className="flex flex-col lg:flex-row items-start gap-5 w-full">
         {/* Table Container: Expands to full width when no row selected */}
-        <div className="flex-1 bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden flex flex-col w-full min-w-0">
+        <div className="flex-1 bg-surface rounded-2xl shadow-soft-sm border border-border overflow-hidden flex flex-col w-full min-w-0">
           <div className="overflow-x-auto w-full">
             <table className="w-full min-w-[1050px] text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider select-none">
+                <tr className="bg-surface-raised border-b border-border text-ink-muted text-[11px] font-bold uppercase tracking-wider select-none">
                   <th className="py-3 px-3.5 w-10 text-center">
                     <input
                       type="checkbox"
@@ -660,7 +663,7 @@ export const DistributorReceivables: React.FC = () => {
                   <th className="py-3 px-3.5 text-center min-w-[130px]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs text-slate-800">
+              <tbody className="divide-y divide-border text-xs text-ink">
                 {paginatedLedgers.map(item => {
                   const isDrawerActive = selectedRetailerId === item.retailer.id;
                   const isChecked = selectedRowIds.includes(item.retailer.id);
@@ -672,10 +675,10 @@ export const DistributorReceivables: React.FC = () => {
                       onClick={() => setSelectedRetailerId(isDrawerActive ? null : item.retailer.id)}
                       className={`transition-colors cursor-pointer ${
                         isDrawerActive
-                          ? "bg-blue-50/80 hover:bg-blue-50"
+                          ? "bg-primary/10/80 hover:bg-primary/10"
                           : isChecked
-                          ? "bg-slate-50 hover:bg-slate-100/70"
-                          : "hover:bg-slate-50/70"
+                          ? "bg-surface-raised hover:bg-surface-raised/70"
+                          : "hover:bg-surface-raised/70"
                       }`}
                     >
                       {/* Selection Checkbox */}
@@ -692,7 +695,7 @@ export const DistributorReceivables: React.FC = () => {
                       <td className="py-3.5 px-3">
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-bold text-slate-900 text-xs truncate">
+                            <span className="font-bold text-ink text-xs truncate">
                               {item.retailer.name}
                             </span>
                             <span
@@ -707,14 +710,14 @@ export const DistributorReceivables: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <span className="text-[11px] text-slate-500 truncate">
-                            {item.retailer.code} • {item.retailer.town}, {item.retailer.district}
+                          <span className="text-[11px] text-ink-muted truncate">
+                            {item.retailer.code} • {formatLocation(item.retailer.town, item.retailer.district, item.retailer.state)}
                           </span>
                         </div>
                       </td>
 
                       {/* Not Yet Due */}
-                      <td className="py-3.5 px-3 text-right font-mono text-slate-700 whitespace-nowrap">
+                      <td className="py-3.5 px-3 text-right font-mono text-ink whitespace-nowrap">
                         {item.notYetDue > 0 ? formatINR(item.notYetDue) : "—"}
                       </td>
 
@@ -734,7 +737,7 @@ export const DistributorReceivables: React.FC = () => {
                       </td>
 
                       {/* Total Owed */}
-                      <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                      <td className="py-3.5 px-3 text-right font-mono font-bold text-ink whitespace-nowrap">
                         {formatINR(item.totalOwed)}
                       </td>
 
@@ -748,23 +751,23 @@ export const DistributorReceivables: React.FC = () => {
                                   ? "text-rose-600"
                                   : item.creditUsedPercent > 70
                                   ? "text-amber-600"
-                                  : "text-slate-800"
+                                  : "text-ink"
                               }`}
                             >
                               {item.creditUsedPercent}%
                             </span>
-                            <span className="text-slate-400 font-mono text-[10px]">
+                            <span className="text-ink-muted font-mono text-[10px]">
                               of {formatINR(item.retailer.creditLimit)}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                          <div className="w-full bg-surface-raised h-1.5 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all ${
                                 item.creditUsedPercent > 90
                                   ? "bg-rose-500"
                                   : item.creditUsedPercent > 70
                                   ? "bg-amber-500"
-                                  : "bg-blue-600"
+                                  : "bg-primary"
                               }`}
                               style={{ width: `${Math.min(100, item.creditUsedPercent)}%` }}
                             ></div>
@@ -777,7 +780,7 @@ export const DistributorReceivables: React.FC = () => {
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => setSelectedRetailerId(isDrawerActive ? null : item.retailer.id)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-ink-muted hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                             title="View Statement & Invoices"
                             type="button"
                           >
@@ -799,7 +802,7 @@ export const DistributorReceivables: React.FC = () => {
                           {/* Requirement 4: Record Receipt Prefilled */}
                           <button
                             onClick={() => handleOpenReceiptForRetailer(item.retailer.id)}
-                            className="p-1.5 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-primary hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                             title="Record payment receipt"
                             type="button"
                           >
@@ -815,8 +818,18 @@ export const DistributorReceivables: React.FC = () => {
 
                 {filteredLedgers.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="py-12 text-center text-slate-400 text-xs">
-                      No retailers match the selected filters.
+                    <td colSpan={9} className="py-12 px-4 text-center">
+                      <EmptyState
+                        icon={<span className="material-symbols-outlined text-[28px]">account_balance_wallet</span>}
+                        title="No receivables found"
+                        description="No retailer accounts match the selected status, route, or search criteria."
+                        actionLabel="Reset Filters"
+                        onAction={() => {
+                          setSearchQuery("");
+                          setDistrictFilter("all");
+                          setAgeFilter("all");
+                        }}
+                      />
                     </td>
                   </tr>
                 )}
@@ -824,12 +837,12 @@ export const DistributorReceivables: React.FC = () => {
 
               {/* Requirement 2: Totals Row - Reconciles to ₹18,64,700 and header cards */}
               <tfoot>
-                <tr className="bg-slate-100/80 border-t-2 border-slate-300 font-bold text-xs text-slate-900">
+                <tr className="bg-surface-raised/80 border-t-2 border-border font-bold text-xs text-ink">
                   <td className="py-3.5 px-3.5 text-center"></td>
-                  <td className="py-3.5 px-3 font-bold text-slate-900">
+                  <td className="py-3.5 px-3 font-bold text-ink">
                     Totals ({filteredLedgers.length} Retailers)
                   </td>
-                  <td className="py-3.5 px-3 text-right font-mono text-slate-900">
+                  <td className="py-3.5 px-3 text-right font-mono text-ink">
                     {formatINR(totals.notYetDue)}
                   </td>
                   <td className="py-3.5 px-3 text-right font-mono text-amber-700">
@@ -841,11 +854,11 @@ export const DistributorReceivables: React.FC = () => {
                   <td className="py-3.5 px-3 text-right font-mono text-rose-700">
                     {formatINR(totals.d60_plus)}
                   </td>
-                  <td className="py-3.5 px-3 text-right font-mono text-sm font-black text-slate-900 whitespace-nowrap">
+                  <td className="py-3.5 px-3 text-right font-mono text-sm font-black text-ink whitespace-nowrap">
                     {formatINR(totals.totalOwed)}
                   </td>
                   <td className="py-3.5 px-4" colSpan={2}>
-                    <span className="text-[11px] text-slate-500 font-normal">
+                    <span className="text-[11px] text-ink-muted font-normal">
                       Reconciled with General Ledger
                     </span>
                   </td>
@@ -856,7 +869,7 @@ export const DistributorReceivables: React.FC = () => {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-600">
+            <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-surface-raised text-xs text-ink-muted">
               <span>
                 Showing {(currentPage - 1) * (pageSize as number) + 1} to{" "}
                 {Math.min(currentPage * (pageSize as number), filteredLedgers.length)} of{" "}
@@ -866,7 +879,7 @@ export const DistributorReceivables: React.FC = () => {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-colors cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-colors cursor-pointer"
                 >
                   Previous
                 </button>
@@ -876,8 +889,8 @@ export const DistributorReceivables: React.FC = () => {
                     onClick={() => setCurrentPage(i + 1)}
                     className={`w-7 h-7 rounded-lg font-bold transition-colors cursor-pointer ${
                       currentPage === i + 1
-                        ? "bg-blue-600 text-white"
-                        : "bg-white border border-slate-200 hover:bg-slate-50 text-slate-700"
+                        ? "bg-primary text-white"
+                        : "bg-surface border border-border hover:bg-surface-raised text-ink"
                     }`}
                   >
                     {i + 1}
@@ -886,7 +899,7 @@ export const DistributorReceivables: React.FC = () => {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-colors cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed font-semibold transition-colors cursor-pointer"
                 >
                   Next
                 </button>
@@ -897,20 +910,20 @@ export const DistributorReceivables: React.FC = () => {
 
         {/* Right Drawer: Detail View for Selected Retailer (Only when a row is clicked) */}
         {activeRetailer && (
-          <div className="w-full lg:w-[420px] shrink-0 bg-white rounded-2xl shadow-md border border-slate-200 p-5 flex flex-col gap-5 animate-in slide-in-from-right-2">
+          <div className="w-full lg:w-[420px] shrink-0 bg-surface rounded-2xl shadow-md border border-border p-5 flex flex-col gap-5 animate-in slide-in-from-right-2">
             {/* Drawer Header with Close Button */}
-            <div className="flex items-start justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-start justify-between pb-3 border-b border-border">
               <div className="flex flex-col gap-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-lg text-slate-900 tracking-tight truncate">
+                  <h2 className="font-bold text-lg text-ink tracking-tight truncate">
                     {activeRetailer.name}
                   </h2>
                 </div>
-                <span className="text-xs text-slate-500">
-                  {activeRetailer.code} • {activeRetailer.town}, {activeRetailer.district}
+                <span className="text-xs text-ink-muted">
+                  {activeRetailer.code} • {formatLocation(activeRetailer.town, activeRetailer.district, activeRetailer.state)}
                 </span>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="font-mono text-xs text-slate-600">
+                  <span className="font-mono text-xs text-ink-muted">
                     {activeRetailer.phone}
                   </span>
                   <a
@@ -919,7 +932,7 @@ export const DistributorReceivables: React.FC = () => {
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                    className="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-soft-sm transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[13px]">chat</span>
                     WhatsApp
@@ -930,7 +943,7 @@ export const DistributorReceivables: React.FC = () => {
               {/* Close Drawer Button */}
               <button
                 onClick={() => setSelectedRetailerId(null)}
-                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full hover:bg-surface-raised text-ink-muted hover:text-ink-muted flex items-center justify-center transition-colors cursor-pointer"
                 title="Close drawer"
                 type="button"
               >
@@ -939,10 +952,10 @@ export const DistributorReceivables: React.FC = () => {
             </div>
 
             {/* Requirement 6: Credit Hold Toggle Box */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+            <div className="p-3.5 rounded-xl bg-surface-raised border border-border flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-slate-900">Credit Hold Status</span>
+                  <span className="font-bold text-xs text-ink">Credit Hold Status</span>
                   {activeRetailer.creditHold ? (
                     <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
                       ON HOLD
@@ -953,7 +966,7 @@ export const DistributorReceivables: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
+                <p className="text-[11px] text-ink-muted mt-0.5 leading-tight">
                   {activeRetailer.creditHold
                     ? "Orders frozen. Retailer sees hold alert in portal."
                     : "Normal credit policy. Orders can be dispatched."}
@@ -964,7 +977,7 @@ export const DistributorReceivables: React.FC = () => {
                 className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer ${
                   activeRetailer.creditHold
                     ? "bg-rose-600 hover:bg-rose-700 text-white"
-                    : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+                    : "bg-surface-raised hover:bg-surface-raised text-ink"
                 }`}
                 type="button"
               >
@@ -977,11 +990,11 @@ export const DistributorReceivables: React.FC = () => {
 
             {/* Micro KPI Cards */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-slate-50 p-2.5 rounded-xl flex flex-col border border-slate-200/60">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+              <div className="bg-surface-raised p-2.5 rounded-xl flex flex-col border border-border/60">
+                <span className="text-[10px] text-ink-muted font-bold uppercase tracking-wider">
                   Total Owed
                 </span>
-                <span className="font-mono text-sm font-bold text-slate-900 mt-1">
+                <span className="font-mono text-sm font-bold text-ink mt-1">
                   {formatINR(activeLedger?.totalOwed || 0)}
                 </span>
               </div>
@@ -997,14 +1010,14 @@ export const DistributorReceivables: React.FC = () => {
                   )}
                 </span>
               </div>
-              <div className="bg-slate-50 p-2.5 rounded-xl flex flex-col border border-slate-200/60">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+              <div className="bg-surface-raised p-2.5 rounded-xl flex flex-col border border-border/60">
+                <span className="text-[10px] text-ink-muted font-bold uppercase tracking-wider">
                   Available
                 </span>
-                <span className="font-mono text-sm font-bold text-slate-900 mt-1">
+                <span className="font-mono text-sm font-bold text-ink mt-1">
                   {formatINR(activeLedger?.creditAvailable || 0)}
                 </span>
-                <span className="text-[10px] text-slate-400 mt-0.5">
+                <span className="text-[10px] text-ink-muted mt-0.5">
                   of {formatINR(activeRetailer.creditLimit)}
                 </span>
               </div>
@@ -1013,8 +1026,8 @@ export const DistributorReceivables: React.FC = () => {
             {/* Open Invoices List */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-slate-900">Open Invoices</span>
-                <span className="text-xs text-slate-500">
+                <span className="font-bold text-xs text-ink">Open Invoices</span>
+                <span className="text-xs text-ink-muted">
                   {activeRetailerInvoices.length} open totaling {formatINR(activeLedger?.totalOwed || 0)}
                 </span>
               </div>
@@ -1026,30 +1039,30 @@ export const DistributorReceivables: React.FC = () => {
                   return (
                     <div
                       key={inv.id}
-                      className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col gap-2"
+                      className="p-3 rounded-xl bg-surface-raised border border-border/80 flex flex-col gap-2"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-bold text-xs text-slate-900">
+                          <span className="font-mono font-bold text-xs text-ink">
                             {inv.invoiceNumber}
                           </span>
                           <span
                             className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                               isOverdue
                                 ? "bg-rose-100 text-rose-700 border border-rose-200"
-                                : "bg-blue-100 text-blue-700 border border-blue-200"
+                                : "bg-blue-100 text-primary border border-primary/20"
                             }`}
                           >
                             {isOverdue ? `${Math.abs(daysUntil)}d Overdue` : "Not yet due"}
                           </span>
                         </div>
-                        <span className="font-mono text-xs font-bold text-slate-900">
+                        <span className="font-mono text-xs font-bold text-ink">
                           {formatINR(inv.balanceDue)}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-200">
+                      <div className="flex items-center justify-between text-[11px] text-ink-muted pt-1 border-t border-border">
                         <span>Billed: {inv.billedDate || inv.date}</span>
-                        <span className={`font-semibold ${isOverdue ? "text-rose-600" : "text-slate-700"}`}>
+                        <span className={`font-semibold ${isOverdue ? "text-rose-600" : "text-ink"}`}>
                           Due: {inv.dueDate}
                         </span>
                       </div>
@@ -1058,7 +1071,7 @@ export const DistributorReceivables: React.FC = () => {
                 })}
 
                 {activeRetailerInvoices.length === 0 && (
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-slate-400 text-xs">
+                  <div className="p-4 rounded-xl bg-surface-raised border border-border text-center text-ink-muted text-xs">
                     No open invoices. Account is fully settled.
                   </div>
                 )}
@@ -1069,7 +1082,7 @@ export const DistributorReceivables: React.FC = () => {
             <div className="flex flex-col gap-2 pt-1">
               <button
                 onClick={() => handleOpenReceiptForRetailer(activeRetailer.id)}
-                className="w-full h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
@@ -1089,20 +1102,20 @@ export const DistributorReceivables: React.FC = () => {
             </div>
 
             {/* Reminder Preview Card */}
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-col gap-1.5">
+            <div className="bg-surface-raised p-3 rounded-xl border border-border/80 flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider">
                   Reminder preview (editable)
                 </span>
-                <span className="material-symbols-outlined text-slate-400 text-[14px]">edit</span>
+                <span className="material-symbols-outlined text-ink-muted text-[14px]">edit</span>
               </div>
               <textarea
-                className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none leading-relaxed"
+                className="w-full p-2 bg-surface border border-border rounded-lg text-xs text-ink focus:outline-none focus:ring-1 focus:ring-primary/20 resize-none leading-relaxed"
                 rows={3}
                 value={reminderMessage}
                 onChange={e => setReminderMessage(e.target.value)}
               />
-              <span className="text-[10px] text-slate-400 leading-tight">
+              <span className="text-[10px] text-ink-muted leading-tight">
                 Opens WhatsApp with this prefilled message.
               </span>
             </div>

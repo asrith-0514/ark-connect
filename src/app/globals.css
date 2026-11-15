@@ -1,8 +1,125 @@
 @import "tailwindcss";
 @source "../**/*.{js,ts,jsx,tsx,mdx}";
 
+/* ==========================================================================
+   ARK Design Tokens & Semantic Variables (Tailwind CSS v4)
+   ========================================================================== */
+
+:root {
+  /* Light Theme (Default) */
+  --background: #FAF7F2;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --border: #E8E4DC;
+  --ink: #1B1A17;
+  --ink-muted: #6B665D;
+  --muted: #6B665D;
+  --primary: #3B3BF5;
+  --primary-foreground: #FFFFFF;
+  --accent: #FF6A3D;
+  --success: #12805C;
+  --warning: #B7791F;
+  --danger: #D92D20;
+
+  /* Soft Layered Shadows */
+  --shadow-color-sm: rgba(20, 18, 12, 0.04);
+  --shadow-color-md: rgba(20, 18, 12, 0.07);
+  --shadow-color-lg: rgba(20, 18, 12, 0.10);
+
+  --shadow-soft-sm: 0 1px 2px var(--shadow-color-sm);
+  --shadow-soft-md: 0 4px 12px -2px var(--shadow-color-md), 0 1px 2px var(--shadow-color-sm);
+  --shadow-soft-lg: 0 8px 24px -8px var(--shadow-color-lg), 0 2px 6px -1px var(--shadow-color-sm);
+  --shadow-soft-xl: 0 16px 36px -12px rgba(20, 18, 12, 0.14), 0 4px 12px -2px var(--shadow-color-sm);
+}
+
+/* Explicit Dark Theme */
+[data-theme="dark"] {
+  --background: #0F1115;
+  --surface: #171A21;
+  --surface-raised: #20242D;
+  --border: #282D38;
+  --ink: #ECEAE4;
+  --ink-muted: #9A978F;
+  --muted: #9A978F;
+  --primary: #7C7CFF;
+  --primary-foreground: #0F1115;
+  --accent: #FF8A63;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+
+  --shadow-color-sm: rgba(0, 0, 0, 0.40);
+  --shadow-color-md: rgba(0, 0, 0, 0.55);
+  --shadow-color-lg: rgba(0, 0, 0, 0.70);
+
+  --shadow-soft-sm: 0 1px 2px var(--shadow-color-sm);
+  --shadow-soft-md: 0 4px 12px -2px var(--shadow-color-md), 0 1px 2px var(--shadow-color-sm);
+  --shadow-soft-lg: 0 8px 24px -8px var(--shadow-color-lg), 0 2px 6px -1px var(--shadow-color-sm);
+  --shadow-soft-xl: 0 16px 36px -12px rgba(0, 0, 0, 0.85), 0 4px 12px -2px var(--shadow-color-sm);
+}
+
+/* Automatic Dark Theme when System Preference is Dark and no explicit Light theme set */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0F1115;
+    --surface: #171A21;
+    --surface-raised: #20242D;
+    --border: #282D38;
+    --ink: #ECEAE4;
+    --ink-muted: #9A978F;
+    --muted: #9A978F;
+    --primary: #7C7CFF;
+    --primary-foreground: #0F1115;
+    --accent: #FF8A63;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+
+    --shadow-color-sm: rgba(0, 0, 0, 0.40);
+    --shadow-color-md: rgba(0, 0, 0, 0.55);
+    --shadow-color-lg: rgba(0, 0, 0, 0.70);
+
+    --shadow-soft-sm: 0 1px 2px var(--shadow-color-sm);
+    --shadow-soft-md: 0 4px 12px -2px var(--shadow-color-md), 0 1px 2px var(--shadow-color-sm);
+    --shadow-soft-lg: 0 8px 24px -8px var(--shadow-color-lg), 0 2px 6px -1px var(--shadow-color-sm);
+    --shadow-soft-xl: 0 16px 36px -12px rgba(0, 0, 0, 0.85), 0 4px 12px -2px var(--shadow-color-sm);
+  }
+}
+
 @theme {
-  --color-primary: #0047d3;
+  /* Semantic Tokens */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* Layered Shadows */
+  --shadow-soft-sm: var(--shadow-soft-sm);
+  --shadow-soft-md: var(--shadow-soft-md);
+  --shadow-soft-lg: var(--shadow-soft-lg);
+  --shadow-soft-xl: var(--shadow-soft-xl);
+
+  /* Font Families */
+  --font-sans: var(--font-geist-sans), "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), "Geist Mono", monospace;
+  --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+
+  /* Backward Compatibility Tokens for existing screens */
   --color-primary-container: #1e5eff;
   --color-on-primary: #ffffff;
   --color-on-primary-container: #f0f0ff;
@@ -35,7 +152,6 @@
   --color-on-error: #ffffff;
   --color-on-error-container: #93000a;
 
-  --color-surface: #f7f9fb;
   --color-surface-dim: #d8dadc;
   --color-surface-bright: #f7f9fb;
   --color-surface-container-lowest: #ffffff;
@@ -51,7 +167,6 @@
   --color-outline: #737688;
   --color-outline-variant: #c3c5d9;
   --color-surface-tint: #004ee8;
-  --color-background: #f7f9fb;
   --color-on-background: #191c1e;
 
   --spacing-gutter: 0.75rem;
@@ -69,19 +184,71 @@
   html, body {
     margin: 0;
     padding: 0;
-    background-color: #f7f9fb;
-    color: #191c1e;
-    font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--background);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    transition: background-color 200ms ease-out, color 200ms ease-out;
   }
   ::-webkit-scrollbar {
     display: none;
   }
   :focus-visible {
-    outline: 2px solid #0047d3;
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 }
 
+/* Number utility: Geist Mono + Tabular figures */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Instrument Serif for page titles only */
+.font-page-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* Skeleton shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    var(--border) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Motion Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-shimmer {
+    animation: none !important;
+    background: var(--border) !important;
+  }
+}
+
+/* Typography backward compatibility classes */
 .font-display-hero {
   font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 36px;
@@ -104,63 +271,66 @@
   font-weight: 600;
 }
 .font-title-sm {
-  font-family: 'Geist', sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 24px;
   letter-spacing: -0.01em;
   font-weight: 600;
 }
 .font-body-lg {
-  font-family: 'Geist', sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
 }
 .font-body-md {
-  font-family: 'Geist', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   line-height: 20px;
   font-weight: 400;
 }
 .font-body-sm {
-  font-family: 'Geist', sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
   line-height: 16px;
   font-weight: 400;
 }
 .font-label-md {
-  font-family: 'Geist', sans-serif;
+  font-family: var(--font-sans);
   font-size: 13px;
   line-height: 18px;
   letter-spacing: 0.01em;
   font-weight: 500;
 }
 .font-label-sm {
-  font-family: 'Geist', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   line-height: 14px;
   letter-spacing: 0.04em;
   font-weight: 600;
 }
 .font-numeric-currency-lg {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 22px;
   line-height: 28px;
   letter-spacing: -0.02em;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .font-numeric-currency-md {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 15px;
   line-height: 20px;
   letter-spacing: -0.01em;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 .font-numeric-table {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   line-height: 16px;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .material-symbols-outlined {

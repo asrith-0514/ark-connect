@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   getDistributorKPIs,
   getAgeingBuckets,
@@ -13,12 +14,15 @@ import {
   getRetailerAgeingLedgers,
   formatINR,
   MOCK_BRANDS,
+  getFollowUpsGrouped,
 } from "@/lib/mock";
+import { AddFollowUpModal } from "@/components/distributor/AddFollowUpModal";
 
 export default function DistributorDashboard() {
   const {
     setDistributorNav,
     setIsReceiptModalOpen,
+    setIsCreateInvoiceOpen,
     setViewingInvoice,
     setOrderTabFilter,
     invoices,
@@ -27,14 +31,28 @@ export default function DistributorDashboard() {
     purchaseBills,
     retailers,
     currentDate,
+    selectedMonth,
+    followUps,
+    addFollowUp,
+    updateFollowUpStatus,
+    retailerRequests,
   } = useApp();
+  const { hasPermission } = useAuth();
+  const canViewSupplierPayables = hasPermission("canViewSupplierPayables");
+
+  const [isAddFollowUpOpen, setIsAddFollowUpOpen] = useState(false);
+
+  // Grouped follow-ups from selector
+  const followUpGrouped = useMemo(() => getFollowUpsGrouped(followUps, currentDate), [followUps, currentDate]);
+  const pendingRequestsCount = useMemo(() => retailerRequests.filter(r => r.status === "pending").length, [retailerRequests]);
+  const activeFollowUps = useMemo(() => [...followUpGrouped.missed, ...followUpGrouped.today], [followUpGrouped]);
 
   const draftInvoice = invoices.find(i => i.status === "Draft") || invoices[0];
 
-  // Derive all data via selectors
+  // Derive all data via selectors (filtered by selectedMonth)
   const kpis = useMemo(
-    () => getDistributorKPIs(orders, invoices, payments, purchaseBills, retailers, currentDate),
-    [orders, invoices, payments, purchaseBills, retailers, currentDate]
+    () => getDistributorKPIs(orders, invoices, payments, purchaseBills, retailers, currentDate, selectedMonth),
+    [orders, invoices, payments, purchaseBills, retailers, currentDate, selectedMonth]
   );
   const pipeline = useMemo(() => getOrderPipelineMetrics(orders), [orders]);
   const ageing = useMemo(() => getAgeingBuckets(invoices, currentDate), [invoices, currentDate]);
@@ -48,8 +66,8 @@ export default function DistributorDashboard() {
     [invoices, payments, currentDate]
   );
   const deltas = useMemo(
-    () => getDashboardPeriodDeltas(kpis, trend),
-    [kpis, trend]
+    () => getDashboardPeriodDeltas(kpis, trend, invoices, selectedMonth, currentDate),
+    [kpis, trend, invoices, selectedMonth, currentDate]
   );
 
   const ledgers = useMemo(
@@ -57,22 +75,15 @@ export default function DistributorDashboard() {
     [retailers, invoices, currentDate]
   );
 
-  // Month Picker state (Requirement 1)
+  // Current Month label
   const currentMonthName = useMemo(() => {
     return currentDate.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
   }, [currentDate]);
 
-  const prevMonthName = useMemo(() => {
-    const d = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    return d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-  }, [currentDate]);
-
-  const [selectedPeriod, setSelectedPeriod] = useState<string>("current-mtd");
-
-  // Chart hover interaction (Requirement 4: tooltip on hover only)
+  // Chart hover interaction (tooltip on hover only)
   const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(null);
 
-  // Needs attention metrics (Requirement 6)
+  // Needs attention metrics
   const pendingRetailersCount = useMemo(() => {
     return retailers.filter(r => r.status === "Needs Approval").length;
   }, [retailers]);
@@ -81,320 +92,427 @@ export default function DistributorDashboard() {
     return ledgers.filter(l => (l.d1_30 + l.d31_60 + l.d60_plus) > 0);
   }, [ledgers]);
 
-  // Sync Tally state in dashboard
-  const [isSyncingTally, setIsSyncingTally] = useState(false);
-  const [lastSyncedTimestamp, setLastSyncedTimestamp] = useState<string>("Today, 09:42 AM");
-  const [tallyToast, setTallyToast] = useState<{ show: boolean; message: string } | null>(null);
-
-  const handleSyncTally = () => {
-    setIsSyncingTally(true);
-    setTimeout(() => {
-      setIsSyncingTally(false);
-      const timeStr = `Today, ${new Date().toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`;
-      setLastSyncedTimestamp(timeStr);
-      setTallyToast({
-        show: true,
-        message: "Tally Prime ERP synchronized successfully. 28 retailer ledgers and 64 vouchers updated.",
-      });
-      setTimeout(() => setTallyToast(null), 4000);
-    }, 1200);
-  };
-
   // Pipeline proportions
-  const totalOrdersCount = kpis.orderCount > 0 ? kpis.orderCount : 1;
-  const submittedWidth = (pipeline.submittedCount / totalOrdersCount) * 100;
-  const approvedWidth = (pipeline.approvedCount / totalOrdersCount) * 100;
-  const confirmedWidth = (pipeline.confirmedCount / totalOrdersCount) * 100;
-  const processingWidth = (pipeline.processingCount / totalOrdersCount) * 100;
-  const dispatchedWidth = (pipeline.dispatchedCount / totalOrdersCount) * 100;
-  const deliveredWidth = (pipeline.deliveredCount / totalOrdersCount) * 100;
+  const totalPipelineCount =
+    pipeline.submittedCount +
+    pipeline.approvedCount +
+    pipeline.confirmedCount +
+    pipeline.processingCount +
+    pipeline.dispatchedCount +
+    pipeline.deliveredCount;
+
+  const submittedWidth = totalPipelineCount > 0 ? (pipeline.submittedCount / totalPipelineCount) * 100 : 0;
+  const approvedWidth = totalPipelineCount > 0 ? (pipeline.approvedCount / totalPipelineCount) * 100 : 0;
+  const confirmedWidth = totalPipelineCount > 0 ? (pipeline.confirmedCount / totalPipelineCount) * 100 : 0;
+  const processingWidth = totalPipelineCount > 0 ? (pipeline.processingCount / totalPipelineCount) * 100 : 0;
+  const dispatchedWidth = totalPipelineCount > 0 ? (pipeline.dispatchedCount / totalPipelineCount) * 100 : 0;
+  const deliveredWidth = totalPipelineCount > 0 ? (pipeline.deliveredCount / totalPipelineCount) * 100 : 0;
+
+  // Receivables overdue health ratio
+  const overduePercent = kpis.totalReceivables > 0 ? Math.round((kpis.overdueReceivables / kpis.totalReceivables) * 100) : 0;
+  const healthyPercent = Math.max(0, 100 - overduePercent);
 
   return (
-    <div className="w-full space-y-6 pb-24">
-      {/* Top Dashboard Header & Operational Control Strip */}
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+    <div className="w-full flex flex-col gap-5 text-ink">
+      {/* 1. Seller / Admin Console Header: Clean, Dense, Task-First with Quick Actions */}
+      <div className="bg-surface rounded-xl p-4 sm:p-5 border border-border shadow-soft-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              Business Dashboard
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
+            <h1 className="font-bold text-lg sm:text-xl text-ink tracking-tight font-sans">
+              Today • Operations &amp; Hub Command
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider border border-slate-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Live Operational Ledger
+            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono font-bold num border border-primary/20">
+              {currentDate.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Wholesale Operations &amp; Ledger Overview • Secunderabad Distribution Hub • Month-to-Date ({currentMonthName})
+          <p className="text-xs text-ink-muted mt-1 flex items-center gap-2 flex-wrap">
+            <span>Tiruppur Mill Hub</span>
+            <span>•</span>
+            <span className="text-primary font-semibold">Same-day dispatch cut-off: 17:30 IST</span>
+            <span>•</span>
+            <span>Tally Prime ERP live</span>
           </p>
         </div>
 
-        {/* Month Picker (Requirement 1) & Quick Actions */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Month Picker dropdown replacing two-pill toggle */}
-          <div className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200/80 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold transition-colors">
-            <span className="material-symbols-outlined text-[18px] text-[#0047d3] shrink-0">
-              calendar_month
-            </span>
-            <select
-              value={selectedPeriod}
-              onChange={e => setSelectedPeriod(e.target.value)}
-              className="bg-transparent text-slate-900 font-bold focus:outline-none cursor-pointer pr-1"
-            >
-              <option value="current-mtd">{currentMonthName} (Month-to-Date)</option>
-              <option value="prev-month">{prevMonthName}</option>
-              <option value="rolling-6m">Rolling 6 Months</option>
-              <option value="fy2026-27">Financial Year 2026–27</option>
-            </select>
-          </div>
+        {/* Quick Actions (Create invoice, Record receipt, Add follow-up) */}
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              setIsCreateInvoiceOpen(true);
+              setDistributorNav("invoices");
+            }}
+            className="px-3.5 min-h-[40px] rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 active:scale-98 transition-all shadow-soft-sm flex items-center gap-1.5 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[17px]">receipt</span>
+            <span>Create Invoice</span>
+          </button>
 
           <button
             type="button"
             onClick={() => setIsReceiptModalOpen(true)}
-            className="h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs sm:text-sm flex items-center gap-2 transition-colors border border-slate-200 cursor-pointer"
+            className="px-3.5 min-h-[40px] rounded-xl bg-surface-raised hover:bg-surface border border-border text-ink font-bold text-xs active:scale-98 transition-all shadow-soft-sm flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px] text-emerald-700">payments</span>
+            <span className="material-symbols-outlined text-[17px] text-success">payments</span>
             <span>Record Receipt</span>
           </button>
 
           <button
             type="button"
-            onClick={() => setViewingInvoice(draftInvoice)}
-            className="h-10 px-4 rounded-xl bg-[#0047d3] hover:bg-[#1e5eff] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-all active:scale-98 cursor-pointer"
+            onClick={() => setIsAddFollowUpOpen(true)}
+            className="px-3.5 min-h-[40px] rounded-xl bg-surface-raised hover:bg-surface border border-border text-ink font-bold text-xs active:scale-98 transition-all shadow-soft-sm flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px]">add_circle</span>
-            <span>Create Invoice</span>
+            <span className="material-symbols-outlined text-[17px] text-accent">phone_callback</span>
+            <span>Add Follow-up</span>
           </button>
         </div>
       </div>
 
-      {/* Requirement 6: "Needs attention" strip */}
-      <div className="bg-gradient-to-r from-amber-50 via-rose-50/50 to-blue-50/40 rounded-2xl p-4 border border-amber-200/80 shadow-2xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-900 flex items-center justify-center font-bold shrink-0">
-              <span className="material-symbols-outlined text-[20px] text-amber-700 animate-pulse">
-                notification_important
+      {/* 2. Tasks Bento Strip: Action-First Tasks (Orders to review, Follow-ups due, Overdue payments) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Task 1: Orders to Review */}
+        <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm flex flex-col justify-between group hover:border-warning/40 transition-colors">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-ink-muted uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-warning animate-pulse" />
+                Orders to Review
               </span>
-            </span>
-            <div>
-              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-                Needs Attention
-              </span>
-              <span className="text-[11px] text-slate-600">
-                Actionable operational items requiring hub intervention
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-warning/15 text-warning">
+                {pipeline.submittedCount} Pending
               </span>
             </div>
+            {pipeline.submittedCount > 0 ? (
+              <div className="p-2.5 rounded-lg bg-surface-raised border border-border mt-1">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-ink">PO #ARK-8839</span>
+                  <span className="font-mono font-bold text-primary num">₹38,400</span>
+                </div>
+                <div className="text-[11px] text-ink-muted mt-0.5">
+                  Sri Balaji Textiles • 96 boxes awaiting credit allocation
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-ink-muted mt-2">All store orders reviewed &amp; approved.</p>
+            )}
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              setOrderTabFilter("review");
+              setDistributorNav("orders");
+            }}
+            className="mt-3 w-full py-1.5 rounded-lg bg-background hover:bg-surface text-warning font-bold text-xs border border-border hover:border-warning/40 flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <span>Review Store Orders</span>
+            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </button>
+        </div>
 
-          {/* Actionable Badges/Links Strip */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* 1. POs awaiting review */}
+        {/* Task 2: Follow-ups Due Today */}
+        <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm flex flex-col justify-between group hover:border-accent/40 transition-colors">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-ink-muted uppercase tracking-wider flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${followUpGrouped.counts.missed > 0 ? "bg-danger" : "bg-accent"}`} />
+                Follow-ups &amp; Tasks
+              </span>
+              <div className="flex items-center gap-1">
+                {followUpGrouped.counts.missed > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-danger/15 text-danger">
+                    {followUpGrouped.counts.missed} Missed
+                  </span>
+                )}
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent/15 text-accent">
+                  {followUpGrouped.counts.today} Today
+                </span>
+              </div>
+            </div>
+            <div className="space-y-1.5 mt-1 max-h-36 overflow-y-auto no-scrollbar">
+              {activeFollowUps.slice(0, 2).map((task) => {
+                const ret = retailers.find((r) => r.id === task.retailerId);
+                const isMissed = task.dueDate < currentDate.toISOString().split("T")[0];
+                return (
+                  <div
+                    key={task.id}
+                    className="p-2 rounded-lg bg-surface-raised border border-border flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-xs text-ink truncate">{ret?.name || task.retailerId}</span>
+                        {task.promisedAmount && (
+                          <span className="text-[10px] text-success font-mono font-bold num">
+                            ₹{task.promisedAmount.toLocaleString("en-IN")}
+                          </span>
+                        )}
+                        {isMissed && (
+                          <span className="text-[9px] font-bold text-danger px-1 rounded bg-danger/10">Missed</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-ink-muted line-clamp-1">{task.notes}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => updateFollowUpStatus(task.id, "done")}
+                      className="w-6 h-6 rounded-md bg-background hover:bg-success/20 text-ink-muted hover:text-success flex items-center justify-center border border-border shrink-0 cursor-pointer"
+                      title="Mark Done"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">check</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-2">
             <button
               type="button"
-              onClick={() => {
-                setOrderTabFilter("review");
-                setDistributorNav("orders");
-              }}
-              className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100/70 text-slate-800 text-xs font-semibold flex items-center gap-2 transition-all border border-amber-300 shadow-2xs cursor-pointer group"
+              onClick={() => setDistributorNav("follow-ups")}
+              className="flex-1 py-1.5 rounded-lg bg-background hover:bg-surface text-ink font-semibold text-xs border border-border flex items-center justify-center gap-1 cursor-pointer"
             >
-              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-              <span>
-                <strong className="text-amber-900 font-bold font-mono">{pipeline.submittedCount}</strong>{" "}
-                {pipeline.submittedCount === 1 ? "PO awaiting review" : "POs awaiting review"}
-              </span>
-              <span className="material-symbols-outlined text-[14px] text-amber-700 group-hover:translate-x-0.5 transition-transform">
-                arrow_forward
-              </span>
+              <span>Manage Tasks</span>
             </button>
-
-            {/* 2. Retailers awaiting approval */}
             <button
               type="button"
-              onClick={() => setDistributorNav("retailers")}
-              className="px-3 py-1.5 rounded-xl bg-white hover:bg-rose-100/70 text-slate-800 text-xs font-semibold flex items-center gap-2 transition-all border border-rose-300 shadow-2xs cursor-pointer group"
+              onClick={() => setIsAddFollowUpOpen(true)}
+              className="py-1.5 px-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center cursor-pointer shadow-soft-xs"
+              title="Schedule Follow-up"
             >
-              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-              <span>
-                <strong className="text-rose-900 font-bold font-mono">{pendingRetailersCount}</strong>{" "}
-                {pendingRetailersCount === 1 ? "retailer awaiting approval" : "retailers awaiting approval"}
-              </span>
-              <span className="material-symbols-outlined text-[14px] text-rose-700 group-hover:translate-x-0.5 transition-transform">
-                arrow_forward
-              </span>
-            </button>
-
-            {/* 3. Overdue accounts */}
-            <button
-              type="button"
-              onClick={() => setDistributorNav("receivables")}
-              className="px-3 py-1.5 rounded-xl bg-white hover:bg-red-100/70 text-slate-800 text-xs font-semibold flex items-center gap-2 transition-all border border-red-300 shadow-2xs cursor-pointer group"
-            >
-              <span className="w-2 h-2 rounded-full bg-red-600 shrink-0" />
-              <span>
-                <strong className="text-red-900 font-bold font-mono">{overdueAccounts.length}</strong> overdue accounts{" "}
-                <span className="text-red-700 font-mono font-bold">({formatINR(kpis.overdueReceivables)})</span>
-              </span>
-              <span className="material-symbols-outlined text-[14px] text-red-700 group-hover:translate-x-0.5 transition-transform">
-                arrow_forward
-              </span>
+              <span className="material-symbols-outlined text-[15px]">add</span>
             </button>
           </div>
+        </div>
+
+        {/* Task 3: Overdue Payments */}
+        <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm flex flex-col justify-between group hover:border-danger/40 transition-colors">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-ink-muted uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-danger" />
+                Overdue Collections
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-danger/15 text-danger">
+                {overdueAccounts.length} Stores
+              </span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-danger/5 border border-danger/20 mt-1">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-bold text-danger">Total Overdue Dues</span>
+                <span className="font-mono font-bold text-danger num text-sm">
+                  {formatINR(kpis.overdueReceivables)}
+                </span>
+              </div>
+              <div className="text-[11px] text-ink-muted mt-0.5">
+                {overdueAccounts.length} retailer accounts past credit terms (30-60+ days)
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDistributorNav("receivables")}
+            className="mt-3 w-full py-1.5 rounded-lg bg-background hover:bg-surface text-danger font-bold text-xs border border-border hover:border-danger/40 flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <span>Open Overdue Ledgers</span>
+            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </button>
         </div>
       </div>
 
-      {/* Row 1: Six Bento KPI Cards with Computed Deltas (Requirement 1) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-4">
-        {/* Card 1: Order value */}
-        <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200 flex flex-col justify-between min-w-0 group hover:shadow-md transition-shadow">
-          <div className="min-w-0">
-            <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
-              <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider truncate">
-                Order Value
+      {/* Row 1: Bento Grid - Hero KPI Card for Receivables vs Overdue + Smaller Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-5">
+        {/* HERO KPI CARD: Receivables vs Overdue (Spans 6 cols on XL) */}
+        <div className="xl:col-span-6 bg-surface rounded-md p-6 shadow-soft-sm border border-border flex flex-col justify-between group hover:shadow-soft-md transition-shadow">
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <span className="text-xs uppercase font-bold text-ink-muted tracking-wider font-mono">
+                Receivables vs Overdue Risk
               </span>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-[#0047d3] whitespace-nowrap shrink-0">
-                {deltas.orderValueDelta}
+              <span className="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-surface-raised text-ink-muted border border-border">
+                {kpis.activeRetailersCount} Active Retailers
               </span>
             </div>
-            <div className="text-2xl font-bold text-slate-900 font-sans tabular-nums tracking-tight">
-              {formatINR(kpis.orderValue)}
+
+            <div className="grid grid-cols-2 gap-4 my-2">
+              <div>
+                <span className="text-[11px] font-semibold text-ink-muted uppercase block tracking-wider">
+                  Total Receivables
+                </span>
+                <div className="text-2xl sm:text-3xl font-extrabold text-ink font-mono num tracking-tight mt-0.5">
+                  {formatINR(kpis.totalReceivables)}
+                </div>
+                <span className="text-xs text-ink-muted mt-1 block">
+                  {kpis.activeRetailersCount} retailer ledgers
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-semibold text-danger uppercase block tracking-wider">
+                  Overdue Terms
+                </span>
+                <div className="text-2xl sm:text-3xl font-extrabold text-danger font-mono num tracking-tight mt-0.5">
+                  {formatINR(kpis.overdueReceivables)}
+                </div>
+                <span className="text-xs text-danger/80 mt-1 block">
+                  Past 30-day terms ({overduePercent}% of book)
+                </span>
+              </div>
+            </div>
+
+            {/* Health Meter Gauge */}
+            <div className="mt-4 pt-3 border-t border-border">
+              <div className="flex items-center justify-between text-xs text-ink-muted mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-success" />
+                  <span>Healthy / Within Terms ({healthyPercent}%)</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-danger" />
+                  <span>Overdue Risk ({overduePercent}%)</span>
+                </span>
+              </div>
+              <div className="w-full h-3 bg-surface-raised rounded-full overflow-hidden flex border border-border">
+                <div
+                  className="bg-success h-full transition-all duration-300"
+                  style={{ width: `${healthyPercent}%` }}
+                />
+                <div
+                  className="bg-danger h-full transition-all duration-300"
+                  style={{ width: `${overduePercent}%` }}
+                />
+              </div>
             </div>
           </div>
-          <div className="mt-4 pt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 min-w-0">
-            <span className="truncate">Demand ({kpis.orderCount} orders)</span>
-            <span className="material-symbols-outlined text-[#0047d3] text-[18px] shrink-0">
-              shopping_bag
-            </span>
+
+          <div className="mt-4 pt-3 flex items-center justify-between text-xs text-ink-muted border-t border-border">
+            <span>30 Net Days Term Standard</span>
+            <button
+              type="button"
+              onClick={() => setDistributorNav("receivables")}
+              className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>View Receivables Table</span>
+              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </button>
           </div>
         </div>
 
-        {/* Card 2: Invoiced Sales */}
-        <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200 flex flex-col justify-between min-w-0 group hover:shadow-md transition-shadow">
-          <div className="min-w-0">
-            <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
-              <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider truncate">
-                Invoiced Sales
-              </span>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 whitespace-nowrap shrink-0">
-                {deltas.invoicedSalesDelta}
+        {/* 4 Smaller Stat Cards (Spans 6 cols on XL: 2x2 grid) */}
+        <div className="xl:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Card 1: Order value */}
+          <div className="bg-surface rounded-md p-4 sm:p-5 shadow-soft-sm border border-border flex flex-col justify-between group hover:shadow-soft-md transition-shadow">
+            <div>
+              <div className="flex items-center justify-between gap-1.5 mb-2">
+                <span className="text-[11px] uppercase font-bold text-ink-muted tracking-wider truncate font-mono">
+                  Order Value (incl. GST)
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 whitespace-nowrap shrink-0 font-mono">
+                  {deltas.orderValueDelta}
+                </span>
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-ink font-mono num tracking-tight">
+                {formatINR(kpis.orderValue)}
+              </div>
+            </div>
+            <div className="mt-3 pt-2.5 flex items-center justify-between text-xs text-ink-muted border-t border-border">
+              <span className="truncate">Demand ({kpis.orderCount} orders)</span>
+              <span className="material-symbols-outlined text-primary text-[18px] shrink-0">
+                shopping_bag
               </span>
             </div>
-            <div className="text-2xl font-bold text-slate-900 font-sans tabular-nums tracking-tight">
-              {formatINR(kpis.invoicedSales)}
-            </div>
           </div>
-          <div className="mt-4 pt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 min-w-0">
-            <span className="truncate">{kpis.invoicedCount} invoices billed</span>
-            <span className="material-symbols-outlined text-emerald-600 text-[18px] shrink-0">
-              verified
-            </span>
-          </div>
-        </div>
 
-        {/* Card 3: Collections Received */}
-        <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200 flex flex-col justify-between min-w-0 group hover:shadow-md transition-shadow">
-          <div className="min-w-0">
-            <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
-              <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider truncate">
-                Collections Recv.
-              </span>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 whitespace-nowrap shrink-0">
-                {deltas.collectionsDelta}
+          {/* Card 2: Invoiced Sales */}
+          <div className="bg-surface rounded-md p-4 sm:p-5 shadow-soft-sm border border-border flex flex-col justify-between group hover:shadow-soft-md transition-shadow">
+            <div>
+              <div className="flex items-center justify-between gap-1.5 mb-2">
+                <span className="text-[11px] uppercase font-bold text-ink-muted tracking-wider truncate font-mono">
+                  Invoiced Sales (incl. GST)
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/20 whitespace-nowrap shrink-0 font-mono">
+                  {deltas.invoicedSalesDelta}
+                </span>
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-ink font-mono num tracking-tight">
+                {formatINR(kpis.invoicedSales)}
+              </div>
+            </div>
+            <div className="mt-3 pt-2.5 flex items-center justify-between text-xs text-ink-muted border-t border-border">
+              <span className="truncate">{kpis.invoicedCount} invoices billed</span>
+              <span className="material-symbols-outlined text-success text-[18px] shrink-0">
+                verified
               </span>
             </div>
-            <div className="text-2xl font-bold text-slate-900 font-sans tabular-nums tracking-tight">
-              {formatINR(kpis.collectionsReceived)}
-            </div>
           </div>
-          <div className="mt-4 pt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 min-w-0">
-            <span className="truncate">{kpis.collectionsCount} collections settled</span>
-            <span className="material-symbols-outlined text-slate-500 text-[18px] shrink-0">
-              account_balance
-            </span>
-          </div>
-        </div>
 
-        {/* Card 4: Outstanding Receivables */}
-        <div className="bg-white rounded-2xl p-5 shadow-xs border border-slate-200 flex flex-col justify-between min-w-0 group hover:shadow-md transition-shadow">
-          <div className="min-w-0">
-            <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
-              <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider truncate">
-                Receivables
-              </span>
-              <span className="text-[11px] font-semibold text-slate-400 whitespace-nowrap shrink-0">
-                {deltas.receivablesDelta}
+          {/* Card 3: Collections Received */}
+          <div className="bg-surface rounded-md p-4 sm:p-5 shadow-soft-sm border border-border flex flex-col justify-between group hover:shadow-soft-md transition-shadow">
+            <div>
+              <div className="flex items-center justify-between gap-1.5 mb-2">
+                <span className="text-[11px] uppercase font-bold text-ink-muted tracking-wider truncate font-mono">
+                  Collections Recv.
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-surface-raised text-ink-muted border border-border whitespace-nowrap shrink-0 font-mono">
+                  {deltas.collectionsDelta}
+                </span>
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-ink font-mono num tracking-tight">
+                {formatINR(kpis.collectionsReceived)}
+              </div>
+            </div>
+            <div className="mt-3 pt-2.5 flex items-center justify-between text-xs text-ink-muted border-t border-border">
+              <span className="truncate">{kpis.collectionsCount} collections settled</span>
+              <span className="material-symbols-outlined text-ink-muted text-[18px] shrink-0">
+                account_balance
               </span>
             </div>
-            <div className="text-2xl font-bold text-slate-900 font-sans tabular-nums tracking-tight">
-              {formatINR(kpis.totalReceivables)}
-            </div>
           </div>
-          <div className="mt-4 pt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 min-w-0">
-            <span className="truncate">{kpis.activeRetailersCount} retailer ledgers</span>
-            <span className="material-symbols-outlined text-slate-400 text-[18px] shrink-0">
-              contacts_product
-            </span>
-          </div>
-        </div>
 
-        {/* Card 5: Overdue Receivables */}
-        <div className="bg-white rounded-2xl p-5 shadow-xs border border-rose-200 flex flex-col justify-between min-w-0 group hover:shadow-md transition-shadow">
-          <div className="min-w-0">
-            <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
-              <span className="text-[11px] uppercase font-bold text-rose-700 tracking-wider truncate">
-                Overdue Terms
-              </span>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 whitespace-nowrap shrink-0">
-                Action Req.
-              </span>
+          {/* Card 4: Supplier Payables */}
+          <div className="bg-surface-raised rounded-md p-4 sm:p-5 shadow-soft-sm border border-border flex flex-col justify-between group hover:shadow-soft-md transition-shadow">
+            <div>
+              <div className="flex items-center justify-between gap-1.5 mb-2">
+                <span className="text-[11px] uppercase font-bold text-ink-muted tracking-wider truncate font-mono">
+                  You Owe (Payables)
+                </span>
+                {canViewSupplierPayables && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-surface text-ink-muted border border-border whitespace-nowrap shrink-0 font-mono">
+                    {deltas.payablesDelta}
+                  </span>
+                )}
+              </div>
+              {canViewSupplierPayables ? (
+                <div className="text-xl sm:text-2xl font-bold text-ink font-mono num tracking-tight">
+                  {formatINR(kpis.supplierPayables)}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-ink-muted text-xs py-1.5 font-semibold">
+                  <span className="material-symbols-outlined text-[16px] text-warning">lock</span>
+                  <span>Restricted to Finance &amp; Owner</span>
+                </div>
+              )}
             </div>
-            <div className="text-2xl font-bold text-rose-700 font-sans tabular-nums tracking-tight">
-              {formatINR(kpis.overdueReceivables)}
+            <div className="mt-3 pt-2.5 flex items-center justify-between text-xs text-ink-muted border-t border-border">
+              <span className="truncate">Tiruppur mill payables</span>
+              <span className="material-symbols-outlined text-ink-muted text-[18px] shrink-0">factory</span>
             </div>
-          </div>
-          <div className="mt-4 pt-3 flex items-center justify-between text-xs text-rose-600 border-t border-rose-100 bg-rose-50/50 -mx-5 -mb-5 px-5 py-3 rounded-b-2xl min-w-0">
-            <span className="truncate">Past 30-day terms</span>
-            <span className="material-symbols-outlined text-rose-600 text-[18px] shrink-0">error</span>
-          </div>
-        </div>
-
-        {/* Card 6: Supplier Payables */}
-        <div className="bg-slate-100 rounded-2xl p-5 shadow-xs border border-slate-200 flex flex-col justify-between min-w-0 group hover:shadow-md transition-shadow">
-          <div className="min-w-0">
-            <div className="flex items-center justify-between gap-1.5 mb-2 min-w-0">
-              <span className="text-[11px] uppercase font-bold text-slate-500 tracking-wider truncate">
-                You Owe (Payables)
-              </span>
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 whitespace-nowrap shrink-0">
-                {deltas.payablesDelta}
-              </span>
-            </div>
-            <div className="text-2xl font-bold text-slate-900 font-sans tabular-nums tracking-tight">
-              {formatINR(kpis.supplierPayables)}
-            </div>
-          </div>
-          <div className="mt-4 pt-3 flex items-center justify-between text-xs text-slate-500 border-t border-slate-200 min-w-0">
-            <span className="truncate">Tiruppur mill payables</span>
-            <span className="material-symbols-outlined text-slate-500 text-[18px] shrink-0">factory</span>
           </div>
         </div>
       </div>
 
       {/* Trend Line Chart Section: Invoiced Sales vs Collections */}
-      <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 relative">
+      <div className="bg-surface rounded-md p-6 shadow-soft-sm border border-border relative">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">
+              <h2 className="text-base sm:text-lg font-bold text-ink font-sans">
                 Invoiced Sales vs Collections
               </h2>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-surface-raised text-ink-muted font-semibold font-mono border border-border">
                 6-Month Trend
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-ink-muted mt-1">
               Direct monthly correlation between dispatched turnover and realized liquidity
             </p>
           </div>
@@ -402,21 +520,21 @@ export default function DistributorDashboard() {
           {/* Legend and Month Delta Stats */}
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#1e5eff]" />
-              <span className="text-xs font-semibold text-slate-700">Invoiced Sales</span>
+              <span className="w-3 h-3 rounded-full bg-primary" />
+              <span className="text-xs font-semibold text-ink">Invoiced Sales (incl. GST)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#007e56]" />
-              <span className="text-xs font-semibold text-slate-700">Collections Recv.</span>
+              <span className="w-3 h-3 rounded-full bg-success" />
+              <span className="text-xs font-semibold text-ink">Collections Recv.</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 flex items-center gap-2 text-xs">
-              <span className="text-slate-500">Current Gap:</span>
-              <span className="font-bold text-[#0047d3] font-mono">{formatINR(kpis.currentMonthGap)}</span>
+            <div className="px-3 py-1.5 rounded-md bg-surface-raised border border-border flex items-center gap-2 text-xs">
+              <span className="text-ink-muted">Current Gap:</span>
+              <span className="font-bold text-primary font-mono num">{formatINR(kpis.currentMonthGap)}</span>
             </div>
           </div>
         </div>
 
-        {/* SVG Chart Visualization with Hover Tooltip Only (Requirement 4) */}
+        {/* SVG Chart Visualization with Hover Tooltip Only */}
         <div
           className="w-full h-64 sm:h-72 relative"
           onMouseLeave={() => setHoveredPointIndex(null)}
@@ -428,26 +546,26 @@ export default function DistributorDashboard() {
           >
             <defs>
               <linearGradient id="invoicedGrad" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#1e5eff" stopOpacity="0.18" />
-                <stop offset="100%" stopColor="#1e5eff" stopOpacity="0.0" />
+                <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
               </linearGradient>
               <linearGradient id="collectionsGrad" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#007e56" stopOpacity="0.16" />
-                <stop offset="100%" stopColor="#007e56" stopOpacity="0.0" />
+                <stop offset="0%" stopColor="var(--success)" stopOpacity="0.20" />
+                <stop offset="100%" stopColor="var(--success)" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
             {/* Grid lines */}
-            <line stroke="#eceef0" strokeDasharray="4 4" x1="50" x2="960" y1="30" y2="30" />
-            <line stroke="#eceef0" strokeDasharray="4 4" x1="50" x2="960" y1="80" y2="80" />
-            <line stroke="#eceef0" strokeDasharray="4 4" x1="50" x2="960" y1="130" y2="130" />
-            <line stroke="#eceef0" strokeDasharray="4 4" x1="50" x2="960" y1="180" y2="180" />
+            <line stroke="currentColor" className="text-border" strokeDasharray="4 4" x1="50" x2="960" y1="30" y2="30" />
+            <line stroke="currentColor" className="text-border" strokeDasharray="4 4" x1="50" x2="960" y1="80" y2="80" />
+            <line stroke="currentColor" className="text-border" strokeDasharray="4 4" x1="50" x2="960" y1="130" y2="130" />
+            <line stroke="currentColor" className="text-border" strokeDasharray="4 4" x1="50" x2="960" y1="180" y2="180" />
 
-            {/* Y-Axis Labels (Requirement 4: keep y-axis labels) */}
-            <text className="fill-slate-400 font-mono text-[11px]" x="15" y="34">₹12L</text>
-            <text className="fill-slate-400 font-mono text-[11px]" x="15" y="84">₹11L</text>
-            <text className="fill-slate-400 font-mono text-[11px]" x="15" y="134">₹10L</text>
-            <text className="fill-slate-400 font-mono text-[11px]" x="15" y="184">₹9L</text>
+            {/* Y-Axis Labels */}
+            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="34">₹12L</text>
+            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="84">₹11L</text>
+            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="134">₹10L</text>
+            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="184">₹9L</text>
 
             {/* Area Fills */}
             <polygon
@@ -463,7 +581,7 @@ export default function DistributorDashboard() {
             <polyline
               fill="none"
               points="100,140 270,120 440,92 610,75 780,107 950,33"
-              stroke="#1e5eff"
+              stroke="var(--primary)"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="3"
@@ -472,13 +590,13 @@ export default function DistributorDashboard() {
             <polyline
               fill="none"
               points="100,185 270,160 440,175 610,127 780,195 950,162"
-              stroke="#007e56"
+              stroke="var(--success)"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="3"
             />
 
-            {/* Interactive Vertical Columns & Points */}
+            {/* Interactive Data Points and Guidelines */}
             {trend.map((pt, idx) => {
               const xPos = 100 + idx * 170;
               const invoicedY = [140, 120, 92, 75, 107, 33][idx];
@@ -486,8 +604,8 @@ export default function DistributorDashboard() {
               const isHovered = hoveredPointIndex === idx;
 
               return (
-                <g key={pt.monthKey}>
-                  {/* Hover zone trigger rectangle */}
+                <g key={pt.monthLabel}>
+                  {/* Invisible hit box for comfortable hovering */}
                   <rect
                     x={xPos - 75}
                     y={10}
@@ -505,7 +623,7 @@ export default function DistributorDashboard() {
                       x2={xPos}
                       y1={20}
                       y2={210}
-                      stroke="#0047d3"
+                      stroke="var(--primary)"
                       strokeDasharray="3 3"
                       strokeWidth="1.5"
                     />
@@ -515,9 +633,9 @@ export default function DistributorDashboard() {
                   <circle
                     cx={xPos}
                     cy={invoicedY}
-                    fill={isHovered ? "#0047d3" : "#ffffff"}
+                    fill={isHovered ? "var(--primary)" : "var(--surface)"}
                     r={isHovered ? 7 : 5}
-                    stroke="#1e5eff"
+                    stroke="var(--primary)"
                     strokeWidth={isHovered ? 3 : 2.5}
                     className="transition-all duration-150"
                   />
@@ -526,9 +644,9 @@ export default function DistributorDashboard() {
                   <circle
                     cx={xPos}
                     cy={collectedY}
-                    fill={isHovered ? "#007e56" : "#ffffff"}
+                    fill={isHovered ? "var(--success)" : "var(--surface)"}
                     r={isHovered ? 7 : 5}
-                    stroke="#007e56"
+                    stroke="var(--success)"
                     strokeWidth={isHovered ? 3 : 2.5}
                     className="transition-all duration-150"
                   />
@@ -537,10 +655,10 @@ export default function DistributorDashboard() {
                   <text
                     className={
                       isHovered
-                        ? "fill-[#0047d3] text-[13px] font-bold"
+                        ? "fill-primary text-[13px] font-bold font-sans"
                         : pt.isCurrent
-                        ? "fill-[#0047d3] text-[12px] font-bold"
-                        : "fill-slate-600 text-[12px] font-medium"
+                        ? "fill-primary text-[12px] font-bold font-sans"
+                        : "fill-ink-muted text-[12px] font-medium font-sans"
                     }
                     textAnchor="middle"
                     x={xPos}
@@ -553,38 +671,38 @@ export default function DistributorDashboard() {
             })}
           </svg>
 
-          {/* Requirement 4: Tooltip visible ON HOVER ONLY (does not cover peak by default) */}
+          {/* Tooltip visible ON HOVER ONLY */}
           {hoveredPointIndex !== null && trend[hoveredPointIndex] && (
             <div
-              className="absolute bg-slate-900/95 backdrop-blur-md text-white rounded-xl p-3.5 shadow-2xl border border-slate-700 pointer-events-none text-xs z-30 transition-all duration-150 min-w-[200px]"
+              className="absolute bg-surface-raised/95 backdrop-blur-md text-ink rounded-md p-3.5 shadow-soft-xl border border-border pointer-events-none text-xs z-30 transition-all duration-150 min-w-[200px]"
               style={{
                 left: `clamp(12px, ${10 + (hoveredPointIndex / 5) * 65}%, calc(100% - 220px))`,
                 top: "16px",
               }}
             >
-              <div className="font-bold text-slate-300 uppercase tracking-wider text-[10px] pb-1 border-b border-slate-800 flex items-center justify-between">
+              <div className="font-bold text-ink-muted uppercase tracking-wider text-[10px] pb-1 border-b border-border flex items-center justify-between font-mono">
                 <span>{trend[hoveredPointIndex].monthLabel}</span>
                 {trend[hoveredPointIndex].isCurrent && (
-                  <span className="text-emerald-400 font-semibold lowercase text-[10px]">active</span>
+                  <span className="text-success font-semibold lowercase text-[10px]">active</span>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-4 font-mono text-xs pt-1.5">
-                <span className="text-blue-400 font-medium flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#1e5eff]" />
+              <div className="flex items-center justify-between gap-4 font-mono num text-xs pt-1.5">
+                <span className="text-primary font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary" />
                   Sales:
                 </span>
-                <span className="font-bold text-white">{formatINR(trend[hoveredPointIndex].invoiced)}</span>
+                <span className="font-bold text-ink">{formatINR(trend[hoveredPointIndex].invoiced)}</span>
               </div>
-              <div className="flex items-center justify-between gap-4 font-mono text-xs mt-1">
-                <span className="text-emerald-400 font-medium flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#007e56]" />
+              <div className="flex items-center justify-between gap-4 font-mono num text-xs mt-1">
+                <span className="text-success font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-success" />
                   Collected:
                 </span>
-                <span className="font-bold text-white">{formatINR(trend[hoveredPointIndex].collected)}</span>
+                <span className="font-bold text-ink">{formatINR(trend[hoveredPointIndex].collected)}</span>
               </div>
-              <div className="flex items-center justify-between gap-4 font-mono text-[11px] text-slate-400 mt-1.5 pt-1.5 border-t border-slate-800">
+              <div className="flex items-center justify-between gap-4 font-mono num text-[11px] text-ink-muted mt-1.5 pt-1.5 border-t border-border">
                 <span>Unsettled Gap:</span>
-                <span className="font-bold text-amber-300">
+                <span className="font-bold text-warning">
                   {formatINR(Math.max(0, trend[hoveredPointIndex].invoiced - trend[hoveredPointIndex].collected))}
                 </span>
               </div>
@@ -593,92 +711,92 @@ export default function DistributorDashboard() {
         </div>
       </div>
 
-      {/* Row 2: Operational Flow & Receivables Risk (Equal Height Cards - Requirement 2 & 3) */}
+      {/* Row 2: Operational Flow (Orders Pipeline Stepper) & Receivables Ageing */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Requirement 2: Orders Pipeline (7 Cols, height matches Receivables Ageing, no big gap) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl p-6 shadow-xs border border-slate-200 flex flex-col justify-between h-full space-y-4">
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+        {/* Orders Pipeline Horizontal Stepper with Counts (7 Cols) */}
+        <div className="lg:col-span-7 bg-surface rounded-md p-6 shadow-soft-sm border border-border flex flex-col justify-between h-full">
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">Orders Pipeline</h2>
-                <p className="text-xs text-slate-500">
+                <h2 className="text-base sm:text-lg font-bold text-ink font-sans">Orders Pipeline</h2>
+                <p className="text-xs text-ink-muted">
                   Stage distribution across factory dispatch and transport
                 </p>
               </div>
-              <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 w-fit">
+              <span className="font-mono num text-xs font-semibold px-2.5 py-1 rounded-full bg-surface-raised text-ink border border-border w-fit">
                 {kpis.orderCount} active POs
               </span>
             </div>
 
-            {/* 6 Stage Count Tiles (Requirement 2) */}
+            {/* 6 Stage Horizontal Stepper Tiles */}
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {[
-                { stage: "Needs Review", count: pipeline.submittedCount, color: "text-[#0047d3] bg-blue-50/70 border-blue-200" },
-                { stage: "Ready to Invoice", count: pipeline.approvedCount, color: "text-slate-900 bg-slate-50 border-slate-200" },
-                { stage: "Invoiced", count: pipeline.confirmedCount, color: "text-slate-900 bg-slate-50 border-slate-200" },
-                { stage: "Processing", count: pipeline.processingCount, color: "text-indigo-800 bg-indigo-50/70 border-indigo-200" },
-                { stage: "Dispatched", count: pipeline.dispatchedCount, color: "text-sky-800 bg-sky-50/70 border-sky-200" },
-                { stage: "Delivered", count: pipeline.deliveredCount, color: "text-emerald-800 bg-emerald-50/70 border-emerald-200" },
+                { stage: "Needs Review", count: pipeline.submittedCount, tint: "bg-warning/10 border-warning/25 text-warning", icon: "pending_actions" },
+                { stage: "Ready to Invoice", count: pipeline.approvedCount, tint: "bg-surface-raised border-border text-ink", icon: "verified" },
+                { stage: "Invoiced", count: pipeline.confirmedCount, tint: "bg-surface-raised border-border text-ink", icon: "receipt_long" },
+                { stage: "Processing", count: pipeline.processingCount, tint: "bg-primary/10 border-primary/25 text-primary", icon: "conveyor_belt" },
+                { stage: "Dispatched", count: pipeline.dispatchedCount, tint: "bg-accent/10 border-accent/25 text-accent", icon: "local_shipping" },
+                { stage: "Delivered", count: pipeline.deliveredCount, tint: "bg-success/10 border-success/25 text-success", icon: "task_alt" },
               ].map(s => (
                 <div
                   key={s.stage}
-                  className={`p-2.5 rounded-xl flex flex-col items-center text-center border ${s.color}`}
+                  className={`p-2 rounded-md flex flex-col items-center justify-between text-center border min-h-[76px] transition-all duration-150 ${s.tint}`}
                 >
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider truncate w-full">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-center leading-tight min-h-[26px] flex items-center justify-center w-full font-mono">
                     {s.stage}
                   </span>
-                  <span className="text-xl font-bold font-mono mt-0.5">{s.count}</span>
+                  <span className="text-xl font-bold font-mono num mt-0.5">{s.count}</span>
                 </div>
               ))}
             </div>
 
-            {/* Proportional Progress Bar (Requirement 2: proportional to counts) */}
-            <div className="space-y-1.5 mt-4">
-              <div className="flex justify-between items-center text-xs text-slate-500">
+            {/* Proportional Stepper Progress Bar */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between items-center text-xs text-ink-muted">
                 <span className="text-[11px] font-medium">Stage Proportions</span>
-                <span className="text-[11px] font-bold font-mono text-slate-700">
+                <span className="text-[11px] font-bold font-mono num text-ink">
                   {pipeline.fulfillmentRatePercent}% Fulfilled
                 </span>
               </div>
-              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
+              <div className="w-full bg-surface-raised h-2.5 rounded-full overflow-hidden flex border border-border">
                 {submittedWidth > 0 && (
                   <div
-                    className="bg-[#0047d3] h-full transition-all duration-300"
+                    className="bg-warning h-full transition-all duration-300"
                     style={{ width: `${submittedWidth}%` }}
                     title={`Needs Review: ${pipeline.submittedCount}`}
                   />
                 )}
                 {approvedWidth > 0 && (
                   <div
-                    className="bg-blue-400 h-full transition-all duration-300"
+                    className="bg-primary/50 h-full transition-all duration-300"
                     style={{ width: `${approvedWidth}%` }}
                     title={`Ready to Invoice: ${pipeline.approvedCount}`}
                   />
                 )}
                 {confirmedWidth > 0 && (
                   <div
-                    className="bg-slate-400 h-full transition-all duration-300"
+                    className="bg-primary/70 h-full transition-all duration-300"
                     style={{ width: `${confirmedWidth}%` }}
                     title={`Invoiced: ${pipeline.confirmedCount}`}
                   />
                 )}
                 {processingWidth > 0 && (
                   <div
-                    className="bg-indigo-400 h-full transition-all duration-300"
+                    className="bg-primary h-full transition-all duration-300"
                     style={{ width: `${processingWidth}%` }}
                     title={`Processing: ${pipeline.processingCount}`}
                   />
                 )}
                 {dispatchedWidth > 0 && (
                   <div
-                    className="bg-sky-400 h-full transition-all duration-300"
+                    className="bg-accent h-full transition-all duration-300"
                     style={{ width: `${dispatchedWidth}%` }}
                     title={`Dispatched: ${pipeline.dispatchedCount}`}
                   />
                 )}
                 {deliveredWidth > 0 && (
                   <div
-                    className="bg-emerald-500 h-full transition-all duration-300"
+                    className="bg-success h-full transition-all duration-300"
                     style={{ width: `${deliveredWidth}%` }}
                     title={`Delivered: ${pipeline.deliveredCount}`}
                   />
@@ -687,17 +805,17 @@ export default function DistributorDashboard() {
             </div>
           </div>
 
-          {/* Requirement 2: Replace wrapping blue button with clean inline row "1 order needs review · Review →" */}
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+          {/* Inline Action Row */}
+          <div className="pt-3 border-t border-border flex items-center justify-between">
             <button
               type="button"
               onClick={() => {
                 setOrderTabFilter("review");
                 setDistributorNav("orders");
               }}
-              className="group flex items-center gap-2 text-xs sm:text-sm font-bold text-[#0047d3] hover:text-[#1e5eff] transition-colors cursor-pointer"
+              className="group flex items-center gap-2 text-xs sm:text-sm font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer"
             >
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-warning animate-pulse" />
               <span>
                 {pipeline.submittedCount === 1
                   ? "1 order needs review · Review →"
@@ -710,98 +828,97 @@ export default function DistributorDashboard() {
                 setOrderTabFilter("all");
                 setDistributorNav("orders");
               }}
-              className="text-xs text-slate-500 hover:text-slate-900 font-semibold cursor-pointer"
+              className="text-xs text-ink-muted hover:text-ink font-semibold cursor-pointer"
             >
               All orders ({kpis.orderCount}) →
             </button>
           </div>
         </div>
 
-        {/* Requirement 3: Receivables Ageing (5 Cols, height matches Orders Pipeline) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl p-6 shadow-xs border border-slate-200 flex flex-col justify-between h-full space-y-4">
+        {/* Receivables Ageing Card (5 Cols) */}
+        <div className="lg:col-span-5 bg-surface rounded-md p-6 shadow-soft-sm border border-border flex flex-col justify-between h-full space-y-4">
           <div>
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">Receivables Ageing</h2>
-                <p className="text-xs text-slate-500">Risk distribution across 30-day net credit terms</p>
+                <h2 className="text-base sm:text-lg font-bold text-ink font-sans">Receivables Ageing</h2>
+                <p className="text-xs text-ink-muted">Risk distribution across 30-day net credit terms</p>
               </div>
               <div className="text-right">
-                <span className="text-[10px] uppercase font-bold text-slate-400">Total Book</span>
-                <div className="text-base font-bold text-slate-900 font-mono">{formatINR(ageing.total)}</div>
+                <span className="text-[10px] uppercase font-bold text-ink-muted font-mono">Total Book</span>
+                <div className="text-base font-bold text-ink font-mono num">{formatINR(ageing.total)}</div>
               </div>
             </div>
 
-            {/* Ageing Stacked Segment Bar (Requirement 3: from data) */}
-            <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex my-2">
+            {/* Ageing Stacked Segment Bar with Token Colors */}
+            <div className="w-full h-3 bg-surface-raised rounded-full overflow-hidden flex my-2 border border-border">
               <div
-                className="bg-emerald-500 h-full transition-all duration-300"
+                className="bg-success h-full transition-all duration-300"
                 style={{ width: `${ageing.notYetDuePct}%` }}
                 title={`Not yet due: ${ageing.notYetDuePct}%`}
               />
               <div
-                className="bg-blue-500 h-full transition-all duration-300"
+                className="bg-warning h-full transition-all duration-300"
                 style={{ width: `${ageing.d1_30Pct}%` }}
                 title={`1-30 days overdue: ${ageing.d1_30Pct}%`}
               />
               <div
-                className="bg-amber-500 h-full transition-all duration-300"
+                className="bg-accent h-full transition-all duration-300"
                 style={{ width: `${ageing.d31_60Pct}%` }}
                 title={`31-60 days overdue: ${ageing.d31_60Pct}%`}
               />
               <div
-                className="bg-rose-500 h-full transition-all duration-300"
+                className="bg-danger h-full transition-all duration-300"
                 style={{ width: `${ageing.d60_plusPct}%` }}
                 title={`60+ days overdue: ${ageing.d60_plusPct}%`}
               />
             </div>
 
-            {/* Breakdown Ledger Matrix (Requirement 3: from data) */}
+            {/* Breakdown Ledger Matrix with Tokens */}
             <div className="space-y-2 mt-3 text-xs sm:text-sm">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/50">
+              <div className="flex items-center justify-between p-2.5 rounded-md bg-surface-raised border border-border">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="text-slate-800 font-medium">Not yet due</span>
-                  <span className="text-[11px] text-slate-400 font-mono">({ageing.notYetDuePct}%)</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-success shrink-0" />
+                  <span className="text-ink font-medium">Not yet due</span>
+                  <span className="text-[11px] text-ink-muted font-mono num">({ageing.notYetDuePct}%)</span>
                 </div>
-                <span className="font-mono font-bold text-slate-900">{formatINR(ageing.notYetDue)}</span>
+                <span className="font-mono num font-bold text-ink">{formatINR(ageing.notYetDue)}</span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/50">
+              <div className="flex items-center justify-between p-2.5 rounded-md bg-surface-raised border border-border">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
-                  <span className="text-slate-800 font-medium">1–30 days overdue</span>
-                  <span className="text-[11px] text-slate-400 font-mono">({ageing.d1_30Pct}%)</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-warning shrink-0" />
+                  <span className="text-ink font-medium">1–30 days overdue</span>
+                  <span className="text-[11px] text-ink-muted font-mono num">({ageing.d1_30Pct}%)</span>
                 </div>
-                <span className="font-mono font-bold text-slate-900">{formatINR(ageing.d1_30)}</span>
+                <span className="font-mono num font-bold text-ink">{formatINR(ageing.d1_30)}</span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/50">
+              <div className="flex items-center justify-between p-2.5 rounded-md bg-surface-raised border border-border">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
-                  <span className="text-slate-800 font-medium">31–60 days overdue</span>
-                  <span className="text-[11px] text-slate-400 font-mono">({ageing.d31_60Pct}%)</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0" />
+                  <span className="text-ink font-medium">31–60 days overdue</span>
+                  <span className="text-[11px] text-ink-muted font-mono num">({ageing.d31_60Pct}%)</span>
                 </div>
-                <span className="font-mono font-bold text-slate-900">{formatINR(ageing.d31_60)}</span>
+                <span className="font-mono num font-bold text-ink">{formatINR(ageing.d31_60)}</span>
               </div>
 
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-rose-50 border border-rose-200">
+              <div className="flex items-center justify-between p-2.5 rounded-md bg-danger/10 border border-danger/25">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                  <span className="text-rose-900 font-bold">60+ days overdue</span>
-                  <span className="text-[11px] text-rose-600 font-mono">({ageing.d60_plusPct}%)</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-danger shrink-0" />
+                  <span className="text-danger font-bold">60+ days overdue</span>
+                  <span className="text-[11px] text-danger/80 font-mono num">({ageing.d60_plusPct}%)</span>
                 </div>
-                <span className="font-mono font-bold text-rose-700">{formatINR(ageing.d60_plus)}</span>
+                <span className="font-mono num font-bold text-danger">{formatINR(ageing.d60_plus)}</span>
               </div>
             </div>
           </div>
 
-          {/* Requirement 3: "Ledger Aging Audit" opens Receivables */}
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <div className="pt-3 border-t border-border flex items-center justify-between text-xs text-ink-muted">
             <span>Standard Terms: 30 Net Days</span>
             <button
               type="button"
               onClick={() => setDistributorNav("receivables")}
-              className="text-[#0047d3] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>Ledger Aging Audit</span>
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -813,15 +930,15 @@ export default function DistributorDashboard() {
       {/* Row 3: Commercial Leaders (Brands & Retailers) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Brands by Invoiced Sales */}
-        <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
+        <div className="bg-surface rounded-md p-6 shadow-soft-sm border border-border space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                Top Brands by Invoiced Sales
+              <h2 className="text-base sm:text-lg font-bold text-ink font-sans">
+                Top Brands by Invoiced Sales (incl. GST)
               </h2>
-              <p className="text-xs text-slate-500">Brand volume distribution for {currentMonthName}</p>
+              <p className="text-xs text-ink-muted">Brand volume distribution for {currentMonthName}</p>
             </div>
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 uppercase">
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-surface-raised text-ink-muted uppercase font-mono border border-border">
               Top 5 of 9 Brands
             </span>
           </div>
@@ -831,35 +948,35 @@ export default function DistributorDashboard() {
               <div key={b.name} className="space-y-1">
                 <div className="flex items-center justify-between text-xs sm:text-sm">
                   <div className="flex items-center gap-2.5">
-                    <span className="w-5 h-5 rounded-md bg-slate-100 flex items-center justify-center font-mono text-xs font-bold text-slate-700">
+                    <span className="w-5 h-5 rounded bg-surface-raised flex items-center justify-center font-mono num text-xs font-bold text-ink border border-border">
                       {b.rank}
                     </span>
-                    <span className="font-bold text-slate-900">{b.name}</span>
-                    <span className="text-slate-400 text-xs hidden sm:inline">{b.tagline}</span>
+                    <span className="font-bold text-ink">{b.name}</span>
+                    <span className="text-ink-muted text-xs hidden sm:inline">{b.tagline}</span>
                   </div>
-                  <span className="font-mono font-bold text-slate-900">{formatINR(b.sales)}</span>
+                  <span className="font-mono num font-bold text-ink">{formatINR(Math.round(b.sales))}</span>
                 </div>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="bg-[#0047d3] h-full rounded-full" style={{ width: `${b.relativePercent}%` }} />
+                <div className="w-full bg-surface-raised h-2 rounded-full overflow-hidden border border-border">
+                  <div className="bg-primary h-full rounded-full" style={{ width: `${b.relativePercent}%` }} />
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Top Retailers by Invoiced Sales (Requirement 5: derived status & state for non-TG) */}
-        <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
+        {/* Top Retailers by Invoiced Sales */}
+        <div className="bg-surface rounded-md p-6 shadow-soft-sm border border-border space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                Top Retailers by Invoiced Sales
+              <h2 className="text-base sm:text-lg font-bold text-ink font-sans">
+                Top Retailers by Invoiced Sales (incl. GST)
               </h2>
-              <p className="text-xs text-slate-500">Leading accounts in Telangana &amp; Andhra Pradesh</p>
+              <p className="text-xs text-ink-muted">Leading accounts in Telangana &amp; Andhra Pradesh</p>
             </div>
             <button
               type="button"
               onClick={() => setDistributorNav("retailers")}
-              className="text-xs font-bold text-[#0047d3] hover:underline cursor-pointer"
+              className="text-xs font-bold text-primary hover:underline cursor-pointer"
             >
               View All {kpis.activeRetailersCount}
             </button>
@@ -869,23 +986,22 @@ export default function DistributorDashboard() {
             {topRetailers.map(r => (
               <div
                 key={r.name}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-200/60"
+                className="flex items-center justify-between p-3 rounded-md bg-surface-raised hover:bg-surface transition-colors border border-border"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 text-[#0047d3] flex items-center justify-center font-bold text-xs shrink-0">
+                  <div className="w-9 h-9 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs shrink-0 font-mono">
                     {r.code}
                   </div>
                   <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                    <h4 className="text-xs sm:text-sm font-bold text-ink leading-tight font-sans">
                       {r.name}
                     </h4>
-                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
-                      {/* Requirement 5: Show state for non-Telangana retailers */}
+                    <div className="flex items-center gap-2 mt-0.5 text-[11px] text-ink-muted">
                       <span
                         className={`px-1.5 py-0.2 rounded font-medium ${
                           r.isInterState
-                            ? "bg-purple-100 text-purple-800 font-semibold"
-                            : "bg-slate-200 text-slate-700"
+                            ? "bg-accent/15 text-accent font-semibold"
+                            : "bg-surface text-ink-muted border border-border"
                         }`}
                       >
                         {r.stateDisplay}
@@ -896,15 +1012,14 @@ export default function DistributorDashboard() {
                 </div>
 
                 <div className="text-right shrink-0">
-                  <span className="font-mono font-bold text-slate-900 text-xs sm:text-sm block">
+                  <span className="font-mono num font-bold text-ink text-xs sm:text-sm block">
                     {formatINR(r.amount)}
                   </span>
-                  {/* Requirement 5: Sri Laxmi must show Overdue ₹31,000 in red, not '100% on-time' */}
                   <span
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 ${
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 font-mono ${
                       r.isOverdue
-                        ? "bg-rose-100 text-rose-800 border border-rose-200"
-                        : "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                        ? "bg-danger/10 text-danger border border-danger/25"
+                        : "bg-success/10 text-success border border-success/25"
                     }`}
                   >
                     {r.statusBadge}
@@ -915,6 +1030,14 @@ export default function DistributorDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Add Follow-Up Modal */}
+      <AddFollowUpModal
+        retailers={retailers}
+        isOpen={isAddFollowUpOpen}
+        onClose={() => setIsAddFollowUpOpen(false)}
+        onSave={addFollowUp}
+      />
     </div>
   );
 }

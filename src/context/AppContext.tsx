@@ -23,6 +23,27 @@ import {
 } from "@/data/mockData";
 import confetti from "canvas-confetti";
 import { useCurrentDate, getDaysUntil } from "@/lib/mock/retailer";
+import {
+  CommunicationLogEntry,
+  Complaint,
+  ComplaintStatus,
+  FollowUp,
+  RetailerRequest,
+  MOCK_COMMUNICATION_LOGS,
+  MOCK_COMPLAINTS,
+  MOCK_FOLLOW_UPS,
+  MOCK_RETAILER_REQUESTS,
+  CallTask,
+  CallTaskReason,
+  VoiceLanguage,
+  CallTaskOutcome,
+  MOCK_CALL_TASKS,
+  SCRIPT_TEMPLATES,
+  ScriptTemplateDefinition,
+  generateProposedCallTasks,
+  MockCallProvider,
+  handleCallOutcomeWriteBack,
+} from "@/lib/mock";
 
 interface AppContextType {
   // Mode & navigation
@@ -80,10 +101,15 @@ interface AppContextType {
   // Invoicing & Receipt Modals
   viewingInvoice: Invoice | null;
   setViewingInvoice: (inv: Invoice | null) => void;
+  isCreateInvoiceOpen: boolean;
+  setIsCreateInvoiceOpen: (open: boolean) => void;
   isReceiptModalOpen: boolean;
   setIsReceiptModalOpen: (open: boolean) => void;
   receiptPrefillRetailerId: string | null;
   setReceiptPrefillRetailerId: (id: string | null) => void;
+
+  // Active Retailer
+  activeRetailer: Retailer;
 
   // Global search
   isSearchOpen: boolean;
@@ -96,35 +122,78 @@ interface AppContextType {
   // Hydration-safe client date
   currentDate: Date;
 
+  // Selected Month for Dashboard & Reporting
+  selectedMonth: string;
+  setSelectedMonth: (month: string) => void;
+
   // Supply Chain & Tier Pricing (Requirements 2, 3, 4)
   suppliers: Supplier[];
   purchaseBills: PurchaseBill[];
   addPurchaseBill: (bill: Omit<PurchaseBill, "id">) => void;
   tierArticles: TierPricingArticle[];
   updateTierArticle: (id: string, updates: Partial<TierPricingArticle>) => { success: boolean; error?: string };
+
+  // Retailer Relationship Management (CRM)
+  communications: CommunicationLogEntry[];
+  addCommunication: (entry: Omit<CommunicationLogEntry, "id" | "createdAt">) => void;
+  complaints: Complaint[];
+  addComplaint: (complaint: Omit<Complaint, "id" | "createdAt">) => void;
+  updateComplaintStatus: (id: string, status: ComplaintStatus, notes?: string) => void;
+  followUps: FollowUp[];
+  addFollowUp: (followUp: Omit<FollowUp, "id" | "createdAt">) => void;
+  updateFollowUpStatus: (id: string, status: "open" | "done") => void;
+  rescheduleFollowUp: (id: string, newDueDate: string) => void;
+  reassignFollowUp: (id: string, newAssignee: string) => void;
+  retailerRequests: RetailerRequest[];
+  addRetailerRequest: (req: Omit<RetailerRequest, "id" | "createdAt" | "status">) => void;
+  updateRetailerRequestStatus: (id: string, status: "pending" | "approved" | "rejected", reviewedBy?: string) => void;
+  selectedRetailer360Id: string | null;
+  setSelectedRetailer360Id: (id: string | null) => void;
+
+  // Voice Calling Agent
+  callTasks: CallTask[];
+  scriptTemplates: Record<CallTaskReason, ScriptTemplateDefinition>;
+  approveCallTask: (taskId: string) => void;
+  approveAllProposedTasks: () => void;
+  cancelCallTask: (taskId: string) => void;
+  executeSimulatedCall: (taskId: string) => Promise<void>;
+  updateScriptTemplate: (reason: CallTaskReason, lang: VoiceLanguage, script: string) => void;
+  updateRetailerVoicePreferences: (retailerId: string, prefs: Partial<Retailer>) => void;
+  generateCallTasksFromRules: () => number;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
+export function AppProvider({
+  children,
+  initialMode: propInitialMode,
+  initialDistributorNav: propInitialDistributorNav,
+}: {
+  children: React.ReactNode;
+  initialMode?: "retailer" | "distributor";
+  initialDistributorNav?: string;
+}) {
   const currentDate = useCurrentDate();
   const searchParams = useSearchParams();
 
   // Parse mode and view synchronously from Next.js searchParams (safe for both SSR & Client inside Suspense)
   const modeParam = searchParams?.get("mode") || searchParams?.get("role") || searchParams?.get("portal");
   const initialMode: "retailer" | "distributor" =
-    modeParam === "distributor" || modeParam === "wholesaler" || modeParam === "admin"
+    propInitialMode ||
+    (modeParam === "distributor" || modeParam === "wholesaler" || modeParam === "admin"
       ? "distributor"
-      : "retailer";
+      : "retailer");
 
   const rawViewParam = searchParams?.get("view") || searchParams?.get("tab");
-  const initialDistributorNav = (() => {
-    if (!rawViewParam) return "dashboard";
-    const normalized = rawViewParam.trim().replace(/\s+/g, "-");
-    return normalized === "products" ? "products-pricing" :
-           normalized === "purchases" ? "purchase-bills" :
-           normalized === "analytics" ? "reports" : normalized;
-  })();
+  const initialDistributorNav =
+    propInitialDistributorNav ||
+    (() => {
+      if (!rawViewParam) return "dashboard";
+      const normalized = rawViewParam.trim().replace(/\s+/g, "-");
+      return normalized === "products" ? "products-pricing" :
+             normalized === "purchases" ? "purchase-bills" :
+             normalized === "analytics" ? "reports" : normalized;
+    })();
 
   const [portalMode, setPortalMode] = useState<"retailer" | "distributor">(initialMode);
   const [retailerNav, setRetailerNav] = useState<string>("home");
@@ -140,6 +209,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isOrderSuccessOpen, setIsOrderSuccessOpen] = useState(false);
   const [lastSubmittedOrder, setLastSubmittedOrder] = useState<Order | null>(null);
   const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null);
+  const [isCreateInvoiceOpen, setIsCreateInvoiceOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [receiptPrefillRetailerId, setReceiptPrefillRetailerId] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -148,11 +218,207 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Data states
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
   const [retailers, setRetailers] = useState<Retailer[]>(MOCK_RETAILERS);
+  const activeRetailer = retailers[0];
   const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
   const [payments, setPayments] = useState<Payment[]>(MOCK_PAYMENTS);
   const [suppliers, setSuppliers] = useState<Supplier[]>(MOCK_SUPPLIERS);
   const [purchaseBills, setPurchaseBills] = useState<PurchaseBill[]>(MOCK_PURCHASE_BILLS);
   const [tierArticles, setTierArticles] = useState<TierPricingArticle[]>(MOCK_TIER_ARTICLES);
+
+  // Selected Month for Dashboard & Reporting
+  const [selectedMonth, setSelectedMonth] = useState<string>("2026-10");
+
+  // Retailer Relationship Management (CRM) States
+  const [communications, setCommunications] = useState<CommunicationLogEntry[]>(MOCK_COMMUNICATION_LOGS);
+  const [complaints, setComplaints] = useState<Complaint[]>(MOCK_COMPLAINTS);
+  const [followUps, setFollowUps] = useState<FollowUp[]>(MOCK_FOLLOW_UPS);
+  const [retailerRequests, setRetailerRequests] = useState<RetailerRequest[]>(MOCK_RETAILER_REQUESTS);
+  const [selectedRetailer360Id, setSelectedRetailer360Id] = useState<string | null>(null);
+
+  const addCommunication = (entry: Omit<CommunicationLogEntry, "id" | "createdAt">) => {
+    const newEntry: CommunicationLogEntry = {
+      ...entry,
+      id: `comm_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    setCommunications((prev) => [newEntry, ...prev]);
+  };
+
+  const addComplaint = (complaint: Omit<Complaint, "id" | "createdAt">) => {
+    const newComplaint: Complaint = {
+      ...complaint,
+      id: `comp_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    setComplaints((prev) => [newComplaint, ...prev]);
+  };
+
+  const updateComplaintStatus = (id: string, status: ComplaintStatus, notes?: string) => {
+    setComplaints((prev) =>
+      prev.map((c) => {
+        if (c.id === id) {
+          return {
+            ...c,
+            status,
+            notes: notes !== undefined ? notes : c.notes,
+            resolvedAt: status === "resolved" ? new Date().toISOString() : c.resolvedAt,
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  const addFollowUp = (followUp: Omit<FollowUp, "id" | "createdAt">) => {
+    const newFollowUp: FollowUp = {
+      ...followUp,
+      id: `fu_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    setFollowUps((prev) => [newFollowUp, ...prev]);
+  };
+
+  const updateFollowUpStatus = (id: string, status: "open" | "done") => {
+    setFollowUps((prev) => prev.map((f) => (f.id === id ? { ...f, status } : f)));
+  };
+
+  const rescheduleFollowUp = (id: string, newDueDate: string) => {
+    setFollowUps((prev) => prev.map((f) => (f.id === id ? { ...f, dueDate: newDueDate, status: "open" } : f)));
+  };
+
+  const reassignFollowUp = (id: string, newAssignee: string) => {
+    setFollowUps((prev) => prev.map((f) => (f.id === id ? { ...f, assignedTo: newAssignee } : f)));
+  };
+
+  const addRetailerRequest = (req: Omit<RetailerRequest, "id" | "createdAt" | "status">) => {
+    const newRequest: RetailerRequest = {
+      ...req,
+      id: `req_${Date.now()}`,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+    };
+    setRetailerRequests((prev) => [newRequest, ...prev]);
+  };
+
+  const updateRetailerRequestStatus = (
+    id: string,
+    status: "pending" | "approved" | "rejected",
+    reviewedBy?: string
+  ) => {
+    setRetailerRequests((prev) =>
+      prev.map((r) => {
+        if (r.id === id) {
+          return {
+            ...r,
+            status,
+            reviewedAt: new Date().toISOString(),
+            reviewedBy: reviewedBy || "Distributor Admin",
+          };
+        }
+        return r;
+      })
+    );
+  };
+
+  // Voice Calling Agent States & Handlers
+  const [callTasks, setCallTasks] = useState<CallTask[]>(MOCK_CALL_TASKS);
+  const [scriptTemplates, setScriptTemplates] = useState(SCRIPT_TEMPLATES);
+
+  const approveCallTask = (taskId: string) => {
+    setCallTasks((prev) =>
+      prev.map((t) =>
+        t.id === taskId
+          ? { ...t, status: "approved", approvedAt: new Date().toISOString() }
+          : t
+      )
+    );
+  };
+
+  const approveAllProposedTasks = () => {
+    setCallTasks((prev) =>
+      prev.map((t) =>
+        t.status === "proposed"
+          ? { ...t, status: "approved", approvedAt: new Date().toISOString() }
+          : t
+      )
+    );
+  };
+
+  const cancelCallTask = (taskId: string) => {
+    setCallTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, status: "cancelled" } : t))
+    );
+  };
+
+  const executeSimulatedCall = async (taskId: string) => {
+    const task = callTasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    setCallTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, status: "in_progress" } : t))
+    );
+
+    const provider = new MockCallProvider();
+    const simResult = provider.generateSimulatedResult(task);
+
+    const completedTask: CallTask = {
+      ...task,
+      status: "completed",
+      completedAt: new Date().toISOString(),
+      outcome: simResult.outcome,
+      transcript: simResult.transcript,
+      promisedPaymentDate: simResult.outcome.promisedPaymentDate,
+    };
+
+    setCallTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? completedTask : t))
+    );
+
+    handleCallOutcomeWriteBack(completedTask, simResult.outcome, {
+      addCommunication,
+      addFollowUp,
+    });
+  };
+
+  const updateScriptTemplate = (
+    reason: CallTaskReason,
+    lang: VoiceLanguage,
+    script: string
+  ) => {
+    setScriptTemplates((prev) => ({
+      ...prev,
+      [reason]: {
+        ...prev[reason],
+        scripts: {
+          ...prev[reason].scripts,
+          [lang]: script,
+        },
+      },
+    }));
+  };
+
+  const updateRetailerVoicePreferences = (
+    retailerId: string,
+    prefs: Partial<Retailer>
+  ) => {
+    setRetailers((prev) =>
+      prev.map((r) => (r.id === retailerId ? { ...r, ...prefs } : r))
+    );
+  };
+
+  const generateCallTasksFromRules = (): number => {
+    const newlyProposed = generateProposedCallTasks(
+      invoices,
+      orders,
+      retailers,
+      callTasks,
+      currentDate
+    );
+    if (newlyProposed.length > 0) {
+      setCallTasks((prev) => [...newlyProposed, ...prev]);
+    }
+    return newlyProposed.length;
+  };
 
   const addPurchaseBill = (billData: Omit<PurchaseBill, "id">) => {
     const newBill: PurchaseBill = {
@@ -655,10 +921,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         viewingInvoice,
         setViewingInvoice,
+        isCreateInvoiceOpen,
+        setIsCreateInvoiceOpen,
         isReceiptModalOpen,
         setIsReceiptModalOpen,
         receiptPrefillRetailerId,
         setReceiptPrefillRetailerId,
+        activeRetailer,
 
         isSearchOpen,
         setIsSearchOpen,
@@ -668,11 +937,42 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         currentDate,
 
+        selectedMonth,
+        setSelectedMonth,
+
         suppliers,
         purchaseBills,
         addPurchaseBill,
         tierArticles,
         updateTierArticle,
+
+        // CRM
+        communications,
+        addCommunication,
+        complaints,
+        addComplaint,
+        updateComplaintStatus,
+        followUps,
+        addFollowUp,
+        updateFollowUpStatus,
+        rescheduleFollowUp,
+        reassignFollowUp,
+        retailerRequests,
+        addRetailerRequest,
+        updateRetailerRequestStatus,
+        selectedRetailer360Id,
+        setSelectedRetailer360Id,
+
+        // Voice Calling Agent
+        callTasks,
+        scriptTemplates,
+        approveCallTask,
+        approveAllProposedTasks,
+        cancelCallTask,
+        executeSimulatedCall,
+        updateScriptTemplate,
+        updateRetailerVoicePreferences,
+        generateCallTasksFromRules,
       }}
     >
       {children}

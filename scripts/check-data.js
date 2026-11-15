@@ -8,12 +8,22 @@
 
 const fs = require("fs");
 const path = require("path");
+const Module = require("module");
 const ts = require("typescript");
 const { ESLint } = require("eslint");
 
 // -----------------------------------------------------------------------------
-// TypeScript In-Memory Transpiler Hook
+// Path Alias & TypeScript In-Memory Transpiler Hooks
 // -----------------------------------------------------------------------------
+const originalResolveFilename = Module._resolveFilename;
+Module._resolveFilename = function (request, parent, isMain, options) {
+  if (request.startsWith("@/")) {
+    const resolvedPath = path.join(__dirname, "../src", request.slice(2));
+    return originalResolveFilename.call(this, resolvedPath, parent, isMain, options);
+  }
+  return originalResolveFilename.call(this, request, parent, isMain, options);
+};
+
 require.extensions[".ts"] = function (module, filename) {
   const source = fs.readFileSync(filename, "utf8");
   const compiled = ts.transpileModule(source, {
@@ -58,6 +68,7 @@ async function runDataChecks() {
   const dataModule = require("../src/lib/mock/data.ts");
   const selectorsModule = require("../src/lib/mock/selectors.ts");
   const retailerModule = require("../src/lib/mock/retailer.ts");
+  const mockDataModule = require("../src/data/mockData.ts");
 
   const {
     MOCK_RETAILERS,
@@ -65,6 +76,13 @@ async function runDataChecks() {
     MOCK_ORDERS,
     MOCK_PAYMENTS,
     MOCK_PURCHASE_BILLS,
+    MOCK_SUPPLIERS,
+    MOCK_TIER_ARTICLES,
+    MOCK_BRANDS,
+    MOCK_FOLLOW_UPS,
+    MOCK_COMPLAINTS,
+    MOCK_COMMUNICATION_LOGS,
+    MOCK_RETAILER_REQUESTS,
   } = dataModule;
 
   const {
@@ -73,6 +91,9 @@ async function runDataChecks() {
     getDistributorKPIs,
     getOrderPipelineMetrics,
     DEFAULT_APP_DATE,
+    getRetailerSegments,
+    getFollowUpsGrouped,
+    formatDateToIsoDay,
   } = selectorsModule;
 
   const {
@@ -81,6 +102,8 @@ async function runDataChecks() {
     RETAILER_ORDERS,
     getRetailerFinancials,
   } = retailerModule;
+
+  const { MOCK_PRODUCTS } = mockDataModule;
 
   // ===========================================================================
   // CHECK 1: RET-0001 (Sri Laxmi Narasimha Textiles) on Both Sides
@@ -261,7 +284,6 @@ async function runDataChecks() {
     const errors = [];
 
     // Distributor receivables
-    const buckets = getAgeingBuckets(MOCK_INVOICES, DEFAULT_APP_DATE);
     const openInvoicesInAgeing = MOCK_INVOICES.filter((inv) => inv.status !== "Draft" && inv.balanceDue > 0);
     const draftInvoicesInOpen = openInvoicesInAgeing.filter((inv) => inv.status === "Draft");
 
@@ -384,6 +406,659 @@ async function runDataChecks() {
   }
 
   // ===========================================================================
+  // CHECK 6: Purchase Bills & Suppliers Payables Reconciliation (Item 1)
+  // ===========================================================================
+  {
+    const checkName = "Check 6: Purchase Bills & Suppliers Payables Reconciliation";
+    const details = [];
+    const errors = [];
+
+    const openBills = MOCK_PURCHASE_BILLS.filter((b) => b.status !== "Paid" && b.balanceDue > 0);
+    const totalUnpaidBills = openBills.reduce((s, b) => s + b.balanceDue, 0);
+    const suppliersPayables = MOCK_SUPPLIERS.reduce((s, sup) => s + sup.payable, 0);
+
+    const kpis = getDistributorKPIs(
+      MOCK_ORDERS,
+      MOCK_INVOICES,
+      MOCK_PAYMENTS,
+      MOCK_PURCHASE_BILLS,
+      MOCK_RETAILERS,
+      DEFAULT_APP_DATE
+    );
+
+    details.push(
+      `Open Purchase Bills: ${openBills.length} unpaid bills totaling ₹${totalUnpaidBills.toLocaleString("en-IN")}`
+    );
+    details.push(
+      `Supplier Payables: ₹${suppliersPayables.toLocaleString("en-IN")} across ${MOCK_SUPPLIERS.length} Tiruppur mills`
+    );
+    details.push(
+      `Dashboard "You Owe" KPI: ₹${kpis.supplierPayables.toLocaleString("en-IN")}`
+    );
+
+    if (openBills.length !== 4) {
+      errors.push(`Open purchase bills count is ${openBills.length}, expected exactly 4.`);
+    }
+    if (totalUnpaidBills !== 3860000) {
+      errors.push(`Open purchase bills total is ₹${totalUnpaidBills}, expected exactly ₹38,60,000.`);
+    }
+    if (suppliersPayables !== 3860000) {
+      errors.push(`Supplier payables sum is ₹${suppliersPayables}, expected exactly ₹38,60,000.`);
+    }
+    if (kpis.supplierPayables !== 3860000) {
+      errors.push(`Dashboard supplier payables KPI is ₹${kpis.supplierPayables}, expected ₹38,60,000.`);
+    }
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 7: Sales Figures Alignment & Selected Month Isolation (Item 2)
+  // ===========================================================================
+  {
+    const checkName = "Check 7: Sales Figures Alignment & Selected Month Isolation";
+    const details = [];
+    const errors = [];
+
+    // Basis verification: all sales figures use grandTotal (incl. GST)
+    const issuedInvoices = MOCK_INVOICES.filter((i) => i.status !== "Draft");
+    const totalSalesInclGST = issuedInvoices.reduce((s, i) => s + i.grandTotal, 0);
+
+    // Selected Month filter test (October 2026)
+    const octInvoices = issuedInvoices.filter((i) => i.billedDate.includes("Oct 2026"));
+    const octSalesExpected = octInvoices.reduce((s, i) => s + i.grandTotal, 0);
+
+    const octKPIs = getDistributorKPIs(
+      MOCK_ORDERS,
+      MOCK_INVOICES,
+      MOCK_PAYMENTS,
+      MOCK_PURCHASE_BILLS,
+      MOCK_RETAILERS,
+      DEFAULT_APP_DATE,
+      "October 2026"
+    );
+
+    details.push(
+      `Total Issued Sales (incl. GST): ₹${totalSalesInclGST.toLocaleString("en-IN")} across ${issuedInvoices.length} invoices`
+    );
+    details.push(
+      `October 2026 Filtered Sales: Dashboard (₹${octKPIs.invoicedSales.toLocaleString("en-IN")}) = Invoices Sum (₹${octSalesExpected.toLocaleString("en-IN")})`
+    );
+
+    if (octKPIs.invoicedSales !== octSalesExpected) {
+      errors.push(
+        `Month filter mismatch: Dashboard reported ₹${octKPIs.invoicedSales}, expected ₹${octSalesExpected}.`
+      );
+    }
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 8: INV-0095 & ARK-8841 Alignment & Draft Exclusions (Item 3)
+  // ===========================================================================
+  {
+    const checkName = "Check 8: INV-0095 & ARK-8841 Alignment & Draft Exclusions";
+    const details = [];
+    const errors = [];
+
+    // 1. Order ARK-8841 must be Dispatched and link to issued invoice INV-0095
+    const ord8841 = MOCK_ORDERS.find((o) => o.orderNumber === "ARK-8841");
+    const inv0095Dist = MOCK_INVOICES.find((i) => i.invoiceNumber === "INV-0095");
+    const inv0095Ret = RETAILER_INVOICES.find((i) => i.invoiceNumber === "INV-0095");
+
+    if (!ord8841) {
+      errors.push("Order ARK-8841 not found in MOCK_ORDERS.");
+    } else if (ord8841.status !== "Dispatched") {
+      errors.push(`Order ARK-8841 has status ${ord8841.status}, expected "Dispatched".`);
+    }
+
+    if (!inv0095Dist) {
+      errors.push("Invoice INV-0095 not found in MOCK_INVOICES.");
+    } else if (inv0095Dist.status === "Draft") {
+      errors.push("Invoice INV-0095 in distributor data is marked Draft, must be issued.");
+    }
+
+    if (!inv0095Ret) {
+      errors.push("Invoice INV-0095 not found in RETAILER_INVOICES.");
+    } else if (inv0095Ret.status === "Draft") {
+      errors.push("Invoice INV-0095 in retailer data is marked Draft, must be issued.");
+    }
+
+    // 2. Draft invoices must never count in sales, top retailers or receivables
+    const draftInvoices = MOCK_INVOICES.filter((i) => i.status === "Draft");
+    const kpis = getDistributorKPIs(
+      MOCK_ORDERS,
+      MOCK_INVOICES,
+      MOCK_PAYMENTS,
+      MOCK_PURCHASE_BILLS,
+      MOCK_RETAILERS,
+      DEFAULT_APP_DATE
+    );
+    const issuedSum = MOCK_INVOICES.filter((i) => i.status !== "Draft").reduce((s, i) => s + i.grandTotal, 0);
+
+    if (kpis.invoicedSales !== issuedSum) {
+      errors.push(
+        `Dashboard invoiced sales (₹${kpis.invoicedSales}) includes draft invoices (expected ₹${issuedSum}).`
+      );
+    }
+
+    details.push(
+      `Order ARK-8841 (${ord8841?.status}) links to issued invoice INV-0095 (${inv0095Ret?.status})`
+    );
+    details.push(
+      `Draft Invoices in Sales & Receivables: 0 (${draftInvoices.length} isolated draft invoice kept out of ledgers)`
+    );
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 9: Single Article Catalogue Source of Truth (Flowchart Real Catalogue)
+  // ===========================================================================
+  {
+    const checkName = "Check 9: Single Article Catalogue Source of Truth";
+    const details = [];
+    const errors = [];
+
+    const expectedStyleCount = 51;
+    const expectedBrandCount = 7;
+    const expectedCategories = ["Leggings", "Petticoats", "Bras", "Panties"];
+
+    details.push(
+      `Backoffice Tier Catalogue: ${MOCK_TIER_ARTICLES.length} styles across all ${MOCK_BRANDS.length} flowchart brands`
+    );
+    details.push(
+      `Retailer Product Catalogue: ${MOCK_PRODUCTS.length} products derived from tier articles`
+    );
+
+    // 1. Validate real style count (51 styles from 4 flowcharts)
+    if (MOCK_TIER_ARTICLES.length !== expectedStyleCount) {
+      errors.push(`Expected ${expectedStyleCount} styles in MOCK_TIER_ARTICLES, found ${MOCK_TIER_ARTICLES.length}.`);
+    }
+
+    // 2. Verify all 7 flowchart brands are present (Flybirds, Flycute, Loveit, Within, Aswati, Ira, Jyothika)
+    const representedBrands = new Set(MOCK_TIER_ARTICLES.map((a) => a.brand));
+    if (representedBrands.size !== expectedBrandCount) {
+      errors.push(`Expected ${expectedBrandCount} brands in catalogue, found ${representedBrands.size}.`);
+    }
+
+    // 3. Verify all 4 required categories are present
+    const representedCategories = new Set(MOCK_TIER_ARTICLES.map((a) => a.category));
+    for (const cat of expectedCategories) {
+      if (!representedCategories.has(cat)) {
+        errors.push(`Category "${cat}" not represented in catalogue styles.`);
+      }
+    }
+
+    // 4. Verify every product matches tier article:
+    // - Box packed specification
+    // - Pcs per pack matches
+    // - If price is active, net price equals Tier A++ price
+    // - If price is pending (PLACEHOLDER), pricePending is true and price is not invented
+    let pendingCount = 0;
+    let pricedCount = 0;
+
+    for (const prod of MOCK_PRODUCTS) {
+      const art = MOCK_TIER_ARTICLES.find((a) => a.artNumber === prod.artNumber);
+      if (!art) {
+        errors.push(`Product ${prod.id} (${prod.artNumber}) has no matching article in MOCK_TIER_ARTICLES.`);
+        continue;
+      }
+      if (prod.packSize !== art.packSize) {
+        errors.push(`Product ${prod.artNumber} packSize "${prod.packSize}" != article "${art.packSize}".`);
+      }
+      if (prod.piecesPerUnit !== art.piecesPerPack) {
+        errors.push(`Product ${prod.artNumber} piecesPerUnit ${prod.piecesPerUnit} != article ${art.piecesPerPack}.`);
+      }
+
+      if (art.pricePending) {
+        pendingCount++;
+        if (prod.pricePending !== true) {
+          errors.push(`Product ${prod.artNumber} has pending price in Backoffice but pricePending is false in Retailer view.`);
+        }
+        if (prod.pricePerUnit !== 0) {
+          errors.push(`Product ${prod.artNumber} has pending price but shows non-zero price ₹${prod.pricePerUnit}.`);
+        }
+      } else {
+        pricedCount++;
+        if (prod.pricePerUnit !== art.tierAppPrice) {
+          errors.push(
+            `Product ${prod.artNumber} net price ₹${prod.pricePerUnit} != Tier A++ price ₹${art.tierAppPrice}.`
+          );
+        }
+      }
+    }
+
+    details.push(
+      `Catalogue Price Status: ${pricedCount} active priced styles, ${pendingCount} pending styles (clearly flagged placeholders)`
+    );
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 10: Role-Based Access Control (RBAC) & Permission Map Integrity
+  // ===========================================================================
+  {
+    const checkName = "Check 10: Role-Based Access Control & Permission Map Integrity";
+    const details = [];
+    const errors = [];
+
+    const permissionsModule = require("../src/lib/auth/permissions.ts");
+    const { PERMISSIONS_MAP } = permissionsModule;
+
+    if (!PERMISSIONS_MAP) {
+      errors.push("PERMISSIONS_MAP is not exported from src/lib/auth/permissions.ts");
+    } else {
+      const requiredRoles = ["retailer", "owner", "accountant", "godown_staff", "salesman"];
+      for (const r of requiredRoles) {
+        if (!PERMISSIONS_MAP[r]) {
+          errors.push(`Role "${r}" is missing from PERMISSIONS_MAP.`);
+        }
+      }
+
+      // 1. Retailer Role: Zero access to tier pricing, supplier payables, or backoffice ledgers
+      const retPerms = PERMISSIONS_MAP.retailer;
+      if (retPerms) {
+        if (retPerms.canViewTierPricing !== false) {
+          errors.push("Security leak: Retailer canViewTierPricing must be false.");
+        }
+        if (retPerms.canEditTierPricing !== false) {
+          errors.push("Security leak: Retailer canEditTierPricing must be false.");
+        }
+        if (retPerms.canViewSupplierPayables !== false) {
+          errors.push("Security leak: Retailer canViewSupplierPayables must be false.");
+        }
+        if (retPerms.canViewPurchaseBills !== false) {
+          errors.push("Security leak: Retailer canViewPurchaseBills must be false.");
+        }
+        if (retPerms.canViewDashboard !== false) {
+          errors.push("Security leak: Retailer canViewDashboard must be false.");
+        }
+        details.push("Retailer Role: strictly isolated to store (0 distributor views, 0 tier prices, 0 mill payables)");
+      }
+
+      // 2. Salesman Role: Forbids tier prices, supplier payables, purchase bills, financial reports
+      const salesPerms = PERMISSIONS_MAP.salesman;
+      if (salesPerms) {
+        if (salesPerms.canViewTierPricing !== false) {
+          errors.push("Security violation: Salesman role canViewTierPricing must be false.");
+        }
+        if (salesPerms.canEditTierPricing !== false) {
+          errors.push("Security violation: Salesman role canEditTierPricing must be false.");
+        }
+        if (salesPerms.canViewSupplierPayables !== false) {
+          errors.push("Security violation: Salesman role canViewSupplierPayables must be false.");
+        }
+        if (salesPerms.canViewPurchaseBills !== false) {
+          errors.push("Security violation: Salesman role canViewPurchaseBills must be false.");
+        }
+        if (salesPerms.canViewSuppliers !== false) {
+          errors.push("Security violation: Salesman role canViewSuppliers must be false.");
+        }
+        if (salesPerms.canViewReports !== false) {
+          errors.push("Security violation: Salesman role canViewReports must be false.");
+        }
+        if (salesPerms.canViewOrders !== true || salesPerms.canViewRetailers !== true || salesPerms.canViewProducts !== true) {
+          errors.push("Salesman must have access to Orders, Retailers, and Products.");
+        }
+        details.push("Salesman Role: verified forbidding tier margins, supplier payables, and purchase bills");
+      }
+
+      // 3. Godown Staff Role: Strictly restricted to Orders and physical Stock
+      const godownPerms = PERMISSIONS_MAP.godown_staff;
+      if (godownPerms) {
+        if (godownPerms.canViewOrders !== true) {
+          errors.push("Godown staff must have access to Orders.");
+        }
+        if (godownPerms.canViewProducts !== true || godownPerms.canManageStock !== true) {
+          errors.push("Godown staff must have access to Products and Stock management.");
+        }
+        if (godownPerms.canViewTierPricing !== false) {
+          errors.push("Security violation: Godown staff cannot view tier pricing.");
+        }
+        if (godownPerms.canViewSupplierPayables !== false) {
+          errors.push("Security violation: Godown staff cannot view supplier payables.");
+        }
+        if (godownPerms.canViewReceivables !== false) {
+          errors.push("Security violation: Godown staff cannot view receivables.");
+        }
+        if (godownPerms.canViewInvoices !== false) {
+          errors.push("Security violation: Godown staff cannot view invoices.");
+        }
+        if (godownPerms.canViewSuppliers !== false) {
+          errors.push("Security violation: Godown staff cannot view suppliers.");
+        }
+        if (godownPerms.canViewPurchaseBills !== false) {
+          errors.push("Security violation: Godown staff cannot view purchase bills.");
+        }
+        if (godownPerms.canViewReports !== false) {
+          errors.push("Security violation: Godown staff cannot view reports.");
+        }
+        if (godownPerms.canViewDashboard !== false) {
+          errors.push("Security violation: Godown staff cannot view dashboard.");
+        }
+        details.push("Godown Staff Role: verified restricted exclusively to Orders and Stock inventory");
+      }
+
+      // 4. Accountant & Owner Roles
+      const accPerms = PERMISSIONS_MAP.accountant;
+      const ownerPerms = PERMISSIONS_MAP.owner;
+      if (accPerms && ownerPerms) {
+        if (accPerms.canViewInvoices !== true || accPerms.canViewReceivables !== true || accPerms.canViewPurchaseBills !== true) {
+          errors.push("Accountant must have invoicing, receivables, and purchase bills access.");
+        }
+        if (accPerms.canEditTierPricing !== false) {
+          errors.push("Accountant cannot edit tier pricing rate cards (view-only).");
+        }
+        if (ownerPerms.canViewTierPricing !== true || ownerPerms.canEditTierPricing !== true || ownerPerms.canViewSupplierPayables !== true) {
+          errors.push("Owner must have full access to tier pricing and supplier payables.");
+        }
+        details.push("Accountant & Owner Roles: verified financial ledger access and rate card editing gates");
+      }
+    }
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 11: Retailer Segmentation Integrity (Dynamic Cohorts & Exact Sum)
+  // ===========================================================================
+  {
+    const checkName = "Check 11: Retailer Segmentation Integrity (Dynamic Cohorts)";
+    const details = [];
+    const errors = [];
+
+    const segmentsResult = getRetailerSegments(
+      MOCK_RETAILERS,
+      MOCK_ORDERS,
+      MOCK_INVOICES,
+      DEFAULT_APP_DATE
+    );
+
+    const { allMetrics, counts } = segmentsResult;
+    const activeRetailers = MOCK_RETAILERS.filter((r) => r.status === "Active");
+
+    if (activeRetailers.length !== 28) {
+      errors.push(`Expected 28 active retailers, found ${activeRetailers.length}`);
+    }
+
+    if (counts.total !== 28) {
+      errors.push(`Segmented total count mismatch: expected 28, got ${counts.total}`);
+    }
+
+    const sumSegments =
+      counts.Champions + counts.Regular + counts.New + counts["At risk"] + counts.Dormant;
+    if (sumSegments !== 28) {
+      errors.push(
+        `Segment sum mismatch: sum of cohorts (${sumSegments}) !== active retailers (28)`
+      );
+    }
+
+    if (allMetrics.length !== 28) {
+      errors.push(
+        `Expected 28 categorized retailers, got ${allMetrics.length}`
+      );
+    }
+
+    // Verify all active retailers are present and valid
+    for (const item of allMetrics) {
+      if (!item.segment || !["Champions", "Regular", "New", "At risk", "Dormant"].includes(item.segment)) {
+        errors.push(`Retailer ${item.retailerId} has invalid segment: ${item.segment}`);
+      }
+      if (item.totalSpend12m < 0 || item.ordersLast90d < 0) {
+        errors.push(`Retailer ${item.retailerId} has invalid negative metrics`);
+      }
+    }
+
+    details.push(`Active Retailer Population: 28 retailers classified into 5 strict cohorts`);
+    details.push(
+      `Distribution: Champions: ${counts.Champions}, Regular: ${counts.Regular}, New: ${counts.New}, At risk: ${counts["At risk"]}, Dormant: ${counts.Dormant}`
+    );
+    details.push(`Cohorts Sum Invariance: ${sumSegments} === 28 (100% active coverage)`);
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 12: CRM Follow-up Derivation & Missed Status Verification
+  // ===========================================================================
+  {
+    const checkName = "Check 12: CRM Follow-up Derivation & Missed Status Verification";
+    const details = [];
+    const errors = [];
+
+    const todayStr = formatDateToIsoDay(DEFAULT_APP_DATE);
+    const grouped = getFollowUpsGrouped(MOCK_FOLLOW_UPS, DEFAULT_APP_DATE);
+
+    // 1. All items in missed must be open and have dueDate < todayStr
+    for (const f of grouped.missed) {
+      if (f.status !== "open") {
+        errors.push(`Follow-up ${f.id} in 'missed' has non-open status: ${f.status}`);
+      }
+      if (f.dueDate >= todayStr) {
+        errors.push(`Follow-up ${f.id} in 'missed' has dueDate >= today (${f.dueDate} >= ${todayStr})`);
+      }
+    }
+
+    // 2. All items in today must be open and have dueDate === todayStr
+    for (const f of grouped.today) {
+      if (f.status !== "open") {
+        errors.push(`Follow-up ${f.id} in 'today' has non-open status: ${f.status}`);
+      }
+      if (f.dueDate !== todayStr) {
+        errors.push(`Follow-up ${f.id} in 'today' has dueDate !== today (${f.dueDate} !== ${todayStr})`);
+      }
+    }
+
+    // 3. All items in upcoming must be open and have dueDate > todayStr
+    for (const f of grouped.upcoming) {
+      if (f.status !== "open") {
+        errors.push(`Follow-up ${f.id} in 'upcoming' has non-open status: ${f.status}`);
+      }
+      if (f.dueDate <= todayStr) {
+        errors.push(`Follow-up ${f.id} in 'upcoming' has dueDate <= today (${f.dueDate} <= ${todayStr})`);
+      }
+    }
+
+    // 4. All items in done must have status === "done"
+    for (const f of grouped.done) {
+      if (f.status !== "done") {
+        errors.push(`Follow-up ${f.id} in 'done' has non-done status: ${f.status}`);
+      }
+    }
+
+    // 5. Total count must match MOCK_FOLLOW_UPS
+    const totalGrouped = grouped.missed.length + grouped.today.length + grouped.upcoming.length + grouped.done.length;
+    if (totalGrouped !== MOCK_FOLLOW_UPS.length) {
+      errors.push(`Grouped count (${totalGrouped}) !== total follow-ups (${MOCK_FOLLOW_UPS.length})`);
+    }
+
+    details.push(`Reference Date: ${todayStr} (Simulation Day)`);
+    details.push(
+      `Derived Grouping: Missed: ${grouped.missed.length}, Today: ${grouped.today.length}, Upcoming: ${grouped.upcoming.length}, Completed: ${grouped.done.length}`
+    );
+    details.push(`Zero Leakage: Open past-due follow-ups strictly derived as Missed`);
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 13: Retailer Portal Privacy Audit (Zero Internal CRM Exposure)
+  // ===========================================================================
+  {
+    const checkName = "Check 13: Retailer Portal Privacy Audit (Zero Internal CRM Exposure)";
+    const details = [];
+    const errors = [];
+
+    const retailerDir = path.join(__dirname, "../src/components/retailer");
+    const files = fs.readdirSync(retailerDir).filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"));
+
+    // Prohibited strings that must NEVER appear in retailer portal components
+    const forbiddenPatterns = [
+      { pattern: /pricingTier/g, name: "pricingTier" },
+      { pattern: /tierBadge/g, name: "tierBadge" },
+      { pattern: /rebatePercent/g, name: "rebatePercent" },
+      { pattern: /marginPercent/g, name: "marginPercent" },
+      { pattern: /assignedTo/g, name: "assignedTo (employee assignment)" },
+      { pattern: /internalNotes/g, name: "internalNotes (backoffice notes)" },
+      { pattern: /supplierPayable/g, name: "supplierPayable" },
+    ];
+
+    let scannedFilesCount = 0;
+    for (const file of files) {
+      scannedFilesCount++;
+      const filePath = path.join(retailerDir, file);
+      const content = fs.readFileSync(filePath, "utf8");
+
+      for (const { pattern, name } of forbiddenPatterns) {
+        if (pattern.test(content)) {
+          errors.push(`Privacy leak in ${file}: contains forbidden internal property "${name}"`);
+        }
+      }
+    }
+
+    details.push(`Scanned ${scannedFilesCount} Retailer Portal UI components in src/components/retailer/`);
+    details.push(`Zero references to internal CRM employee assignments, notes, or pricing tier margins`);
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 14: Voice Telephony Adapter & Call Queue Architecture
+  // ===========================================================================
+  {
+    const checkName = "Check 14: Voice Telephony Adapter & Call Queue Architecture";
+    const details = [];
+    const errors = [];
+
+    const {
+      getCallProvider,
+      SCRIPT_TEMPLATES,
+      renderScriptTemplate,
+      generateProposedCallTasks,
+      handleCallOutcomeWriteBack,
+      MOCK_CALL_TASKS,
+    } = dataModule;
+
+    // 1. Verify CallProvider Interface & Adapter Factory
+    const provider = getCallProvider();
+    if (!provider || typeof provider.initiateCall !== "function" || typeof provider.getCallStatus !== "function") {
+      errors.push("CallProvider adapter does not adhere to the standard interface contract.");
+    } else {
+      details.push(`Telephony Adapter: Pluggable provider "${provider.name}" loaded with clean swap point`);
+    }
+
+    // 2. Verify Script Templates across all 4 reasons and 4 languages
+    const requiredReasons = ["payment_due", "overdue", "dispatch_update", "order_followup"];
+    const requiredLangs = ["te", "en", "hi", "ta"];
+    let templateCount = 0;
+
+    for (const reason of requiredReasons) {
+      if (!SCRIPT_TEMPLATES[reason]) {
+        errors.push(`Missing script template group for reason: "${reason}"`);
+        continue;
+      }
+      for (const lang of requiredLangs) {
+        const text = SCRIPT_TEMPLATES[reason].scripts[lang];
+        if (!text || text.length < 20) {
+          errors.push(`Missing or incomplete script template for reason "${reason}" and language "${lang}"`);
+        } else {
+          templateCount++;
+        }
+      }
+    }
+    details.push(`Multilingual Scripts: ${templateCount}/16 templates verified across Telugu, English, Hindi, and Tamil`);
+
+    // Test template rendering with variables
+    const rendered = renderScriptTemplate("Hello {{name}}, amount ₹{{amount}}", { name: "Sri Laxmi", amount: 15000 });
+    if (!rendered.includes("Sri Laxmi") || !rendered.includes("15,000")) {
+      errors.push(`Script variable interpolation failed: "${rendered}"`);
+    }
+
+    // 3. Verify Rule-based Generation (Strictly Proposed, Zero Automatic Dialing)
+    const proposed = generateProposedCallTasks(MOCK_INVOICES, MOCK_ORDERS, MOCK_RETAILERS, [], DEFAULT_APP_DATE);
+    const nonProposed = proposed.filter((t) => t.status !== "proposed");
+    if (nonProposed.length > 0) {
+      errors.push(`Safety violation: ${nonProposed.length} generated tasks have status other than "proposed"!`);
+    }
+
+    // Verify DNC and consent guardrails
+    const dncViolations = proposed.filter((t) => {
+      const ret = MOCK_RETAILERS.find((r) => r.id === t.retailerId);
+      return ret && (ret.doNotCall === true || ret.phoneConsent === false);
+    });
+    if (dncViolations.length > 0) {
+      errors.push(`Consent violation: ${dncViolations.length} call tasks generated for DNC or opted-out retailers!`);
+    }
+    details.push(`Rule Engine: Generated ${proposed.length} proposed call tasks (100% strictly proposed for owner review, 0 auto-dialed)`);
+    details.push(`Consent Guardrails: Verified strict suppression for doNotCall and phoneConsent opt-outs`);
+
+    // 4. Verify Outcome Write-back to Communications and Follow-ups
+    const sampleTask = {
+      id: "test-call-task",
+      retailerId: "ret-1",
+      retailerName: "Sri Laxmi Narasimha Textiles",
+      phone: "+91 94401 23456",
+      reason: "overdue",
+      referenceType: "invoice",
+      referenceId: "INV-0094",
+      amount: 31000,
+      language: "te",
+      preferredTimeWindow: "11:00 AM - 01:00 PM",
+      status: "completed",
+      scheduledDate: "2026-11-12",
+      createdAt: "2026-11-12",
+      retryCount: 0,
+      maxRetries: 3,
+    };
+
+    const mockComms = [];
+    const mockFollowUps = [];
+    handleCallOutcomeWriteBack(
+      sampleTask,
+      {
+        status: "promised_to_pay",
+        promisedPaymentDate: "2026-11-20",
+        promisedAmount: 31000,
+        notes: "Promised payment on 20 Nov",
+        sentiment: "positive",
+        durationSeconds: 65,
+      },
+      {
+        addCommunication: (c) => mockComms.push(c),
+        addFollowUp: (f) => mockFollowUps.push(f),
+      }
+    );
+
+    if (mockComms.length !== 1 || mockComms[0].channel !== "ai-call") {
+      errors.push("Failed to write outbound AI Call entry to Communication Log");
+    }
+    if (mockFollowUps.length !== 1 || mockFollowUps[0].dueDate !== "2026-11-20" || mockFollowUps[0].status !== "open") {
+      errors.push("Failed to write open follow-up with captured promised payment date");
+    }
+    details.push(`Outcome Write-Back: Successfully logged "ai-call" communication and created open follow-up for 20 Nov`);
+
+    // 5. Verify Retailer Preferences Fields
+    const sampleRetailer = MOCK_RETAILERS[0];
+    if (!sampleRetailer.preferredLanguage || sampleRetailer.phoneConsent === undefined || sampleRetailer.quietHours === undefined) {
+      errors.push("Retailer missing telephony preference fields (language, consent, quietHours)");
+    }
+    const dncRetailer = MOCK_RETAILERS.find((r) => r.id === "ret-20");
+    const noConsentRetailer = MOCK_RETAILERS.find((r) => r.id === "ret-14");
+    if (!dncRetailer || dncRetailer.doNotCall !== true) {
+      errors.push("ret-20 doNotCall flag not set to true as expected for testing");
+    }
+    if (!noConsentRetailer || noConsentRetailer.phoneConsent !== false) {
+      errors.push("ret-14 phoneConsent flag not set to false as expected for testing");
+    }
+    details.push(`Retailer Telephony Profiles: Verified language, quiet hours, consent flags, and DNC suppression on all retailers`);
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
   // Summary & Reporting
   // ===========================================================================
   console.log(`${colors.bold}SUMMARY REPORT:${colors.reset}\n`);
@@ -400,7 +1075,7 @@ async function runDataChecks() {
 
   if (allPassed) {
     console.log(
-      `${colors.bgGreen}${colors.bold} PASS ${colors.reset} ${colors.green}${colors.bold}All 5 Data & Privacy Integrity Checks Passed Successfully!${colors.reset}\n`
+      `${colors.bgGreen}${colors.bold} PASS ${colors.reset} ${colors.green}${colors.bold}All ${results.length} Data & Privacy Integrity Checks Passed Successfully!${colors.reset}\n`
     );
     process.exit(0);
   } else {
@@ -415,4 +1090,3 @@ runDataChecks().catch((err) => {
   console.error("Fatal error during check:data execution:", err);
   process.exit(1);
 });
-

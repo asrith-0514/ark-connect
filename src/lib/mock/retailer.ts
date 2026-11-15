@@ -1,3 +1,5 @@
+"use client";
+
 // Shared mock data module for ARK Connect Retailer Portal
 // Retailer: Sri Laxmi Narasimha Textiles (RET-0001)
 
@@ -170,6 +172,22 @@ export const INTERNAL_RETAILER_PROFILE: InternalRetailerProfile = {
 // - INV-0079 (#ARK-8761), billed 30 Sep 2026, total ₹31,000, paid 0, due 30 Oct 2026 (overdue)
 export const RETAILER_INVOICES: RetailerInvoice[] = [
   {
+    id: "inv-0095",
+    invoiceNumber: "INV-0095",
+    orderNumber: "#ARK-8841",
+    billedDate: "24 Oct 2026",
+    total: 48510,
+    paid: 48510,
+    balanceDue: 0,
+    dueDate: "23 Nov 2026",
+    status: "Paid",
+    statusBadge: "Settled in full",
+    receiptRef: "NEFT-881920",
+    creditDays: 30,
+    taxRatePercent: 5,
+    itemsCount: 4,
+  },
+  {
     id: "inv-0094",
     invoiceNumber: "INV-0094",
     orderNumber: "#ARK-8812",
@@ -221,6 +239,17 @@ export const RETAILER_INVOICES: RetailerInvoice[] = [
 // 3. Payments
 // ---------------------------------------------------------------------------
 export const RETAILER_PAYMENTS: RetailerPayment[] = [
+  {
+    id: "pay-neft-881920",
+    receiptNumber: "NEFT-881920",
+    date: "24 Oct 2026",
+    invoiceNumber: "INV-0095",
+    orderNumber: "#ARK-8841",
+    amount: 48510,
+    mode: "NEFT",
+    referenceId: "NEFT-881920",
+    reconciled: true,
+  },
   {
     id: "pay-1",
     receiptNumber: "REC-0842",
@@ -302,7 +331,7 @@ export const RETAILER_ORDERS: RetailerOrder[] = [
         productId: "prod-aswathi",
         productTitle: "Gold Border Pure Cotton Dhoti",
         artNumber: "AS-501",
-        brand: "Aswathi",
+        brand: "Aswati",
         color: "Bleached White",
         colorHex: "#ffffff",
         size: "Free Size",
@@ -315,7 +344,7 @@ export const RETAILER_ORDERS: RetailerOrder[] = [
         productId: "prod-aswathi-2",
         productTitle: "Woven Cotton Banian Vest",
         artNumber: "AS-102",
-        brand: "Aswathi",
+        brand: "Aswati",
         color: "Off White",
         colorHex: "#f8fafc",
         size: "Size XL",
@@ -385,7 +414,7 @@ export const RETAILER_ORDERS: RetailerOrder[] = [
         productId: "prod-sleepy-1",
         productTitle: "Modal Checked Lounge Pants",
         artNumber: "SP-550",
-        brand: "Sleepy Panda",
+        brand: "Loveit",
         color: "Heather / Navy Grid",
         colorHex: "#565e74",
         size: "Size L (85 cm)",
@@ -398,7 +427,7 @@ export const RETAILER_ORDERS: RetailerOrder[] = [
         productId: "prod-sleepy-2",
         productTitle: "Kids Bio-Wash Pyjama Set (2-10Y)",
         artNumber: "SP-810",
-        brand: "Sleepy Panda",
+        brand: "Loveit",
         color: "Pastel Assorted",
         colorHex: "#6ffbbe",
         size: "Size M (4-6Y)",

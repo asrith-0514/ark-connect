@@ -4,6 +4,10 @@ import React, { useState, useEffect } from "react";
 import { useApp } from "@/context/AppContext";
 import { Order } from "@/data/mockData";
 import { formatINR, isDemoModeEnabled } from "@/lib/mock/retailer";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Card } from "@/components/ui/Card";
 
 export default function MyOrdersView() {
   const {
@@ -118,64 +122,60 @@ export default function MyOrdersView() {
     }
   };
 
-  // Requirement 1: Distinct status chip colours
+  // Requirement 1: Distinct status chip colours using semantic tokens
   const renderStatusBadge = (status: Order["status"]) => {
     switch (status) {
       case "Draft":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            <span>Draft</span>
-          </span>
+          <Badge variant="neutral" size="sm" dot>
+            Draft
+          </Badge>
         );
       case "Submitted":
       case "Approved":
       case "Confirmed":
       case "Processing":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-            <span>{status === "Approved" ? "Approved • Confirm Now" : "In Review"}</span>
-          </span>
+          <Badge variant="warning" size="sm" dot pulse>
+            {status === "Approved" ? "Approved • Confirm Now" : "In Review"}
+          </Badge>
         );
       case "Dispatched":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#0047d3] border border-blue-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0047d3]" />
-            <span>Dispatched</span>
-          </span>
+          <Badge variant="primary" size="sm" dot>
+            Dispatched
+          </Badge>
         );
       case "Delivered":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
-            <span className="material-symbols-outlined text-[14px] text-emerald-700">check_circle</span>
-            <span>Delivered</span>
-          </span>
+          <Badge variant="success" size="sm" dot>
+            Delivered
+          </Badge>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-300">
-            <span>{status}</span>
-          </span>
+          <Badge variant="neutral" size="sm">
+            {status}
+          </Badge>
         );
     }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-24">
+    <div className="w-full max-w-4xl mx-auto space-y-6 pb-24 text-ink">
       {/* 1. Urgent Action Banner for Approved Orders */}
       {orders.some(o => o.status === "Approved") && (
-        <section className="bg-gradient-to-r from-blue-700 to-blue-900 rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <section className="bg-primary text-primary-foreground rounded-xl p-5 shadow-soft-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-surface/20 flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[24px]">verified</span>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="bg-emerald-400 text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                <span className="bg-success text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
                   Action Required
                 </span>
-                <span className="text-xs text-blue-200 font-mono">#ARK-8897</span>
+                <span className="text-xs text-primary-foreground/80 font-mono num">#ARK-8897</span>
               </div>
               <p className="text-sm sm:text-base font-semibold mt-1">
                 Order #ARK-8897 is approved by wholesaler. Confirm to release for processing.
@@ -186,7 +186,7 @@ export default function MyOrdersView() {
           <button
             type="button"
             onClick={() => handleConfirmOrder("ARK-8897")}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white text-[#0047d3] hover:bg-blue-50 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all shrink-0 active:scale-98 cursor-pointer"
+            className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-md bg-surface text-ink hover:bg-background font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-soft-sm transition-all shrink-0 active:scale-98 cursor-pointer border border-border"
           >
             <span>Confirm Order</span>
             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -197,24 +197,24 @@ export default function MyOrdersView() {
       {/* 2. Order Management Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+          <h1 className="font-page-title text-2xl sm:text-3xl text-ink font-normal">
             Wholesale Purchase Orders
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-ink-muted mt-0.5">
             Real-time status updates from ARK Distributors, Secunderabad Hub
           </p>
         </div>
 
         {/* State Demo Switcher */}
         {isDemo && (
-          <div className="flex items-center gap-1 bg-slate-200/80 p-1 rounded-xl self-start sm:self-auto">
+          <div className="flex items-center gap-1 bg-surface border border-border p-1 rounded-lg self-start sm:self-auto shadow-soft-sm">
             <button
               type="button"
               onClick={() => setDemoState("orders")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
                 demoState === "orders"
-                  ? "bg-white text-[#0047d3] shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-primary text-primary-foreground shadow-soft-sm"
+                  : "text-ink-muted hover:text-ink"
               }`}
             >
               Orders ({orders.length})
@@ -222,10 +222,10 @@ export default function MyOrdersView() {
             <button
               type="button"
               onClick={() => setDemoState("empty")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
                 demoState === "empty"
-                  ? "bg-white text-[#0047d3] shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-primary text-primary-foreground shadow-soft-sm"
+                  : "text-ink-muted hover:text-ink"
               }`}
             >
               Empty
@@ -233,10 +233,10 @@ export default function MyOrdersView() {
             <button
               type="button"
               onClick={() => setDemoState("skeleton")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${
                 demoState === "skeleton"
-                  ? "bg-white text-[#0047d3] shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-primary text-primary-foreground shadow-soft-sm"
+                  : "text-ink-muted hover:text-ink"
               }`}
             >
               Skeleton
@@ -246,10 +246,10 @@ export default function MyOrdersView() {
       </div>
 
       {/* Requirement 4: Search Box for PO number and Date-Range Filter */}
-      <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center gap-3">
+      <div className="bg-surface rounded-xl p-3.5 sm:p-4 border border-border shadow-soft-sm flex flex-col sm:flex-row items-center gap-3">
         {/* Search PO Number */}
         <div className="relative flex-1 w-full">
-          <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-[18px]">
+          <span className="material-symbols-outlined absolute left-3.5 top-3 text-ink-muted text-[18px]">
             search
           </span>
           <input
@@ -257,13 +257,13 @@ export default function MyOrdersView() {
             value={searchPO}
             onChange={e => setSearchPO(e.target.value)}
             placeholder="Search PO number (e.g. ARK-8841, 8902)..."
-            className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0047d3] transition-all font-mono"
+            className="w-full min-h-[44px] pl-10 pr-9 py-2 rounded-md bg-background border border-border text-xs sm:text-sm text-ink placeholder:text-ink-muted/60 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono num shadow-soft-sm"
           />
           {searchPO && (
             <button
               type="button"
               onClick={() => setSearchPO("")}
-              className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-3 text-ink-muted hover:text-ink cursor-pointer"
               aria-label="Clear PO search"
             >
               <span className="material-symbols-outlined text-[16px]">close</span>
@@ -273,13 +273,13 @@ export default function MyOrdersView() {
 
         {/* Date Filter Dropdown */}
         <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-          <span className="material-symbols-outlined text-slate-400 text-[18px] hidden sm:inline">
+          <span className="material-symbols-outlined text-ink-muted text-[18px] hidden sm:inline">
             calendar_today
           </span>
           <select
             value={dateFilter}
             onChange={e => setDateFilter(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-800 outline-none cursor-pointer focus:ring-2 focus:ring-[#0047d3]"
+            className="w-full sm:w-auto min-h-[44px] px-3.5 py-2 rounded-md bg-surface border border-border text-xs font-semibold text-ink outline-none cursor-pointer focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-soft-sm"
           >
             <option value="all">All Dates</option>
             <option value="oct-2026">October 2026</option>
@@ -293,7 +293,7 @@ export default function MyOrdersView() {
                 setSearchPO("");
                 setDateFilter("all");
               }}
-              className="text-xs font-semibold text-[#0047d3] hover:underline px-2 whitespace-nowrap cursor-pointer"
+              className="text-xs font-semibold text-primary hover:underline px-2 whitespace-nowrap cursor-pointer"
             >
               Reset
             </button>
@@ -303,18 +303,18 @@ export default function MyOrdersView() {
 
       {/* 3. Empty State Variant */}
       {demoState === "empty" && (
-        <div className="bg-white rounded-2xl p-8 sm:p-12 shadow-sm border border-slate-200 text-center flex flex-col items-center gap-3">
-          <div className="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
+        <div className="bg-surface rounded-xl p-8 sm:p-12 shadow-soft-sm border border-border text-center flex flex-col items-center gap-3">
+          <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center">
             <span className="material-symbols-outlined text-[36px]">inventory_2</span>
           </div>
-          <h2 className="text-lg font-bold text-slate-900">No purchase orders found</h2>
-          <p className="text-xs text-slate-500 max-w-sm">
+          <h2 className="text-lg font-bold text-ink font-sans">No purchase orders found</h2>
+          <p className="text-xs text-ink-muted max-w-sm">
             When you place wholesale purchase orders, they will appear here with live tracking, stock allocation, and lorry transport updates.
           </p>
           <button
             type="button"
             onClick={() => setRetailerNav("catalogue")}
-            className="mt-3 px-5 py-2.5 rounded-xl bg-[#0047d3] text-white font-semibold text-xs flex items-center gap-2 cursor-pointer"
+            className="mt-3 min-h-[44px] px-5 py-2.5 rounded-md bg-primary text-primary-foreground font-semibold text-xs flex items-center gap-2 cursor-pointer shadow-soft-sm hover:opacity-90 transition-opacity"
           >
             <span>Browse Brand Catalogue</span>
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
@@ -324,18 +324,18 @@ export default function MyOrdersView() {
 
       {/* 4. Skeleton State Variant */}
       {demoState === "skeleton" && (
-        <div className="space-y-4 animate-pulse">
-          <div className="h-10 w-64 bg-slate-200 rounded-full" />
+        <div className="space-y-4">
+          <Skeleton variant="rounded" height={40} width={260} />
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-2xl p-5 border border-slate-200 space-y-3">
+            <div key={i} className="bg-surface rounded-xl p-5 border border-border shadow-soft-sm space-y-3">
               <div className="flex justify-between">
-                <div className="h-5 w-28 bg-slate-200 rounded" />
-                <div className="h-5 w-20 bg-slate-200 rounded-full" />
+                <Skeleton variant="text" width={120} height={20} />
+                <Skeleton variant="text" width={80} height={20} />
               </div>
-              <div className="h-12 bg-slate-100 rounded-xl" />
+              <Skeleton variant="rounded" height={48} />
               <div className="flex justify-between">
-                <div className="h-4 w-32 bg-slate-200 rounded" />
-                <div className="h-6 w-24 bg-slate-200 rounded" />
+                <Skeleton variant="text" width={140} height={16} />
+                <Skeleton variant="text" width={100} height={24} />
               </div>
             </div>
           ))}
@@ -360,10 +360,10 @@ export default function MyOrdersView() {
                 key={tab.id}
                 type="button"
                 onClick={() => handleTabClick(tab.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   activeTab === tab.id
-                    ? "bg-[#0047d3] text-white shadow-2xs font-bold"
-                    : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
+                    ? "bg-primary text-primary-foreground shadow-soft-sm font-bold"
+                    : "bg-surface hover:bg-background text-ink-muted border border-border"
                 }`}
               >
                 {tab.label}
@@ -373,14 +373,14 @@ export default function MyOrdersView() {
 
           {/* Orders Cards List */}
           {filteredOrders.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
-              <span className="material-symbols-outlined text-[40px] text-slate-300">
+            <div className="text-center py-12 bg-surface rounded-xl border border-border shadow-soft-sm text-ink">
+              <span className="material-symbols-outlined text-[40px] text-ink-muted">
                 search_off
               </span>
-              <h3 className="text-sm font-bold text-slate-800 mt-2">
+              <h3 className="text-sm font-bold text-ink mt-2 font-sans">
                 No orders match your filter criteria
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-ink-muted mt-1">
                 Try adjusting the search query, date filter, or tab selection.
               </p>
               <button
@@ -391,7 +391,7 @@ export default function MyOrdersView() {
                   setSearchPO("");
                   setDateFilter("all");
                 }}
-                className="mt-3 px-4 py-1.5 rounded-xl bg-[#0047d3] text-white text-xs font-semibold cursor-pointer"
+                className="mt-3 min-h-[36px] px-4 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold cursor-pointer shadow-soft-sm hover:opacity-90"
               >
                 Show All Orders
               </button>
@@ -405,18 +405,18 @@ export default function MyOrdersView() {
                 return (
                   <article
                     key={order.id}
-                    className="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200 hover:shadow-md transition-all space-y-3"
+                    className="bg-surface rounded-xl p-5 shadow-soft-sm border border-border hover:shadow-soft-md transition-all duration-200 ease-out space-y-3 text-ink"
                   >
                     {/* Top Bar: Order # & Requirement 1 Distinct Status Badge */}
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 text-base font-mono">
+                          <span className="font-bold text-ink text-base font-mono num">
                             #{order.orderNumber}
                           </span>
                           {renderStatusBadge(order.status)}
                         </div>
-                        <p className="text-xs text-slate-400 font-mono mt-0.5">
+                        <p className="text-xs text-ink-muted font-mono num mt-0.5">
                           {order.date}
                         </p>
                       </div>
@@ -424,7 +424,7 @@ export default function MyOrdersView() {
                       <button
                         type="button"
                         onClick={() => setSelectedOrder(order)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                        className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-raised cursor-pointer"
                         title="View Full PO Breakdown"
                         aria-label={`View details for order #${order.orderNumber}`}
                       >
@@ -433,14 +433,14 @@ export default function MyOrdersView() {
                     </div>
 
                     {/* Summary Box */}
-                    <div className="bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200 space-y-1.5 text-xs sm:text-sm">
+                    <div className="bg-surface-raised p-3 sm:p-3.5 rounded-xl border border-border space-y-1.5 text-xs sm:text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-500">Brands</span>
-                        <span className="font-semibold text-slate-900">{brandsList}</span>
+                        <span className="text-ink-muted">Brands</span>
+                        <span className="font-semibold text-ink">{brandsList}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-500">Volume</span>
-                        <span className="font-semibold text-slate-900 font-mono">
+                        <span className="text-ink-muted">Volume</span>
+                        <span className="font-semibold text-ink font-mono">
                           {order.totalBoxes} boxes ({order.totalPieces || order.totalBoxes * 10} pcs)
                         </span>
                       </div>
@@ -448,21 +448,21 @@ export default function MyOrdersView() {
 
                     {/* Values */}
                     <div className="flex items-baseline justify-between pt-1">
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-ink-muted">
                         Estimated total (before GST)
                       </span>
-                      <span className="text-base sm:text-lg font-bold text-slate-900 font-mono">
+                      <span className="text-base sm:text-lg font-bold text-ink font-mono">
                         {formatINR(order.subtotal)}
                       </span>
                     </div>
 
                     {/* Requirement 2: Draft Cards with Resume Editing & Delete Draft */}
                     {order.status === "Draft" && (
-                      <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center gap-2">
+                      <div className="pt-3 border-t border-border flex flex-col sm:flex-row items-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleResumeEditing(order)}
-                          className="flex-1 w-full h-10 rounded-xl bg-[#0047d3] hover:bg-[#1e5eff] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                          className="flex-1 w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[16px]">edit_square</span>
                           <span>Resume Editing</span>
@@ -482,7 +482,7 @@ export default function MyOrdersView() {
                     {(order.status === "Submitted" ||
                       order.status === "Processing" ||
                       order.status === "Confirmed") && (
-                      <div className="pt-2 border-t border-slate-100">
+                      <div className="pt-2 border-t border-border">
                         <div className="bg-amber-50/90 p-3.5 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-start sm:items-center gap-3">
                           <span className="material-symbols-outlined text-[20px] text-amber-700 shrink-0 mt-0.5 sm:mt-0">
                             hourglass_top
@@ -506,7 +506,7 @@ export default function MyOrdersView() {
 
                     {/* Approved Action */}
                     {order.status === "Approved" && (
-                      <div className="pt-2 border-t border-slate-100 space-y-2">
+                      <div className="pt-2 border-t border-border space-y-2">
                         <div className="bg-emerald-50 text-emerald-800 text-xs p-2.5 rounded-lg border border-emerald-200 flex items-center gap-2">
                           <span className="material-symbols-outlined text-[18px] text-emerald-700">
                             check_circle
@@ -516,7 +516,7 @@ export default function MyOrdersView() {
                         <button
                           type="button"
                           onClick={() => handleConfirmOrder(order.id)}
-                          className="w-full h-11 rounded-xl bg-[#0047d3] hover:bg-[#1e5eff] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                          className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[18px]">task_alt</span>
                           <span>Review & Confirm Allocation</span>
@@ -526,17 +526,17 @@ export default function MyOrdersView() {
 
                     {/* Requirement 3: Dispatched Cards with Track Lorry Receipt (opens Drawer) */}
                     {order.status === "Dispatched" && (
-                      <div className="pt-2 border-t border-slate-100 space-y-2">
-                        <div className="bg-blue-50/70 p-2.5 rounded-lg border border-blue-200 text-xs text-slate-700 space-y-1">
+                      <div className="pt-2 border-t border-border space-y-2">
+                        <div className="bg-primary/10/70 p-2.5 rounded-lg border border-primary/20 text-xs text-ink space-y-1">
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Transporter:</span>
-                            <span className="font-semibold text-slate-900">
+                            <span className="text-ink-muted">Transporter:</span>
+                            <span className="font-semibold text-ink">
                               {order.transporter || "Navata Road Transport"}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-slate-500">Lorry Receipt (LR):</span>
-                            <span className="font-bold text-[#0047d3] font-mono">
+                            <span className="text-ink-muted">Lorry Receipt (LR):</span>
+                            <span className="font-bold text-primary font-mono">
                               {order.lrNumber || "NRT-77492-SDP"}
                             </span>
                           </div>
@@ -546,7 +546,7 @@ export default function MyOrdersView() {
                         <button
                           type="button"
                           onClick={() => setTrackingOrder(order)}
-                          className="w-full h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0047d3] font-bold text-xs flex items-center justify-center gap-2 transition-colors border border-slate-200 cursor-pointer"
+                          className="w-full h-10 rounded-xl bg-surface-raised hover:bg-surface-raised text-primary font-bold text-xs flex items-center justify-center gap-2 transition-colors border border-border cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[18px]">local_shipping</span>
                           <span>Track Lorry Receipt (LR)</span>
@@ -556,7 +556,7 @@ export default function MyOrdersView() {
 
                     {/* Delivered Cards */}
                     {order.status === "Delivered" && (
-                      <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2">
+                      <div className="pt-2 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-semibold">
                           <span className="material-symbols-outlined text-[18px]">verified_user</span>
                           <span>Delivered & verified at shop (Siddipet)</span>
@@ -564,7 +564,7 @@ export default function MyOrdersView() {
                         <button
                           type="button"
                           onClick={() => setRetailerNav("catalogue")}
-                          className="w-full sm:w-auto px-4 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-slate-200 cursor-pointer"
+                          className="w-full sm:w-auto px-4 h-9 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-border cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[16px]">autorenew</span>
                           <span>Reorder Articles</span>
@@ -579,32 +579,32 @@ export default function MyOrdersView() {
         </div>
       )}
 
-      {/* Requirement 3: Right-Side Drawer for "Track Lorry Receipt" */}
+      {/* Requirement 3: Right-Side Drawer for "Track Lorry Receipt" with Vertical Timeline */}
       {trackingOrder && (
         <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs animate-in fade-in"
+          className="fixed inset-0 z-50 flex justify-end bg-ink/40 backdrop-blur-xs animate-in fade-in"
           onClick={e => {
             if (e.target === e.currentTarget) setTrackingOrder(null);
           }}
         >
-          <div className="w-full max-w-md h-full bg-white shadow-2xl border-l border-slate-200 flex flex-col overflow-y-auto animate-in slide-in-from-right duration-300">
+          <div className="w-full max-w-md h-full bg-surface text-ink shadow-soft-xl border-l border-border flex flex-col overflow-y-auto animate-in slide-in-from-right duration-250 ease-out">
             {/* Drawer Header */}
-            <div className="p-5 border-b border-slate-200 flex items-start justify-between bg-slate-50">
+            <div className="p-5 border-b border-border flex items-start justify-between bg-surface-raised">
               <div>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider block">
                   Consignment Tracking
                 </span>
-                <h2 className="text-lg font-bold text-slate-900 mt-0.5">
+                <h2 className="text-lg font-bold text-ink mt-0.5 font-sans">
                   Lorry Receipt Tracking
                 </h2>
-                <span className="text-xs text-slate-500 font-mono">
+                <span className="text-xs text-ink-muted font-mono num">
                   PO #{trackingOrder.orderNumber}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setTrackingOrder(null)}
-                className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer shadow-2xs"
+                className="w-8 h-8 rounded-full bg-surface border border-border text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer shadow-soft-sm"
                 aria-label="Close tracking drawer"
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
@@ -613,51 +613,51 @@ export default function MyOrdersView() {
 
             <div className="p-5 space-y-6 flex-1">
               {/* Transporter & Booking Point Card */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="p-4 rounded-xl bg-background border border-border shadow-soft-sm space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#0047d3] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[22px]">local_shipping</span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-slate-400 font-bold uppercase block">
+                    <span className="text-[11px] text-ink-muted font-bold uppercase block">
                       Preferred Transporter
                     </span>
-                    <h3 className="font-bold text-slate-900 text-sm">
+                    <h3 className="font-bold text-ink text-sm font-sans">
                       {trackingOrder.transporter || "Navata Road Transport"}
                     </h3>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200/80 text-xs text-slate-600 space-y-1">
+                <div className="pt-2 border-t border-border text-xs text-ink-muted space-y-1">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Origin Hub:</span>
-                    <span className="font-semibold text-slate-800">Secunderabad Hub</span>
+                    <span>Origin Hub:</span>
+                    <span className="font-semibold text-ink">Secunderabad Hub</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Destination Point:</span>
-                    <span className="font-semibold text-slate-800">Siddipet Central Booking</span>
+                    <span>Destination Point:</span>
+                    <span className="font-semibold text-ink">Siddipet Central Booking</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Recipient Shop:</span>
-                    <span className="font-semibold text-slate-800">Sri Laxmi Narasimha Textiles</span>
+                    <span>Recipient Shop:</span>
+                    <span className="font-semibold text-ink">Sri Laxmi Narasimha Textiles</span>
                   </div>
                 </div>
               </div>
 
               {/* LR Number Box with Copy Action */}
-              <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between shadow-soft-sm">
                 <div>
-                  <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider block">
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">
                     Lorry Receipt (LR) Number
                   </span>
-                  <span className="text-lg font-bold text-[#0047d3] font-mono block mt-0.5">
+                  <span className="text-lg font-bold text-primary font-mono num block mt-0.5">
                     {trackingOrder.lrNumber || "NRT-77492-SDP"}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleCopyLR(trackingOrder.lrNumber || "NRT-77492-SDP")}
-                  className="px-3 py-1.5 rounded-xl bg-white text-[#0047d3] hover:bg-blue-100/70 border border-blue-200 font-bold text-xs flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-md bg-surface text-primary hover:bg-background border border-border font-bold text-xs flex items-center gap-1.5 shadow-soft-sm transition-all cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     {copiedLR ? "check" : "content_copy"}
@@ -668,71 +668,71 @@ export default function MyOrdersView() {
 
               {/* e-Way Bill Number Box */}
               {trackingOrder.ewayBill && (
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div className="p-3.5 rounded-xl bg-background border border-border flex items-center justify-between shadow-soft-sm">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                    <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
                       GST e-Way Bill
                     </span>
-                    <span className="text-sm font-bold text-slate-900 font-mono block mt-0.5">
+                    <span className="text-sm font-bold text-ink font-mono num block mt-0.5">
                       {trackingOrder.ewayBill}
                     </span>
                   </div>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono">
+                  <Badge variant="success" size="sm">
                     Valid in Transit
-                  </span>
+                  </Badge>
                 </div>
               )}
 
-              {/* Simple 4-stage Timeline: Dispatched → In Transit → Arrived at station → Delivered */}
+              {/* Vertical Timeline */}
               <div className="space-y-3">
-                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                <span className="text-xs font-bold text-ink uppercase tracking-wider block font-sans">
                   Consignment Timeline
                 </span>
 
-                <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
+                <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-border">
                   {/* Stage 1: Dispatched */}
                   <div className="relative">
-                    <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center ring-4 ring-white">
+                    <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-success text-white flex items-center justify-center ring-4 ring-surface">
                       <span className="material-symbols-outlined text-[12px]">check</span>
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900 text-xs sm:text-sm">
+                      <h4 className="font-bold text-ink text-xs sm:text-sm font-sans">
                         Dispatched
                       </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-[11px] text-ink-muted mt-0.5 num">
                         ARK Distributors, Secunderabad Hub • 24 Oct 2026, 17:30 IST
                       </p>
-                      <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      <Badge variant="success" size="sm" className="mt-1">
                         LR Waybill Generated
-                      </span>
+                      </Badge>
                     </div>
                   </div>
 
                   {/* Stage 2: In Transit */}
                   <div className="relative">
                     <div
-                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white ${
+                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-surface ${
                         trackingOrder.status === "Delivered"
-                          ? "bg-emerald-500 text-white"
-                          : "bg-[#0047d3] text-white ring-blue-100"
+                          ? "bg-success text-white"
+                          : "bg-primary text-primary-foreground ring-primary/20"
                       }`}
                     >
                       {trackingOrder.status === "Delivered" ? (
                         <span className="material-symbols-outlined text-[12px]">check</span>
                       ) : (
-                        <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-primary-foreground animate-pulse" />
                       )}
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+                      <h4 className="font-bold text-ink text-xs sm:text-sm flex items-center gap-1.5 font-sans">
                         <span>In Transit</span>
                         {trackingOrder.status !== "Delivered" && (
-                          <span className="text-[10px] text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                          <Badge variant="primary" size="sm">
                             Current Location
-                          </span>
+                          </Badge>
                         )}
                       </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-[11px] text-ink-muted mt-0.5">
                         On Hyderabad-Siddipet Highway (NH 365B) • Navata Express Route
                       </p>
                     </div>
@@ -741,29 +741,29 @@ export default function MyOrdersView() {
                   {/* Stage 3: Arrived at station */}
                   <div className="relative">
                     <div
-                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white ${
+                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-surface ${
                         trackingOrder.status === "Delivered"
-                          ? "bg-emerald-500 text-white"
-                          : "bg-slate-200 text-slate-400"
+                          ? "bg-success text-white"
+                          : "bg-border text-ink-muted"
                       }`}
                     >
                       {trackingOrder.status === "Delivered" ? (
                         <span className="material-symbols-outlined text-[12px]">check</span>
                       ) : (
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-ink-muted" />
                       )}
                     </div>
                     <div>
                       <h4
-                        className={`text-xs sm:text-sm ${
+                        className={`text-xs sm:text-sm font-sans ${
                           trackingOrder.status === "Delivered"
-                            ? "font-bold text-slate-900"
-                            : "font-semibold text-slate-600"
+                            ? "font-bold text-ink"
+                            : "font-semibold text-ink-muted"
                         }`}
                       >
                         Arrived at Station
                       </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-[11px] text-ink-muted mt-0.5">
                         Siddipet Central Booking Point (Expected arrival: 25 Oct, 11:00 AM)
                       </p>
                     </div>
@@ -772,29 +772,29 @@ export default function MyOrdersView() {
                   {/* Stage 4: Delivered */}
                   <div className="relative">
                     <div
-                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white ${
+                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-surface ${
                         trackingOrder.status === "Delivered"
-                          ? "bg-emerald-500 text-white"
-                          : "bg-slate-200 text-slate-400"
+                          ? "bg-success text-white"
+                          : "bg-border text-ink-muted"
                       }`}
                     >
                       {trackingOrder.status === "Delivered" ? (
                         <span className="material-symbols-outlined text-[12px]">check</span>
                       ) : (
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-ink-muted" />
                       )}
                     </div>
                     <div>
                       <h4
-                        className={`text-xs sm:text-sm ${
+                        className={`text-xs sm:text-sm font-sans ${
                           trackingOrder.status === "Delivered"
-                            ? "font-bold text-slate-900"
-                            : "font-semibold text-slate-600"
+                            ? "font-bold text-ink"
+                            : "font-semibold text-ink-muted"
                         }`}
                       >
                         Delivered
                       </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-[11px] text-ink-muted mt-0.5">
                         Final store delivery & verification at Main Bazaar, Siddipet
                       </p>
                     </div>
@@ -803,17 +803,17 @@ export default function MyOrdersView() {
               </div>
 
               {/* Package Summary */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
-                <span className="font-bold text-slate-800 block">Package Details</span>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Total Boxes:</span>
-                  <span className="font-mono font-semibold text-slate-900">
+              <div className="p-4 rounded-xl bg-background border border-border text-xs space-y-2 shadow-soft-sm">
+                <span className="font-bold text-ink block font-sans">Package Details</span>
+                <div className="flex justify-between text-ink-muted">
+                  <span>Total Boxes:</span>
+                  <span className="font-mono font-semibold text-ink num">
                     {trackingOrder.totalBoxes} boxes ({trackingOrder.totalPieces || trackingOrder.totalBoxes * 10} pcs)
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Consignment Value:</span>
-                  <span className="font-mono font-bold text-[#0047d3]">
+                  <span className="text-ink-muted">Consignment Value:</span>
+                  <span className="font-mono font-bold text-primary num">
                     {formatINR(trackingOrder.grandTotal)}
                   </span>
                 </div>
@@ -821,11 +821,11 @@ export default function MyOrdersView() {
             </div>
 
             {/* Drawer Footer */}
-            <div className="p-4 border-t border-slate-200 bg-white">
+            <div className="p-4 border-t border-border bg-surface-raised">
               <button
                 type="button"
                 onClick={() => setTrackingOrder(null)}
-                className="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors cursor-pointer"
+                className="w-full min-h-[44px] rounded-md bg-surface border border-border text-ink hover:bg-background font-bold text-xs transition-colors cursor-pointer shadow-soft-sm"
               >
                 Close Tracking
               </button>
@@ -842,72 +842,72 @@ export default function MyOrdersView() {
             if (e.target === e.currentTarget) setSelectedOrder(null);
           }}
         >
-          <div className="w-full max-w-lg bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-lg bg-surface rounded-3xl p-6 shadow-2xl border border-border space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-xs text-slate-400 font-semibold uppercase">
+                <span className="text-xs text-ink-muted font-semibold uppercase">
                   Order Details
                 </span>
-                <h3 className="text-xl font-bold text-slate-900 font-mono">
+                <h3 className="text-xl font-bold text-ink font-mono">
                   #{selectedOrder.orderNumber}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-full bg-surface-raised text-ink-muted flex items-center justify-center cursor-pointer"
                 aria-label="Close modal"
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5">
+            <div className="p-3.5 bg-surface-raised rounded-xl border border-border text-xs space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-slate-500">Status</span>
+                <span className="text-ink-muted">Status</span>
                 {renderStatusBadge(selectedOrder.status)}
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Transporter</span>
-                <span className="font-semibold text-slate-800">
+                <span className="text-ink-muted">Transporter</span>
+                <span className="font-semibold text-ink">
                   {selectedOrder.transporter || "Navata Road Transport"}
                 </span>
               </div>
               {selectedOrder.lrNumber && (
                 <div className="flex justify-between">
-                  <span className="text-slate-500">LR Consignment #</span>
-                  <span className="font-bold text-[#0047d3] font-mono">
+                  <span className="text-ink-muted">LR Consignment #</span>
+                  <span className="font-bold text-primary font-mono">
                     {selectedOrder.lrNumber}
                   </span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-slate-500">Order Date</span>
-                <span className="text-slate-800">{selectedOrder.date}</span>
+                <span className="text-ink-muted">Order Date</span>
+                <span className="text-ink">{selectedOrder.date}</span>
               </div>
             </div>
 
             {/* Items List */}
             <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-ink uppercase tracking-wider block">
                 Item Breakdown
               </span>
-              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden text-xs">
+              <div className="divide-y divide-border border border-border rounded-xl overflow-hidden text-xs">
                 {selectedOrder.items.map((item, idx) => (
-                  <div key={idx} className="p-3 flex items-center justify-between bg-white">
+                  <div key={idx} className="p-3 flex items-center justify-between bg-surface">
                     <div>
-                      <span className="font-semibold text-slate-900 block">
+                      <span className="font-semibold text-ink block">
                         {item.productTitle || item.productName}
                       </span>
-                      <span className="text-slate-400 text-[11px]">
+                      <span className="text-ink-muted text-[11px]">
                         {item.color} • {item.size} • {item.brand}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="font-bold text-slate-900 font-mono block">
+                      <span className="font-bold text-ink font-mono block">
                         {item.units} bx
                       </span>
-                      <span className="text-slate-500 font-mono">
+                      <span className="text-ink-muted font-mono">
                         {formatINR(item.units * item.rate)}
                       </span>
                     </div>
@@ -916,9 +916,9 @@ export default function MyOrdersView() {
               </div>
             </div>
 
-            <div className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-200 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800">Grand Total (incl. GST)</span>
-              <span className="text-lg font-bold text-[#0047d3] font-mono">
+            <div className="p-3.5 bg-primary/10/60 rounded-xl border border-primary/20 flex items-center justify-between">
+              <span className="text-xs font-bold text-ink">Grand Total (incl. GST)</span>
+              <span className="text-lg font-bold text-primary font-mono">
                 {formatINR(selectedOrder.grandTotal)}
               </span>
             </div>
@@ -926,7 +926,7 @@ export default function MyOrdersView() {
             <button
               type="button"
               onClick={() => setSelectedOrder(null)}
-              className="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs cursor-pointer transition-colors"
+              className="w-full h-11 rounded-xl bg-surface-raised hover:bg-surface text-white font-semibold text-xs cursor-pointer transition-colors"
             >
               Close Details
             </button>

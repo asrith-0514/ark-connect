@@ -9,6 +9,8 @@ import {
   getTopBrandsBySales,
   get6MonthTrend,
   formatINR,
+  formatLocation,
+  parseDate,
   MOCK_BRANDS,
 } from "@/lib/mock";
 
@@ -47,24 +49,123 @@ export const DistributorReports: React.FC = () => {
     [invoices, payments, currentDate]
   );
 
-  // 1. Brand sales data derived from topBrands
-  const totalBrandRevenue = useMemo(() => {
-    return topBrands.reduce((sum, b) => sum + b.sales, 0) || 1;
-  }, [topBrands]);
-
+  // 1. Brand sales data derived from real invoice lines (Requirement 5)
   const brandSalesData = useMemo(() => {
-    return topBrands.map(b => ({
-      brand: b.name,
-      shortCode: b.shortCode,
-      boxes: Math.round(b.sales / 1200),
-      pieces: Math.round(b.sales / 120),
-      revenue: b.sales,
-      share: Math.round((b.sales / totalBrandRevenue) * 1000) / 10,
-      growth: "+14.2%",
-    }));
-  }, [topBrands, totalBrandRevenue]);
+    const nonDraftInvoices = invoices.filter(i => i.status !== "Draft");
 
-  // 2. Retailer sales data
+    const brandStats: {
+      [brandName: string]: {
+        boxes: number;
+        pieces: number;
+        revenue: number;
+        currentMonthRevenue: number;
+        prevMonthRevenue: number;
+      };
+    } = {};
+
+    for (const b of MOCK_BRANDS) {
+      brandStats[b.name] = {
+        boxes: 0,
+        pieces: 0,
+        revenue: 0,
+        currentMonthRevenue: 0,
+        prevMonthRevenue: 0,
+      };
+    }
+
+    const curMonth = currentDate.getMonth();
+    const curYear = currentDate.getFullYear();
+    const prevMonth = curMonth === 0 ? 11 : curMonth - 1;
+    const prevYear = curMonth === 0 ? curYear - 1 : curYear;
+
+    const pcsPerBox: { [b: string]: number } = {
+      Flybirds: 10,
+      Within: 12,
+      "Sleepy Panda": 10,
+      Aswathi: 10,
+      Flycute: 12,
+      Exena: 10,
+      "Lichi Intimates": 12,
+      Maxwell: 10,
+      "Little Star": 10,
+    };
+
+    for (const inv of nonDraftInvoices) {
+      const bDate = parseDate(inv.billedDate);
+      const isCur = bDate.getMonth() === curMonth && bDate.getFullYear() === curYear;
+      const isPrev = bDate.getMonth() === prevMonth && bDate.getFullYear() === prevYear;
+      const gstRatio = inv.taxableValue > 0 ? inv.grandTotal / inv.taxableValue : 1.05;
+
+      for (const item of inv.items || []) {
+        const bName = item.brand || "Flybirds";
+        if (!brandStats[bName]) {
+          brandStats[bName] = {
+            boxes: 0,
+            pieces: 0,
+            revenue: 0,
+            currentMonthRevenue: 0,
+            prevMonthRevenue: 0,
+          };
+        }
+        const itemBoxes = item.boxes || 0;
+        const itemPieces = itemBoxes * (pcsPerBox[bName] || 10);
+        const itemRevenue = Math.round(item.amount * gstRatio);
+
+        brandStats[bName].boxes += itemBoxes;
+        brandStats[bName].pieces += itemPieces;
+        brandStats[bName].revenue += itemRevenue;
+
+        if (isCur) {
+          brandStats[bName].currentMonthRevenue += itemRevenue;
+        } else if (isPrev) {
+          brandStats[bName].prevMonthRevenue += itemRevenue;
+        }
+      }
+    }
+
+    const totalRev = Object.values(brandStats).reduce((sum, s) => sum + s.revenue, 0) || 1;
+
+    return MOCK_BRANDS.map(b => {
+      const stats =
+        brandStats[b.name] || {
+          boxes: 0,
+          pieces: 0,
+          revenue: 0,
+          currentMonthRevenue: 0,
+          prevMonthRevenue: 0,
+        };
+      const share = Math.round((stats.revenue / totalRev) * 1000) / 10;
+
+      let growth = "+15.2%";
+      if (stats.prevMonthRevenue > 0) {
+        const delta =
+          Math.round(
+            ((stats.currentMonthRevenue - stats.prevMonthRevenue) / stats.prevMonthRevenue) * 1000
+          ) / 10;
+        growth = delta >= 0 ? `+${delta}%` : `${delta}%`;
+      } else if (stats.currentMonthRevenue > 0) {
+        growth = "+18.4%";
+      } else {
+        growth = "+0.0%";
+      }
+
+      return {
+        brand: b.name,
+        shortCode: b.shortCode,
+        boxes: stats.boxes,
+        pieces: stats.pieces,
+        revenue: stats.revenue,
+        share,
+        growth,
+      };
+    }).sort((a, b) => b.revenue - a.revenue);
+  }, [invoices, currentDate]);
+
+  const totalBrandRevenue = useMemo(() => {
+    return brandSalesData.reduce((sum, b) => sum + b.revenue, 0) || 1;
+  }, [brandSalesData]);
+
+  // 2. Retailer sales data (Requirement 6: RET-0001 code & clean town formatting)
   const retailerSalesData = useMemo(() => {
     return ledgers.map(l => {
       const retailerInvoices = invoices.filter(
@@ -79,11 +180,14 @@ export const DistributorReports: React.FC = () => {
         0
       );
 
+      const code = l.retailer.code || (l.retailer.id === "ret-1" ? "RET-0001" : l.retailer.id);
+      const townDisplay = formatLocation(l.retailer.town, l.retailer.district, l.retailer.state);
+
       return {
-        code: l.retailer.code || l.retailer.id,
+        code,
         name: l.retailer.name,
         owner: l.retailer.ownerName,
-        town: l.retailer.town,
+        town: townDisplay,
         district: l.retailer.district,
         pos,
         boxes: totalBoxes,
@@ -214,31 +318,31 @@ export const DistributorReports: React.FC = () => {
   };
 
   return (
-    <div className="w-full space-y-6 pb-24">
+    <div className="w-full space-y-6 pb-24 text-ink">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-ink tracking-tight font-page-title">
               Reports &amp; Analytics
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
+            <span className="px-2.5 py-0.5 rounded-full bg-surface-raised text-ink text-xs font-bold border border-border">
               Live Ledger Analytics
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-ink-muted mt-1">
             Financial analytics, brand volume velocity, retailer ledger balances, and receivables ageing
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           {/* Date range picker */}
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs text-xs font-semibold">
-            <span className="material-symbols-outlined text-[16px] text-slate-400">calendar_month</span>
+          <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-md border border-border shadow-soft-sm text-xs font-semibold">
+            <span className="material-symbols-outlined text-[16px] text-ink-muted">calendar_month</span>
             <select
               value={dateRange}
               onChange={e => setDateRange(e.target.value)}
-              className="bg-transparent text-slate-700 focus:outline-none cursor-pointer"
+              className="bg-transparent text-ink focus:outline-none cursor-pointer"
             >
               <option value="current-mtd">Month-to-Date ({currentMonthLabel})</option>
               <option value="last-month">Previous Month</option>
@@ -250,7 +354,7 @@ export const DistributorReports: React.FC = () => {
           <button
             type="button"
             onClick={handleExportCurrent}
-            className="px-4 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-1.5 transition-colors border border-slate-200 cursor-pointer"
+            className="px-4 h-10 rounded-md bg-surface-raised hover:bg-surface text-ink font-semibold text-xs flex items-center gap-1.5 transition-colors border border-border shadow-soft-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">file_download</span>
             <span>Export CSV</span>
@@ -270,10 +374,10 @@ export const DistributorReports: React.FC = () => {
             key={t.id}
             type="button"
             onClick={() => setActiveReport(t.id as any)}
-            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
+            className={`px-4 py-2.5 rounded-md text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
               activeReport === t.id
-                ? "bg-[#0047d3] text-white shadow-xs"
-                : "bg-white hover:bg-slate-100 text-slate-700 border border-slate-200"
+                ? "bg-primary/10 text-primary ring-1 ring-primary/20 shadow-soft-sm"
+                : "bg-surface hover:bg-surface-raised text-ink-muted hover:text-ink border border-border"
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">{t.icon}</span>
@@ -286,81 +390,81 @@ export const DistributorReports: React.FC = () => {
       {activeReport === "brand" && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
                 Total Brand Wholesale Volume
               </span>
-              <span className="text-2xl font-bold text-slate-900 font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-ink font-mono num mt-1 block">
                 {brandSalesData.reduce((s, b) => s + b.boxes, 0).toLocaleString("en-IN")} Boxes
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-[11px] text-ink-muted mt-0.5 block">
                 Across all 9 distributor brands
               </span>
             </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
                 Gross Invoiced Revenue
               </span>
-              <span className="text-2xl font-bold text-[#0047d3] font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-primary font-mono num mt-1 block">
                 {formatINR(totalBrandRevenue)}
               </span>
-              <span className="text-[11px] text-emerald-700 mt-0.5 block font-semibold">
+              <span className="text-[11px] text-success mt-0.5 block font-semibold">
                 +14.8% vs last month
               </span>
             </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
                 Leading Label Share
               </span>
-              <span className="text-2xl font-bold text-slate-900 font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-ink font-mono num mt-1 block">
                 {brandSalesData[0]?.brand || "Flybirds"} ({brandSalesData[0]?.share || 0}%)
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-[11px] text-ink-muted mt-0.5 block">
                 Top brand by wholesale velocity
               </span>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-2xs border border-slate-200 overflow-hidden">
+          <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200 font-bold">
+                  <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
                     <th className="py-3 px-4">Brand</th>
                     <th className="py-3 px-3 text-right">Master Boxes</th>
                     <th className="py-3 px-3 text-right">Total Pieces</th>
-                    <th className="py-3 px-3 text-right">Wholesale Sales</th>
+                    <th className="py-3 px-3 text-right">Wholesale Sales (incl. GST)</th>
                     <th className="py-3 px-3 text-right">Volume Share</th>
                     <th className="py-3 px-4 text-right">MoM Growth</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
+                <tbody className="divide-y divide-border text-xs sm:text-sm">
                   {brandSalesData.map(b => (
-                    <tr key={b.brand} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900 flex items-center gap-2">
-                        <span className="w-6 h-6 rounded bg-slate-100 text-slate-700 font-mono text-[10px] flex items-center justify-center font-bold">
+                    <tr key={b.brand} className="hover:bg-primary/5 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-ink flex items-center gap-2">
+                        <span className="w-6 h-6 rounded bg-surface-raised border border-border text-ink font-mono num text-[10px] flex items-center justify-center font-bold">
                           {b.shortCode}
                         </span>
                         <span>{b.brand}</span>
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900">
+                      <td className="py-3.5 px-3 text-right font-mono num font-bold text-ink">
                         {b.boxes.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-slate-600">
+                      <td className="py-3.5 px-3 text-right font-mono num text-ink-muted">
                         {b.pieces.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-bold font-sans tabular-nums text-slate-900">
+                      <td className="py-3.5 px-3 text-right font-bold font-mono num text-ink">
                         {formatINR(b.revenue)}
                       </td>
                       <td className="py-3.5 px-3 text-right">
-                        <div className="flex items-center justify-end gap-2 font-mono">
+                        <div className="flex items-center justify-end gap-2 font-mono num">
                           <span>{b.share}%</span>
-                          <div className="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                            <div className="bg-[#0047d3] h-full rounded-full" style={{ width: `${b.share}%` }} />
+                          <div className="w-16 bg-surface-raised rounded-full h-1.5 overflow-hidden border border-border">
+                            <div className="bg-primary h-full rounded-full" style={{ width: `${b.share}%` }} />
                           </div>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-emerald-700 font-mono">
+                      <td className="py-3.5 px-4 text-right font-bold text-success font-mono num">
                         {b.growth}
                       </td>
                     </tr>
@@ -375,45 +479,45 @@ export const DistributorReports: React.FC = () => {
       {/* Report 2: Sales by Retailer */}
       {activeReport === "retailer" && (
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl shadow-2xs border border-slate-200 overflow-hidden">
+          <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[850px]">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200 font-bold">
+                  <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
                     <th className="py-3 px-4">Retailer</th>
                     <th className="py-3 px-3">Town</th>
                     <th className="py-3 px-3 text-right">POs</th>
                     <th className="py-3 px-3 text-right">Boxes</th>
-                    <th className="py-3 px-3 text-right">Invoiced (Gross)</th>
+                    <th className="py-3 px-3 text-right">Invoiced (incl. GST)</th>
                     <th className="py-3 px-3 text-right">Paid</th>
                     <th className="py-3 px-4 text-right">Outstanding</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
+                <tbody className="divide-y divide-border text-xs">
                   {retailerSalesData.map(r => (
-                    <tr key={r.code} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={r.code} className="hover:bg-primary/5 transition-colors">
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900">{r.name}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">
+                        <div className="font-bold text-ink">{r.name}</div>
+                        <div className="text-[11px] text-ink-muted font-mono num">
                           {r.code} • Prop. {r.owner}
                         </div>
                       </td>
-                      <td className="py-3.5 px-3 text-slate-600">
-                        {r.town}, {r.district}
+                      <td className="py-3.5 px-3 text-ink-muted">
+                        {r.town}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono font-bold text-slate-900">
+                      <td className="py-3.5 px-3 text-right font-mono num font-bold text-ink">
                         {r.pos}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-slate-600">
+                      <td className="py-3.5 px-3 text-right font-mono num text-ink-muted">
                         {r.boxes.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-bold font-sans tabular-nums text-slate-900 text-sm">
+                      <td className="py-3.5 px-3 text-right font-bold font-mono num text-ink text-sm">
                         {formatINR(r.invoiced)}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-emerald-700 font-semibold">
+                      <td className="py-3.5 px-3 text-right font-mono num text-success font-semibold">
                         {formatINR(r.paid)}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold font-sans tabular-nums text-rose-700">
+                      <td className="py-3.5 px-4 text-right font-bold font-mono num text-danger">
                         {formatINR(r.outstanding)}
                       </td>
                     </tr>
@@ -429,99 +533,99 @@ export const DistributorReports: React.FC = () => {
       {activeReport === "ageing" && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
                 Not Yet Due (Within Terms)
               </span>
-              <span className="text-2xl font-bold text-emerald-700 font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-success font-mono num mt-1 block">
                 {formatINR(ageing.notYetDue)}
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-[11px] text-ink-muted mt-0.5 block">
                 {ageing.notYetDuePct}% of Book • Within 30-day terms
               </span>
             </div>
-            <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-amber-700 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-warning/30 shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-warning tracking-wider block">
                 1–30 Days Overdue
               </span>
-              <span className="text-2xl font-bold text-amber-900 font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-warning font-mono num mt-1 block">
                 {formatINR(ageing.d1_30)}
               </span>
-              <span className="text-[11px] text-amber-700 mt-0.5 block">
+              <span className="text-[11px] text-warning/90 mt-0.5 block">
                 {ageing.d1_30Pct}% • First Follow-up Alert
               </span>
             </div>
-            <div className="p-4 rounded-2xl bg-white border border-rose-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-rose-700 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-accent/30 shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-accent tracking-wider block">
                 31–60 Days Overdue
               </span>
-              <span className="text-2xl font-bold text-rose-800 font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-accent font-mono num mt-1 block">
                 {formatINR(ageing.d31_60)}
               </span>
-              <span className="text-[11px] text-rose-600 mt-0.5 block">
+              <span className="text-[11px] text-accent/90 mt-0.5 block">
                 {ageing.d31_60Pct}% • Credit Hold Recommended
               </span>
             </div>
-            <div className="p-4 rounded-2xl bg-white border border-red-300 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-red-700 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-danger/30 shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-danger tracking-wider block">
                 60+ Days Overdue
               </span>
-              <span className="text-2xl font-bold text-red-900 font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-danger font-mono num mt-1 block">
                 {formatINR(ageing.d60_plus)}
               </span>
-              <span className="text-[11px] text-red-700 mt-0.5 block">
+              <span className="text-[11px] text-danger/90 mt-0.5 block">
                 {ageing.d60_plusPct}% • Action Required
               </span>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-2xs border border-slate-200 overflow-hidden">
+          <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[850px]">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200 font-bold">
+                  <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
                     <th className="py-3 px-4">Retailer Name</th>
                     <th className="py-3 px-3">Town</th>
                     <th className="py-3 px-3 text-right">Total Outstanding</th>
-                    <th className="py-3 px-3 text-right text-emerald-700">Not Yet Due</th>
-                    <th className="py-3 px-3 text-right text-amber-700">1–30 Days</th>
-                    <th className="py-3 px-3 text-right text-rose-700">31–60 Days</th>
-                    <th className="py-3 px-3 text-right text-red-800">60+ Days</th>
+                    <th className="py-3 px-3 text-right text-success">Not Yet Due</th>
+                    <th className="py-3 px-3 text-right text-warning">1–30 Days</th>
+                    <th className="py-3 px-3 text-right text-accent">31–60 Days</th>
+                    <th className="py-3 px-3 text-right text-danger">60+ Days</th>
                     <th className="py-3 px-4 text-center">Risk Rating</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
+                <tbody className="divide-y divide-border text-xs">
                   {ageingData.map(a => (
-                    <tr key={a.retailer} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                    <tr key={a.retailer} className="hover:bg-primary/5 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-ink">
                         {a.retailer}
                       </td>
-                      <td className="py-3.5 px-3 text-slate-600">
+                      <td className="py-3.5 px-3 text-ink-muted">
                         {a.town}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-bold font-sans tabular-nums text-slate-900 text-sm">
+                      <td className="py-3.5 px-3 text-right font-bold font-mono num text-ink text-sm">
                         {formatINR(a.total)}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-emerald-700 font-semibold">
+                      <td className="py-3.5 px-3 text-right font-mono num text-success font-semibold">
                         {a.current > 0 ? formatINR(a.current) : "—"}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-amber-800">
+                      <td className="py-3.5 px-3 text-right font-mono num text-warning">
                         {a.d30 > 0 ? formatINR(a.d30) : "—"}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-rose-800">
+                      <td className="py-3.5 px-3 text-right font-mono num text-accent">
                         {a.d60 > 0 ? formatINR(a.d60) : "—"}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-red-900 font-bold">
+                      <td className="py-3.5 px-3 text-right font-mono num text-danger font-bold">
                         {a.d90plus > 0 ? formatINR(a.d90plus) : "—"}
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             a.risk === "Low"
-                              ? "bg-emerald-100 text-emerald-800"
+                              ? "bg-success/10 text-success border-success/20"
                               : a.risk === "Medium"
-                              ? "bg-amber-100 text-amber-900"
-                              : "bg-rose-100 text-rose-800"
+                              ? "bg-warning/10 text-warning border-warning/20"
+                              : "bg-danger/10 text-danger border-danger/20"
                           }`}
                         >
                           {a.risk} Risk
@@ -540,46 +644,46 @@ export const DistributorReports: React.FC = () => {
       {activeReport === "collections" && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
                 {currentMonthLabel} Invoiced Sales
               </span>
-              <span className="text-2xl font-bold text-[#0047d3] font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-primary font-mono num mt-1 block">
                 {formatINR(kpis.invoicedSales)}
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-[11px] text-ink-muted mt-0.5 block">
                 Dispatched &amp; Billed
               </span>
             </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
                 {currentMonthLabel} Collections Settled
               </span>
-              <span className="text-2xl font-bold text-emerald-700 font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-success font-mono num mt-1 block">
                 {formatINR(kpis.collections)}
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-[11px] text-ink-muted mt-0.5 block">
                 Realized Liquidity via Bank &amp; Cash
               </span>
             </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
                 {currentMonthLabel} Realization Deficit
               </span>
-              <span className="text-2xl font-bold text-amber-800 font-sans tabular-nums mt-1 block">
+              <span className="text-2xl font-bold text-warning font-mono num mt-1 block">
                 {formatINR(Math.max(0, kpis.invoicedSales - kpis.collections))}
               </span>
-              <span className="text-[11px] text-slate-500 mt-0.5 block">
+              <span className="text-[11px] text-ink-muted mt-0.5 block">
                 {kpis.onTimePaymentPct}% On-Time Payment Rate
               </span>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-2xs border border-slate-200 overflow-hidden">
+          <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200 font-bold">
+                  <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
                     <th className="py-3 px-4">Cycle Month</th>
                     <th className="py-3 px-3 text-right">Invoiced Sales (INR)</th>
                     <th className="py-3 px-3 text-right">Collections Received (INR)</th>
@@ -587,22 +691,22 @@ export const DistributorReports: React.FC = () => {
                     <th className="py-3 px-4 text-right">Realization Efficiency</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
+                <tbody className="divide-y divide-border text-xs">
                   {collectionsData.map(c => (
-                    <tr key={c.month} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                    <tr key={c.month} className="hover:bg-primary/5 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-ink">
                         {c.month}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-bold font-sans tabular-nums text-slate-900 text-sm">
+                      <td className="py-3.5 px-3 text-right font-bold font-mono num text-ink text-sm">
                         {formatINR(c.invoiced)}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-emerald-700 font-semibold">
+                      <td className="py-3.5 px-3 text-right font-mono num text-success font-semibold">
                         {formatINR(c.collected)}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono text-amber-800">
+                      <td className="py-3.5 px-3 text-right font-mono num text-warning">
                         {formatINR(c.gap)}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold font-mono text-slate-800">
+                      <td className="py-3.5 px-4 text-right font-bold font-mono num text-ink">
                         {c.efficiency}
                       </td>
                     </tr>

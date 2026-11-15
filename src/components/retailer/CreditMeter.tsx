@@ -24,54 +24,53 @@ export default function CreditMeter({
 }: CreditMeterProps) {
   return (
     <div
-      className={`rounded-xl bg-slate-50 border border-slate-200 ${
-        compact ? "p-3 space-y-1.5" : "p-4 space-y-2.5"
+      className={`rounded-lg bg-surface border border-border shadow-soft-sm text-ink transition-colors duration-200 ${
+        compact ? "p-3 space-y-2" : "p-4 space-y-3"
       } ${className}`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[#0047d3] text-[18px]">
+          <span className="material-symbols-outlined text-primary text-[18px]">
             verified_user
           </span>
-          <span className="text-xs font-bold text-slate-900">Credit Line Health</span>
+          <span className="text-xs font-bold text-ink">Credit Line Health</span>
         </div>
 
-        {/* Clear label showing used vs available (Requirement 4) */}
+        {/* Clear label showing used vs available */}
         <div className="flex items-center gap-1.5 text-xs">
-          <span className="text-slate-600">
-            <strong className="text-[#0047d3] font-mono">{formatINR(totalOutstanding)}</strong> used
+          <span className="text-ink-muted">
+            <strong className="text-primary font-mono num">{formatINR(totalOutstanding)}</strong> used
           </span>
-          <span className="text-slate-400 font-bold">·</span>
-          <span className="text-emerald-700">
-            <strong className="text-emerald-800 font-mono">{formatINR(availableCredit)}</strong> available
+          <span className="text-border font-bold">·</span>
+          <span className="text-success">
+            <strong className="font-mono num font-bold">{formatINR(availableCredit)}</strong> available
           </span>
         </div>
       </div>
 
-      {/* Segmented bar: fill matches label */}
-      <div className="w-full h-3 rounded-full bg-slate-200 overflow-hidden flex shadow-inner">
+      {/* Thick rounded gauge */}
+      <div className="w-full h-4 rounded-full bg-border/60 overflow-hidden flex shadow-inner p-0.5">
         <div
-          className="h-full bg-[#0047d3] transition-all duration-500"
-          style={{ width: `${usedCreditPercent}%` }}
+          className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${Math.max(usedCreditPercent > 0 ? 3 : 0, usedCreditPercent)}%` }}
           title={`Used: ${formatINR(totalOutstanding)} (${usedCreditPercent}%)`}
         />
         <div
-          className="h-full bg-emerald-500 transition-all duration-500"
+          className="h-full bg-success rounded-full transition-all duration-500 ease-out ml-0.5"
           style={{ width: `${availableCreditPercent}%` }}
           title={`Available: ${formatINR(availableCredit)} (${availableCreditPercent}%)`}
         />
       </div>
 
-      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+      <div className="flex items-center justify-between text-[11px] text-ink-muted pt-0.5">
         <span>
           Authorized Limit:{" "}
-          <strong className="text-slate-800 font-mono">{formatINR(creditLimit)}</strong>
+          <strong className="text-ink font-mono num font-semibold">{formatINR(creditLimit)}</strong>
         </span>
-        <span className="text-emerald-700 font-bold font-mono">
+        <span className="text-success font-bold font-mono num">
           {availableCreditPercent}% Available
         </span>
       </div>
     </div>
   );
 }
-

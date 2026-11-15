@@ -11,6 +11,7 @@ import {
   Order,
   Payment,
 } from "@/lib/mock";
+import { Badge, StatusChip } from "@/components/ui/Badge";
 
 type SortField =
   | "code"
@@ -65,6 +66,8 @@ export const DistributorRetailers: React.FC = () => {
     updateRetailer,
     setViewingInvoice,
     currentDate,
+    setSelectedRetailer360Id,
+    setDistributorNav,
   } = useApp();
 
   // Tab navigation
@@ -389,7 +392,7 @@ export const DistributorRetailers: React.FC = () => {
             toast.type === "error"
               ? "bg-rose-50 text-rose-900 border-rose-200"
               : toast.type === "info"
-              ? "bg-slate-900 text-white border-slate-800"
+              ? "bg-ink text-surface border-border"
               : "bg-emerald-50 text-emerald-900 border-emerald-200"
           }`}
         >
@@ -402,13 +405,13 @@ export const DistributorRetailers: React.FC = () => {
 
       {/* Top Breadcrumb Context */}
       <div className="flex items-center justify-between py-0.5">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-          <span className="hover:text-slate-800 transition-colors cursor-pointer">Operations</span>
+        <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
+          <span className="hover:text-ink transition-colors cursor-pointer">Operations</span>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-slate-900 font-bold">Retailers</span>
+          <span className="text-ink font-bold">Retailers</span>
         </div>
-        <div className="text-xs text-slate-400 font-mono">
-          Seed: 28 Active · 3 Awaiting Approval
+        <div className="text-xs text-ink-muted font-mono">
+          28 Active · 3 Awaiting Approval
         </div>
       </div>
 
@@ -416,27 +419,27 @@ export const DistributorRetailers: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Retailers</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+            <h1 className="text-2xl font-bold text-ink tracking-tight">Retailers</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-raised text-ink">
               {retailers.length} Registered
             </span>
           </div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-ink-muted">
             Authorized retail partner directory, onboarding verification, and pricing tier control.
           </p>
         </div>
         <div className="flex items-center gap-2.5">
           <button
             onClick={handleExportCSV}
-            className="h-10 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+            className="h-10 px-4 rounded-xl bg-surface border border-border hover:bg-surface-raised text-ink font-semibold text-sm flex items-center gap-2 shadow-soft-sm transition-colors cursor-pointer"
             type="button"
           >
-            <span className="material-symbols-outlined text-[18px] text-slate-500">file_download</span>
+            <span className="material-symbols-outlined text-[18px] text-ink-muted">file_download</span>
             Export CSV
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center gap-2 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+            className="h-10 px-4 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-sm flex items-center gap-2 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
@@ -446,7 +449,7 @@ export const DistributorRetailers: React.FC = () => {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+      <div className="flex items-center gap-2 border-b border-border pb-2">
         <button
           onClick={() => {
             setActiveTab("pending");
@@ -454,8 +457,8 @@ export const DistributorRetailers: React.FC = () => {
           }}
           className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
             activeTab === "pending"
-              ? "bg-rose-50 text-rose-700 shadow-xs border border-rose-200/60"
-              : "bg-transparent hover:bg-slate-100 text-slate-600"
+              ? "bg-rose-50 text-rose-700 shadow-soft-sm border border-rose-200/60"
+              : "bg-transparent hover:bg-surface-raised text-ink-muted"
           }`}
         >
           <span>Needs approval</span>
@@ -463,7 +466,7 @@ export const DistributorRetailers: React.FC = () => {
             className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
               activeTab === "pending"
                 ? "bg-rose-600 text-white"
-                : "bg-slate-200 text-slate-700"
+                : "bg-surface-raised text-ink"
             }`}
           >
             {pendingCount}
@@ -477,16 +480,16 @@ export const DistributorRetailers: React.FC = () => {
           }}
           className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
             activeTab === "active"
-              ? "bg-blue-50 text-blue-700 shadow-xs border border-blue-200/60"
-              : "bg-transparent hover:bg-slate-100 text-slate-600"
+              ? "bg-primary/10 text-primary shadow-soft-sm border border-primary/20/60"
+              : "bg-transparent hover:bg-surface-raised text-ink-muted"
           }`}
         >
           <span>Active</span>
           <span
             className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
               activeTab === "active"
-                ? "bg-blue-600 text-white"
-                : "bg-slate-200 text-slate-700"
+                ? "bg-primary text-white"
+                : "bg-surface-raised text-ink"
             }`}
           >
             {activeCount}
@@ -500,16 +503,16 @@ export const DistributorRetailers: React.FC = () => {
           }}
           className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
             activeTab === "deactivated"
-              ? "bg-slate-800 text-white shadow-xs"
-              : "bg-transparent hover:bg-slate-100 text-slate-600"
+              ? "bg-primary text-primary-foreground shadow-soft-sm"
+              : "bg-transparent hover:bg-surface-raised text-ink-muted"
           }`}
         >
           <span>Deactivated</span>
           <span
             className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
               activeTab === "deactivated"
-                ? "bg-slate-700 text-white"
-                : "bg-slate-200 text-slate-700"
+                ? "bg-primary/90 text-primary-foreground"
+                : "bg-surface-raised text-ink"
             }`}
           >
             {deactivatedCount}
@@ -523,25 +526,25 @@ export const DistributorRetailers: React.FC = () => {
           }}
           className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
             activeTab === "all"
-              ? "bg-slate-100 text-slate-900 font-bold"
-              : "bg-transparent hover:bg-slate-100 text-slate-600"
+              ? "bg-surface-raised text-ink font-bold"
+              : "bg-transparent hover:bg-surface-raised text-ink-muted"
           }`}
         >
           <span>All</span>
-          <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-slate-200 text-slate-700">
+          <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-surface-raised text-ink">
             {retailers.length}
           </span>
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap lg:flex-nowrap items-center gap-3">
+      <div className="bg-surface p-3 rounded-2xl border border-border shadow-soft-sm flex flex-wrap lg:flex-nowrap items-center gap-3">
         <div className="flex-1 min-w-[240px] relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted text-[18px]">
             search
           </span>
           <input
-            className="w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full h-10 pl-9 pr-4 bg-surface-raised border border-border rounded-xl text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             placeholder="Search shop name, owner, phone, GSTIN, town..."
             type="text"
             value={searchQuery}
@@ -554,7 +557,7 @@ export const DistributorRetailers: React.FC = () => {
           <select
             value={selectedDistrict}
             onChange={e => setSelectedDistrict(e.target.value)}
-            className="h-10 px-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            className="h-10 px-3 bg-surface-raised border border-border hover:bg-surface-raised rounded-xl text-xs font-medium text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
           >
             <option value="">District: All ({districtList.length})</option>
             {districtList.map(d => (
@@ -569,7 +572,7 @@ export const DistributorRetailers: React.FC = () => {
             <select
               value={selectedTier}
               onChange={e => setSelectedTier(e.target.value)}
-              className="h-10 px-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              className="h-10 px-3 bg-surface-raised border border-border hover:bg-surface-raised rounded-xl text-xs font-medium text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
             >
               <option value="">Tier: All</option>
               <option value="Tier A++">Tier A++ (High Volume)</option>
@@ -595,37 +598,37 @@ export const DistributorRetailers: React.FC = () => {
       </div>
 
       {/* FULL-WIDTH TABLE CONTAINER (Never squished) */}
-      <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="w-full bg-surface rounded-2xl border border-border shadow-soft-sm overflow-hidden">
         {/* Deactivated Tab Empty State per Requirement 6 */}
         {activeTab === "deactivated" && sortedRetailers.length === 0 ? (
           <div className="py-20 px-4 flex flex-col items-center justify-center text-center max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
+            <div className="w-16 h-16 rounded-full bg-surface-raised flex items-center justify-center text-ink-muted mb-4">
               <span className="material-symbols-outlined text-[32px]">person_off</span>
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-1">No deactivated retailers</h3>
-            <p className="text-sm text-slate-500 mb-6">
+            <h3 className="text-lg font-bold text-ink mb-1">No deactivated retailers</h3>
+            <p className="text-sm text-ink-muted mb-6">
               All registered retail partner accounts are active and in good operational standing.
             </p>
             <button
               onClick={() => setActiveTab("active")}
-              className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-ink text-surface text-xs font-semibold hover:bg-surface transition-colors cursor-pointer"
               type="button"
             >
               View Active Retailers ({activeCount})
             </button>
           </div>
         ) : sortedRetailers.length === 0 ? (
-          <div className="py-16 text-center text-slate-400 text-sm">
+          <div className="py-16 text-center text-ink-muted text-sm">
             No retailers found matching your search criteria.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-semibold uppercase tracking-wider select-none">
+                <tr className="bg-surface-raised border-b border-border text-ink-muted text-xs font-semibold uppercase tracking-wider select-none">
                   <th className="py-3.5 pl-4 pr-2 w-10">
                     <input
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 accent-blue-600 cursor-pointer"
+                      className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-blue-600 cursor-pointer"
                       type="checkbox"
                       checked={selectedIds.size > 0 && selectedIds.size === sortedRetailers.length}
                       onChange={toggleSelectAll}
@@ -634,7 +637,7 @@ export const DistributorRetailers: React.FC = () => {
 
                   {activeTab !== "pending" && (
                     <th
-                      className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-slate-900"
+                      className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
                       onClick={() => handleSort("code")}
                     >
                       <div className="flex items-center gap-1">
@@ -649,7 +652,7 @@ export const DistributorRetailers: React.FC = () => {
                   )}
 
                   <th
-                    className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("name")}
                   >
                     <div className="flex items-center gap-1">
@@ -664,7 +667,7 @@ export const DistributorRetailers: React.FC = () => {
 
                   {/* Town Column Requirement 4 */}
                   <th
-                    className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("town")}
                   >
                     <div className="flex items-center gap-1">
@@ -679,7 +682,7 @@ export const DistributorRetailers: React.FC = () => {
 
                   {/* Tier Column: Pending rows show "-" per Requirement 3 */}
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("pricingTier")}
                   >
                     <div className="flex items-center gap-1">
@@ -694,7 +697,7 @@ export const DistributorRetailers: React.FC = () => {
 
                   {/* Credit Limit Column: Pending rows show "-" per Requirement 3 */}
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
                     onClick={() => handleSort("creditLimit")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -709,7 +712,7 @@ export const DistributorRetailers: React.FC = () => {
 
                   {activeTab !== "pending" && (
                     <th
-                      className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-slate-900"
+                      className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
                       onClick={() => handleSort("outstanding")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -725,7 +728,7 @@ export const DistributorRetailers: React.FC = () => {
 
                   {activeTab !== "pending" && (
                     <th
-                      className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-slate-900"
+                      className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
                       onClick={() => handleSort("overdue")}
                     >
                       <div className="flex items-center justify-end gap-1">
@@ -752,7 +755,7 @@ export const DistributorRetailers: React.FC = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm text-slate-800">
+              <tbody className="divide-y divide-border text-sm text-ink">
                 {sortedRetailers.map(retailer => {
                   const isPending = retailer.status === "Needs Approval";
                   const isDuplicate = Boolean(retailer.flags?.includes("Possible duplicate"));
@@ -774,16 +777,16 @@ export const DistributorRetailers: React.FC = () => {
                       }}
                       className={`transition-colors cursor-pointer group ${
                         isReviewOpen || isProfileOpen
-                          ? "bg-blue-50/70"
+                          ? "bg-primary/10/70"
                           : isSelected
-                          ? "bg-slate-50"
-                          : "hover:bg-slate-50/80"
+                          ? "bg-surface-raised"
+                          : "hover:bg-surface-raised/80"
                       }`}
                     >
                       {/* Checkbox column */}
                       <td className="py-3.5 pl-4 pr-2" onClick={e => e.stopPropagation()}>
                         <input
-                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 accent-blue-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-blue-600 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                           type="checkbox"
                           checked={isSelected}
                           disabled={isPending && isDuplicate}
@@ -798,7 +801,7 @@ export const DistributorRetailers: React.FC = () => {
 
                       {/* Code */}
                       {activeTab !== "pending" && (
-                        <td className="py-3.5 px-3 font-mono text-xs font-bold text-blue-700 whitespace-nowrap">
+                        <td className="py-3.5 px-3 font-mono text-xs font-bold text-primary whitespace-nowrap">
                           {retailer.code}
                         </td>
                       )}
@@ -806,10 +809,10 @@ export const DistributorRetailers: React.FC = () => {
                       {/* Shop & Proprietor */}
                       <td className="py-3.5 px-4 min-w-[220px]">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                          <span className="font-semibold text-ink group-hover:text-primary transition-colors">
                             {retailer.name}
                           </span>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-ink-muted">
                             {retailer.ownerName} · <span className="font-mono">{retailer.phone}</span>
                           </span>
                         </div>
@@ -818,24 +821,24 @@ export const DistributorRetailers: React.FC = () => {
                       {/* Town Column Requirement 4:
                           Show town once when town and district are same; show state for non-Telangana */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-medium text-slate-900 block">{townInfo.primary}</span>
+                        <span className="font-medium text-ink block">{townInfo.primary}</span>
                         {townInfo.secondary && (
-                          <span className="text-xs text-slate-400 block">{townInfo.secondary}</span>
+                          <span className="text-xs text-ink-muted block">{townInfo.secondary}</span>
                         )}
                       </td>
 
                       {/* Pricing Tier: Pending rows show "-" per Requirement 3 */}
                       <td className="py-3.5 px-3 whitespace-nowrap">
                         {isPending || !retailer.pricingTier ? (
-                          <span className="text-slate-400 font-mono text-xs">—</span>
+                          <span className="text-ink-muted font-mono text-xs">—</span>
                         ) : (
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-xs font-bold font-mono ${
                               retailer.pricingTier === "Tier A++"
                                 ? "bg-purple-100 text-purple-900 border border-purple-200"
                                 : retailer.pricingTier === "Tier A+"
-                                ? "bg-blue-100 text-blue-900 border border-blue-200"
-                                : "bg-slate-100 text-slate-700 border border-slate-200"
+                                ? "bg-blue-100 text-blue-900 border border-primary/20"
+                                : "bg-surface-raised text-ink border border-border"
                             }`}
                           >
                             {retailer.pricingTier}
@@ -844,9 +847,9 @@ export const DistributorRetailers: React.FC = () => {
                       </td>
 
                       {/* Credit Limit: Pending rows show "-" per Requirement 3 */}
-                      <td className="py-3.5 px-3 text-right font-mono font-medium text-slate-800 whitespace-nowrap">
+                      <td className="py-3.5 px-3 text-right font-mono font-medium text-ink whitespace-nowrap">
                         {isPending || !retailer.creditLimit ? (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-ink-muted">—</span>
                         ) : (
                           `₹${retailer.creditLimit.toLocaleString("en-IN")}`
                         )}
@@ -854,7 +857,7 @@ export const DistributorRetailers: React.FC = () => {
 
                       {/* Outstanding */}
                       {activeTab !== "pending" && (
-                        <td className="py-3.5 px-3 text-right font-mono font-semibold text-slate-900 whitespace-nowrap">
+                        <td className="py-3.5 px-3 text-right font-mono font-semibold text-ink whitespace-nowrap">
                           {formatINR(retailer.outstanding || 0)}
                         </td>
                       )}
@@ -867,14 +870,14 @@ export const DistributorRetailers: React.FC = () => {
                               {formatINR(retailer.overdue)}
                             </span>
                           ) : (
-                            <span className="text-slate-400">—</span>
+                            <span className="text-ink-muted">—</span>
                           )}
                         </td>
                       )}
 
                       {/* Applied Date (Pending tab) */}
                       {activeTab === "pending" && (
-                        <td className="py-3.5 px-3 text-xs text-slate-500 font-mono whitespace-nowrap">
+                        <td className="py-3.5 px-3 text-xs text-ink-muted font-mono whitespace-nowrap">
                           {retailer.appliedDate || "24 Oct 2026"}
                         </td>
                       )}
@@ -901,7 +904,7 @@ export const DistributorRetailers: React.FC = () => {
                         {isPending ? (
                           <button
                             onClick={() => handleOpenReview(retailer)}
-                            className="h-8 px-3.5 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white font-semibold text-xs transition-colors cursor-pointer"
+                            className="h-8 px-3.5 rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-white font-semibold text-xs transition-colors cursor-pointer"
                             type="button"
                           >
                             Review
@@ -909,7 +912,7 @@ export const DistributorRetailers: React.FC = () => {
                         ) : retailer.status === "Active" ? (
                           <button
                             onClick={() => handleOpenActiveProfile(retailer)}
-                            className="h-8 px-3 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 text-xs font-semibold flex items-center gap-1 ml-auto cursor-pointer"
+                            className="h-8 px-3 rounded-lg text-ink-muted hover:text-primary hover:bg-surface-raised text-xs font-semibold flex items-center gap-1 ml-auto cursor-pointer"
                             type="button"
                           >
                             <span>Profile</span>
@@ -939,31 +942,31 @@ export const DistributorRetailers: React.FC = () => {
           onClick={() => setSelectedPendingRetailer(null)}
         >
           <div
-            className="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-200 border-l border-slate-200"
+            className="w-full max-w-lg h-full bg-surface shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-200 border-l border-border"
             onClick={e => e.stopPropagation()}
           >
             {/* Drawer Top Header */}
-            <div className="p-5 border-b border-slate-200 flex items-start justify-between gap-3 bg-slate-50/50">
+            <div className="p-5 border-b border-border flex items-start justify-between gap-3 bg-surface-raised/50">
               <div className="flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-900 border border-rose-200 text-xs font-bold">
                     Needs Approval
                   </span>
-                  <span className="text-xs text-slate-400 font-mono">
+                  <span className="text-xs text-ink-muted font-mono">
                     Applied on {selectedPendingRetailer.appliedDate || "24 Oct 2026"}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                <h2 className="text-xl font-bold text-ink tracking-tight">
                   {selectedPendingRetailer.name}
                 </h2>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-ink-muted">
                   Proprietor: {selectedPendingRetailer.ownerName} ·{" "}
                   <span className="font-mono">{selectedPendingRetailer.phone}</span>
                 </span>
               </div>
               <button
                 onClick={() => setSelectedPendingRetailer(null)}
-                className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center transition-colors cursor-pointer"
                 title="Close drawer"
                 type="button"
               >
@@ -990,30 +993,30 @@ export const DistributorRetailers: React.FC = () => {
 
                   {/* Side-by-Side Comparison */}
                   <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                    <div className="p-2.5 rounded-lg bg-white/90 border border-amber-200">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                    <div className="p-2.5 rounded-lg bg-surface/90 border border-amber-200">
+                      <span className="text-[10px] uppercase font-bold text-ink-muted block mb-1">
                         New Applicant
                       </span>
-                      <div className="font-bold text-slate-900">{selectedPendingRetailer.name}</div>
-                      <div className="text-slate-600">{selectedPendingRetailer.ownerName}</div>
-                      <div className="text-slate-500 font-mono mt-1">{selectedPendingRetailer.town}</div>
+                      <div className="font-bold text-ink">{selectedPendingRetailer.name}</div>
+                      <div className="text-ink-muted">{selectedPendingRetailer.ownerName}</div>
+                      <div className="text-ink-muted font-mono mt-1">{selectedPendingRetailer.town}</div>
                       <div className="text-amber-700 font-mono font-bold mt-1">
                         {selectedPendingRetailer.phone}
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-white/90 border border-amber-200">
+                    <div className="p-2.5 rounded-lg bg-surface/90 border border-amber-200">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                        <span className="text-[10px] uppercase font-bold text-ink-muted block">
                           Existing Partner
                         </span>
                         <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
                           {existingDuplicateRetailer?.code || "RET-0017"}
                         </span>
                       </div>
-                      <div className="font-bold text-slate-900">{existingDuplicateRetailer?.name}</div>
-                      <div className="text-slate-600">{existingDuplicateRetailer?.ownerName}</div>
-                      <div className="text-slate-500 font-mono mt-1">{existingDuplicateRetailer?.town}</div>
+                      <div className="font-bold text-ink">{existingDuplicateRetailer?.name}</div>
+                      <div className="text-ink-muted">{existingDuplicateRetailer?.ownerName}</div>
+                      <div className="text-ink-muted font-mono mt-1">{existingDuplicateRetailer?.town}</div>
                       <div className="text-amber-700 font-mono font-bold mt-1">
                         {existingDuplicateRetailer?.phone}
                       </div>
@@ -1033,26 +1036,26 @@ export const DistributorRetailers: React.FC = () => {
               )}
 
               {/* Shop & Location Details */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+              <div className="p-4 rounded-xl bg-surface-raised border border-border space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-ink-muted block">
                   Shop Information
                 </span>
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="text-slate-400 block">Town / Station</span>
-                    <span className="font-semibold text-slate-900">{selectedPendingRetailer.town}</span>
+                    <span className="text-ink-muted block">Town / Station</span>
+                    <span className="font-semibold text-ink">{selectedPendingRetailer.town}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">District</span>
-                    <span className="font-semibold text-slate-900">{selectedPendingRetailer.district}</span>
+                    <span className="text-ink-muted block">District</span>
+                    <span className="font-semibold text-ink">{selectedPendingRetailer.district}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">State</span>
-                    <span className="font-semibold text-slate-900">{selectedPendingRetailer.state}</span>
+                    <span className="text-ink-muted block">State</span>
+                    <span className="font-semibold text-ink">{selectedPendingRetailer.state}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">Contact Phone</span>
-                    <span className="font-mono font-semibold text-slate-900">{selectedPendingRetailer.phone}</span>
+                    <span className="text-ink-muted block">Contact Phone</span>
+                    <span className="font-mono font-semibold text-ink">{selectedPendingRetailer.phone}</span>
                   </div>
                 </div>
               </div>
@@ -1065,19 +1068,19 @@ export const DistributorRetailers: React.FC = () => {
                 );
 
                 return (
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="p-4 rounded-xl bg-surface-raised border border-border space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      <span className="text-xs font-bold uppercase tracking-wider text-ink-muted">
                         GSTIN Verification
                       </span>
-                      <span className="font-mono text-xs font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                      <span className="font-mono text-xs font-bold text-ink bg-surface px-2 py-0.5 rounded border border-border">
                         {selectedPendingRetailer.gstin}
                       </span>
                     </div>
 
                     <div className="space-y-2 text-xs">
                       {/* Check 1: Format */}
-                      <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-surface border border-border">
                         <div className="flex items-center gap-2">
                           <span
                             className={`material-symbols-outlined text-[18px] ${
@@ -1086,7 +1089,7 @@ export const DistributorRetailers: React.FC = () => {
                           >
                             {gstinCheck.formatValid ? "check_circle" : "cancel"}
                           </span>
-                          <span className="text-slate-700">15-digit Alphanumeric Format</span>
+                          <span className="text-ink">15-digit Alphanumeric Format</span>
                         </div>
                         <span
                           className={`font-semibold ${
@@ -1098,7 +1101,7 @@ export const DistributorRetailers: React.FC = () => {
                       </div>
 
                       {/* Check 2: State code matches town */}
-                      <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-surface border border-border">
                         <div className="flex items-center gap-2">
                           <span
                             className={`material-symbols-outlined text-[18px] ${
@@ -1107,7 +1110,7 @@ export const DistributorRetailers: React.FC = () => {
                           >
                             {gstinCheck.stateCodeValid ? "check_circle" : "warning"}
                           </span>
-                          <span className="text-slate-700">
+                          <span className="text-ink">
                             State Code vs Town ({gstinCheck.stateCode} · {selectedPendingRetailer.state})
                           </span>
                         </div>
@@ -1125,45 +1128,45 @@ export const DistributorRetailers: React.FC = () => {
               })()}
 
               {/* Submitted Documents Checklist */}
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+              <div className="p-4 rounded-xl bg-surface-raised border border-border space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-ink-muted block">
                   Documents Verified
                 </span>
                 <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-surface border border-border">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-blue-600 text-[18px]">description</span>
-                      <span className="text-slate-800 font-medium">GST REG-06 Certificate</span>
+                      <span className="material-symbols-outlined text-primary text-[18px]">description</span>
+                      <span className="text-ink font-medium">GST REG-06 Certificate</span>
                     </div>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                       Verified
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-surface border border-border">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-blue-600 text-[18px]">store</span>
-                      <span className="text-slate-800 font-medium">Shop &amp; Establishment License</span>
+                      <span className="material-symbols-outlined text-primary text-[18px]">store</span>
+                      <span className="text-ink font-medium">Shop &amp; Establishment License</span>
                     </div>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                       Valid
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-surface border border-border">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-blue-600 text-[18px]">badge</span>
-                      <span className="text-slate-800 font-medium">Proprietor PAN Card</span>
+                      <span className="material-symbols-outlined text-primary text-[18px]">badge</span>
+                      <span className="text-ink font-medium">Proprietor PAN Card</span>
                     </div>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                       Verified
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-surface border border-border">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-blue-600 text-[18px]">account_balance</span>
-                      <span className="text-slate-800 font-medium">Cancelled Cheque (Bank Account)</span>
+                      <span className="material-symbols-outlined text-primary text-[18px]">account_balance</span>
+                      <span className="text-ink font-medium">Cancelled Cheque (Bank Account)</span>
                     </div>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                       Valid
@@ -1173,10 +1176,10 @@ export const DistributorRetailers: React.FC = () => {
               </div>
 
               {/* Approval Configuration Form (Labelled "Proposed" per Requirement 3) */}
-              <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 space-y-4">
+              <div className="p-4 rounded-xl bg-primary/10/60 border border-primary/20 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-blue-600 text-[20px]">tune</span>
+                    <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
                     <span className="text-xs font-bold uppercase tracking-wider text-blue-900">
                       Account Configuration
                     </span>
@@ -1189,31 +1192,31 @@ export const DistributorRetailers: React.FC = () => {
                 <div className="space-y-3">
                   {/* Proposed Pricing Tier */}
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-ink flex items-center justify-between mb-1">
                       <span>Proposed Pricing Tier</span>
-                      <span className="text-[10px] text-blue-800 font-bold bg-blue-100 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] text-primary font-bold bg-blue-100 px-1.5 py-0.2 rounded">
                         Proposed
                       </span>
                     </label>
                     <select
                       value={proposedTier}
                       onChange={e => setProposedTier(e.target.value as PricingTier)}
-                      className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full h-10 px-3 bg-surface border border-border rounded-xl text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
                       <option value="Tier A++">Tier A++ (High Volume · Net -5% Rebate)</option>
                       <option value="Tier A+">Tier A+ (Regular Wholesale · Net -3% Rebate)</option>
                       <option value="Tier A">Tier A (Standard Retail · Baseline)</option>
                     </select>
-                    <p className="text-[11px] text-slate-500 mt-1">
+                    <p className="text-[11px] text-ink-muted mt-1">
                       * Internal to ARK Backoffice. Retailer only sees final net price on catalogue.
                     </p>
                   </div>
 
                   {/* Proposed Credit Limit */}
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-ink flex items-center justify-between mb-1">
                       <span>Proposed Credit Limit (₹)</span>
-                      <span className="text-[10px] text-blue-800 font-bold bg-blue-100 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] text-primary font-bold bg-blue-100 px-1.5 py-0.2 rounded">
                         Proposed
                       </span>
                     </label>
@@ -1221,7 +1224,7 @@ export const DistributorRetailers: React.FC = () => {
                       type="number"
                       value={proposedCreditLimit}
                       onChange={e => setProposedCreditLimit(e.target.value)}
-                      className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full h-10 px-3 bg-surface border border-border rounded-xl text-xs font-mono font-bold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                     <div className="flex items-center gap-1.5 mt-1.5">
                       {["50000", "100000", "250000", "500000"].map(amt => (
@@ -1229,7 +1232,7 @@ export const DistributorRetailers: React.FC = () => {
                           key={amt}
                           type="button"
                           onClick={() => setProposedCreditLimit(amt)}
-                          className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] font-mono text-slate-700 hover:bg-slate-100 cursor-pointer"
+                          className="px-2 py-0.5 rounded-md bg-surface border border-border text-[10px] font-mono text-ink hover:bg-surface-raised cursor-pointer"
                         >
                           ₹{(Number(amt) / 1000).toFixed(0)}k
                         </button>
@@ -1239,16 +1242,16 @@ export const DistributorRetailers: React.FC = () => {
 
                   {/* Proposed Credit Terms */}
                   <div>
-                    <label className="text-xs font-semibold text-slate-700 flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-ink flex items-center justify-between mb-1">
                       <span>Proposed Credit Terms</span>
-                      <span className="text-[10px] text-blue-800 font-bold bg-blue-100 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] text-primary font-bold bg-blue-100 px-1.5 py-0.2 rounded">
                         Proposed
                       </span>
                     </label>
                     <select
                       value={proposedCreditTerms}
                       onChange={e => setProposedCreditTerms(Number(e.target.value))}
-                      className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full h-10 px-3 bg-surface border border-border rounded-xl text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
                       <option value={15}>15 Days Net</option>
                       <option value={30}>30 Days Net (Standard)</option>
@@ -1261,11 +1264,11 @@ export const DistributorRetailers: React.FC = () => {
             </div>
 
             {/* Drawer Bottom Actions per Requirement 2 */}
-            <div className="p-4 border-t border-slate-200 bg-white space-y-2">
+            <div className="p-4 border-t border-border bg-surface space-y-2">
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleConfirmApproval}
-                  className="flex-1 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                  className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
                   type="button"
                 >
                   <span className="material-symbols-outlined text-[18px]">verified</span>
@@ -1281,7 +1284,7 @@ export const DistributorRetailers: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsRequestInfoModalOpen(true)}
-                className="w-full h-9 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full h-9 rounded-lg hover:bg-surface-raised text-ink-muted hover:text-ink text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[16px]">help_outline</span>
@@ -1301,14 +1304,14 @@ export const DistributorRetailers: React.FC = () => {
           onClick={() => setSelectedActiveRetailer(null)}
         >
           <div
-            className="w-full max-w-xl h-full bg-white shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-200 border-l border-slate-200"
+            className="w-full max-w-xl h-full bg-surface shadow-2xl flex flex-col z-50 animate-in slide-in-from-right duration-200 border-l border-border"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex items-start justify-between gap-3">
+            <div className="p-5 border-b border-border bg-surface-raised/50 flex items-start justify-between gap-3">
               <div className="flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-100 text-blue-800">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-100 text-primary">
                     {selectedActiveRetailer.code}
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
@@ -1320,36 +1323,50 @@ export const DistributorRetailers: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                <h2 className="text-xl font-bold text-ink tracking-tight">
                   {selectedActiveRetailer.name}
                 </h2>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-ink-muted">
                   {selectedActiveRetailer.ownerName} ·{" "}
                   <span className="font-mono">{selectedActiveRetailer.phone}</span> ·{" "}
                   <span className="font-mono">{selectedActiveRetailer.gstin}</span>
                 </span>
-                <span className="text-xs text-slate-400 mt-0.5">
+                <span className="text-xs text-ink-muted mt-0.5">
                   {formatTownDisplay(selectedActiveRetailer.town, selectedActiveRetailer.district, selectedActiveRetailer.state).primary} · {selectedActiveRetailer.state}
                 </span>
               </div>
-              <button
-                onClick={() => setSelectedActiveRetailer(null)}
-                className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
-                title="Close profile drawer"
-                type="button"
-              >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRetailer360Id(selectedActiveRetailer.id);
+                    setSelectedActiveRetailer(null);
+                    setDistributorNav("retailer-360");
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-primary/90 transition-all cursor-pointer"
+                >
+                  <span>Open 360 Profile</span>
+                  <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                </button>
+                <button
+                  onClick={() => setSelectedActiveRetailer(null)}
+                  className="w-8 h-8 rounded-lg hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center transition-colors cursor-pointer"
+                  title="Close profile drawer"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              </div>
             </div>
 
             {/* Profile Sub-tabs */}
-            <div className="flex items-center gap-2 px-5 border-b border-slate-200 bg-white pt-2">
+            <div className="flex items-center gap-2 px-5 border-b border-border bg-surface pt-2">
               <button
                 onClick={() => setActiveProfileTab("overview")}
                 className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeProfileTab === "overview"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-blue-600 text-primary"
+                    : "border-transparent text-ink-muted hover:text-ink"
                 }`}
               >
                 Ledger &amp; Terms
@@ -1358,8 +1375,8 @@ export const DistributorRetailers: React.FC = () => {
                 onClick={() => setActiveProfileTab("invoices")}
                 className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeProfileTab === "invoices"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-blue-600 text-primary"
+                    : "border-transparent text-ink-muted hover:text-ink"
                 }`}
               >
                 Invoices ({invoices.filter(i => i.retailerId === selectedActiveRetailer.id || i.retailerName === selectedActiveRetailer.name).length})
@@ -1368,8 +1385,8 @@ export const DistributorRetailers: React.FC = () => {
                 onClick={() => setActiveProfileTab("receipts")}
                 className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeProfileTab === "receipts"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-blue-600 text-primary"
+                    : "border-transparent text-ink-muted hover:text-ink"
                 }`}
               >
                 Receipts ({payments.filter(p => p.retailerId === selectedActiveRetailer.id || p.retailerName === selectedActiveRetailer.name).length})
@@ -1378,8 +1395,8 @@ export const DistributorRetailers: React.FC = () => {
                 onClick={() => setActiveProfileTab("orders")}
                 className={`pb-2.5 px-3 text-xs font-semibold border-b-2 transition-colors cursor-pointer ${
                   activeProfileTab === "orders"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-slate-500 hover:text-slate-800"
+                    ? "border-blue-600 text-primary"
+                    : "border-transparent text-ink-muted hover:text-ink"
                 }`}
               >
                 Orders ({orders.filter(o => o.retailerId === selectedActiveRetailer.id || o.retailerName === selectedActiveRetailer.name).length})
@@ -1399,9 +1416,9 @@ export const DistributorRetailers: React.FC = () => {
                     const usedPct = Math.min(100, Math.round((outstanding / limit) * 100));
 
                     return (
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                      <div className="p-4 rounded-xl bg-surface-raised border border-border space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                          <span className="text-xs font-bold uppercase tracking-wider text-ink-muted">
                             Credit Standing &amp; Meter
                           </span>
                           {overdue > 0 ? (
@@ -1416,35 +1433,35 @@ export const DistributorRetailers: React.FC = () => {
                         </div>
 
                         {/* Progress Bar */}
-                        <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-surface-raised h-2.5 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all ${
                               overdue > 0 || usedPct > 90
                                 ? "bg-rose-500"
                                 : usedPct > 70
                                 ? "bg-amber-500"
-                                : "bg-blue-600"
+                                : "bg-primary"
                             }`}
                             style={{ width: `${usedPct}%` }}
                           />
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 text-xs pt-1">
-                          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                            <span className="text-slate-400 block text-[11px]">Approved Limit</span>
-                            <span className="font-mono font-bold text-slate-900 text-sm">
+                          <div className="p-2.5 rounded-lg bg-surface border border-border">
+                            <span className="text-ink-muted block text-[11px]">Approved Limit</span>
+                            <span className="font-mono font-bold text-ink text-sm">
                               ₹{limit.toLocaleString("en-IN")}
                             </span>
                           </div>
-                          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                            <span className="text-slate-400 block text-[11px]">Current Outstanding</span>
-                            <span className="font-mono font-bold text-slate-900 text-sm">
+                          <div className="p-2.5 rounded-lg bg-surface border border-border">
+                            <span className="text-ink-muted block text-[11px]">Current Outstanding</span>
+                            <span className="font-mono font-bold text-ink text-sm">
                               ₹{outstanding.toLocaleString("en-IN")}
                             </span>
-                            <span className="text-[10px] text-slate-500">({usedPct}% utilized)</span>
+                            <span className="text-[10px] text-ink-muted">({usedPct}% utilized)</span>
                           </div>
-                          <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                            <span className="text-slate-400 block text-[11px]">Available Credit</span>
+                          <div className="p-2.5 rounded-lg bg-surface border border-border">
+                            <span className="text-ink-muted block text-[11px]">Available Credit</span>
                             <span className="font-mono font-bold text-emerald-700 text-sm">
                               ₹{available.toLocaleString("en-IN")}
                             </span>
@@ -1466,32 +1483,32 @@ export const DistributorRetailers: React.FC = () => {
                     const d60_plus = targetLedger?.d60_plus ?? 0;
 
                     return (
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                      <div className="p-4 rounded-xl bg-surface-raised border border-border space-y-3">
+                        <span className="text-xs font-bold uppercase tracking-wider text-ink-muted block">
                           Receivables Ageing Breakdown
                         </span>
                         <div className="grid grid-cols-4 gap-2 text-xs">
-                          <div className="p-2 rounded-lg bg-white border border-slate-200 text-center">
-                            <span className="text-[10px] text-slate-400 block">Current (Not Due)</span>
-                            <span className="font-mono font-bold text-slate-900 mt-0.5 block">
+                          <div className="p-2 rounded-lg bg-surface border border-border text-center">
+                            <span className="text-[10px] text-ink-muted block">Current (Not Due)</span>
+                            <span className="font-mono font-bold text-ink mt-0.5 block">
                               ₹{Math.max(0, notYetDue).toLocaleString("en-IN")}
                             </span>
                           </div>
-                          <div className="p-2 rounded-lg bg-white border border-slate-200 text-center">
-                            <span className="text-[10px] text-slate-400 block">1–30 Days Overdue</span>
-                            <span className={`font-mono font-bold mt-0.5 block ${d1_30 > 0 ? "text-amber-700" : "text-slate-400"}`}>
+                          <div className="p-2 rounded-lg bg-surface border border-border text-center">
+                            <span className="text-[10px] text-ink-muted block">1–30 Days Overdue</span>
+                            <span className={`font-mono font-bold mt-0.5 block ${d1_30 > 0 ? "text-amber-700" : "text-ink-muted"}`}>
                               {d1_30 > 0 ? `₹${d1_30.toLocaleString("en-IN")}` : "—"}
                             </span>
                           </div>
-                          <div className="p-2 rounded-lg bg-white border border-slate-200 text-center">
-                            <span className="text-[10px] text-slate-400 block">31–60 Days Overdue</span>
-                            <span className={`font-mono font-bold mt-0.5 block ${d31_60 > 0 ? "text-rose-600" : "text-slate-400"}`}>
+                          <div className="p-2 rounded-lg bg-surface border border-border text-center">
+                            <span className="text-[10px] text-ink-muted block">31–60 Days Overdue</span>
+                            <span className={`font-mono font-bold mt-0.5 block ${d31_60 > 0 ? "text-rose-600" : "text-ink-muted"}`}>
                               {d31_60 > 0 ? `₹${d31_60.toLocaleString("en-IN")}` : "—"}
                             </span>
                           </div>
-                          <div className="p-2 rounded-lg bg-white border border-slate-200 text-center">
-                            <span className="text-[10px] text-slate-400 block">60+ Days Overdue</span>
-                            <span className={`font-mono font-bold mt-0.5 block ${d60_plus > 0 ? "text-rose-700 font-black" : "text-slate-400"}`}>
+                          <div className="p-2 rounded-lg bg-surface border border-border text-center">
+                            <span className="text-[10px] text-ink-muted block">60+ Days Overdue</span>
+                            <span className={`font-mono font-bold mt-0.5 block ${d60_plus > 0 ? "text-rose-700 font-black" : "text-ink-muted"}`}>
                               {d60_plus > 0 ? `₹${d60_plus.toLocaleString("en-IN")}` : "—"}
                             </span>
                           </div>
@@ -1501,26 +1518,26 @@ export const DistributorRetailers: React.FC = () => {
                   })()}
 
                   {/* Edit Pricing Tier and Limit Form */}
-                  <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs space-y-4">
+                  <div className="p-4 rounded-xl bg-surface border border-border shadow-soft-sm space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-blue-600 text-[20px]">edit_note</span>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                        <span className="material-symbols-outlined text-primary text-[20px]">edit_note</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-ink">
                           Edit Pricing Tier &amp; Credit Terms
                         </span>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-mono">Backoffice Only</span>
+                      <span className="text-[10px] text-ink-muted font-mono">Backoffice Only</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-semibold text-slate-700 block mb-1">
+                        <label className="text-xs font-semibold text-ink block mb-1">
                           Pricing Tier
                         </label>
                         <select
                           value={editTier}
                           onChange={e => setEditTier(e.target.value as PricingTier)}
-                          className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                         >
                           <option value="Tier A++">Tier A++ (Net -5% Rebate)</option>
                           <option value="Tier A+">Tier A+ (Net -3% Rebate)</option>
@@ -1529,13 +1546,13 @@ export const DistributorRetailers: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="text-xs font-semibold text-slate-700 block mb-1">
+                        <label className="text-xs font-semibold text-ink block mb-1">
                           Credit Terms
                         </label>
                         <select
                           value={editCreditTerms}
                           onChange={e => setEditCreditTerms(Number(e.target.value))}
-                          className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                         >
                           <option value={15}>15 Days Net</option>
                           <option value={30}>30 Days Net</option>
@@ -1545,14 +1562,14 @@ export const DistributorRetailers: React.FC = () => {
                       </div>
 
                       <div className="col-span-2">
-                        <label className="text-xs font-semibold text-slate-700 block mb-1">
+                        <label className="text-xs font-semibold text-ink block mb-1">
                           Credit Limit (₹)
                         </label>
                         <input
                           type="number"
                           value={editCreditLimit}
                           onChange={e => setEditCreditLimit(e.target.value)}
-                          className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl text-xs font-mono font-bold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                       </div>
                     </div>
@@ -1560,7 +1577,7 @@ export const DistributorRetailers: React.FC = () => {
                     <div className="flex justify-end pt-2">
                       <button
                         onClick={handleSaveActiveProfile}
-                        className="h-9 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors cursor-pointer"
+                        className="h-9 px-4 rounded-xl bg-surface-raised hover:bg-surface text-white font-semibold text-xs transition-colors cursor-pointer"
                         type="button"
                       >
                         Save Account Settings
@@ -1574,7 +1591,7 @@ export const DistributorRetailers: React.FC = () => {
               {activeProfileTab === "invoices" && (
                 <div className="space-y-3">
                   {invoices.filter(i => i.retailerId === selectedActiveRetailer.id || i.retailerName === selectedActiveRetailer.name).length === 0 ? (
-                    <div className="py-12 text-center text-slate-400 text-xs">
+                    <div className="py-12 text-center text-ink-muted text-xs">
                       No invoices issued for this retailer yet.
                     </div>
                   ) : (
@@ -1584,11 +1601,11 @@ export const DistributorRetailers: React.FC = () => {
                         <div
                           key={inv.id}
                           onClick={() => setViewingInvoice(inv)}
-                          className="p-3.5 rounded-xl bg-slate-50 hover:bg-blue-50/50 border border-slate-200 transition-colors cursor-pointer flex items-center justify-between"
+                          className="p-3.5 rounded-xl bg-surface-raised hover:bg-primary/10/50 border border-border transition-colors cursor-pointer flex items-center justify-between"
                         >
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-xs font-bold text-blue-700">
+                              <span className="font-mono text-xs font-bold text-primary">
                                 {inv.invoiceNumber}
                               </span>
                               <span
@@ -1603,12 +1620,12 @@ export const DistributorRetailers: React.FC = () => {
                                 {inv.status}
                               </span>
                             </div>
-                            <span className="text-xs text-slate-500 mt-0.5">
+                            <span className="text-xs text-ink-muted mt-0.5">
                               Billed: {inv.billedDate} · Due: {inv.dueDate}
                             </span>
                           </div>
                           <div className="text-right">
-                            <div className="font-mono font-bold text-slate-900 text-xs">
+                            <div className="font-mono font-bold text-ink text-xs">
                               ₹{inv.grandTotal.toLocaleString("en-IN")}
                             </div>
                             {inv.balanceDue > 0 && (
@@ -1627,7 +1644,7 @@ export const DistributorRetailers: React.FC = () => {
               {activeProfileTab === "receipts" && (
                 <div className="space-y-3">
                   {payments.filter(p => p.retailerId === selectedActiveRetailer.id || p.retailerName === selectedActiveRetailer.name).length === 0 ? (
-                    <div className="py-12 text-center text-slate-400 text-xs">
+                    <div className="py-12 text-center text-ink-muted text-xs">
                       No payment receipts on record for this retailer.
                     </div>
                   ) : (
@@ -1636,16 +1653,16 @@ export const DistributorRetailers: React.FC = () => {
                       .map(rec => (
                         <div
                           key={rec.id}
-                          className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs"
+                          className="p-3.5 rounded-xl bg-surface-raised border border-border flex items-center justify-between text-xs"
                         >
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-slate-900">{rec.receiptNumber}</span>
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700">
+                              <span className="font-mono font-bold text-ink">{rec.receiptNumber}</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-raised text-ink">
                                 {rec.mode}
                               </span>
                             </div>
-                            <span className="text-slate-500 mt-0.5 font-mono">
+                            <span className="text-ink-muted mt-0.5 font-mono">
                               {rec.date} · Ref: {rec.referenceId}
                             </span>
                           </div>
@@ -1662,7 +1679,7 @@ export const DistributorRetailers: React.FC = () => {
               {activeProfileTab === "orders" && (
                 <div className="space-y-3">
                   {orders.filter(o => o.retailerId === selectedActiveRetailer.id || o.retailerName === selectedActiveRetailer.name).length === 0 ? (
-                    <div className="py-12 text-center text-slate-400 text-xs">
+                    <div className="py-12 text-center text-ink-muted text-xs">
                       No purchase orders recorded for this retailer.
                     </div>
                   ) : (
@@ -1671,24 +1688,24 @@ export const DistributorRetailers: React.FC = () => {
                       .map(order => (
                         <div
                           key={order.id}
-                          className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs"
+                          className="p-3.5 rounded-xl bg-surface-raised border border-border flex items-center justify-between text-xs"
                         >
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-blue-700">{order.orderNumber}</span>
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-800">
+                              <span className="font-mono font-bold text-primary">{order.orderNumber}</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-raised text-ink">
                                 {order.status}
                               </span>
                             </div>
-                            <span className="text-slate-500 mt-0.5">
+                            <span className="text-ink-muted mt-0.5">
                               {order.date} · {order.totalBoxes} boxes ({order.totalPieces} pcs)
                             </span>
                           </div>
                           <div className="text-right">
-                            <div className="font-mono font-bold text-slate-900 text-xs">
+                            <div className="font-mono font-bold text-ink text-xs">
                               ₹{order.grandTotal.toLocaleString("en-IN")}
                             </div>
-                            <span className="text-[10px] text-slate-400">incl. GST</span>
+                            <span className="text-[10px] text-ink-muted">incl. GST</span>
                           </div>
                         </div>
                       ))
@@ -1698,10 +1715,10 @@ export const DistributorRetailers: React.FC = () => {
             </div>
 
             {/* Sticky Drawer Footer */}
-            <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end">
+            <div className="p-4 border-t border-border bg-surface-raised flex items-center justify-end">
               <button
                 onClick={() => setSelectedActiveRetailer(null)}
-                className="h-10 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors cursor-pointer"
+                className="h-10 px-5 rounded-xl bg-surface-raised hover:bg-surface text-white font-semibold text-xs transition-colors cursor-pointer"
                 type="button"
               >
                 Done
@@ -1716,29 +1733,29 @@ export const DistributorRetailers: React.FC = () => {
       {/* ==================================================================== */}
       {isRejectModalOpen && selectedPendingRetailer && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-5 border border-slate-200">
+          <div className="bg-surface rounded-2xl shadow-xl max-w-md w-full p-6 space-y-5 border border-border">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-700 flex-shrink-0">
                 <span className="material-symbols-outlined text-[20px]">block</span>
               </div>
               <div className="flex flex-col">
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-ink">
                   Reject Application for {selectedPendingRetailer.name}?
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-ink-muted mt-0.5">
                   The applicant will be marked as Deactivated and notified with the selected rationale.
                 </p>
               </div>
             </div>
 
             <div className="space-y-3">
-              <label className="text-xs font-semibold text-slate-700 block">
+              <label className="text-xs font-semibold text-ink block">
                 Rejection Reason (Required)
               </label>
               <select
                 value={rejectReason}
                 onChange={e => setRejectReason(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-rose-500/20"
               >
                 <option value="Unverifiable business address">Unverifiable business address</option>
                 <option value="Duplicate phone or applicant record">Duplicate phone or applicant record</option>
@@ -1754,7 +1771,7 @@ export const DistributorRetailers: React.FC = () => {
                   onChange={e => setCustomRejectReason(e.target.value)}
                   placeholder="State the reason for rejecting this retailer registration..."
                   rows={3}
-                  className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 resize-none"
+                  className="w-full p-3 bg-surface-raised border border-border rounded-xl text-xs text-ink focus:outline-none focus:ring-2 focus:ring-rose-500/20 resize-none"
                 />
               )}
             </div>
@@ -1762,7 +1779,7 @@ export const DistributorRetailers: React.FC = () => {
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setIsRejectModalOpen(false)}
-                className="h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs transition-colors cursor-pointer"
                 type="button"
               >
                 Cancel
@@ -1784,44 +1801,44 @@ export const DistributorRetailers: React.FC = () => {
       {/* ==================================================================== */}
       {isRequestInfoModalOpen && selectedPendingRetailer && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-5 border border-slate-200">
+          <div className="bg-surface rounded-2xl shadow-xl max-w-md w-full p-6 space-y-5 border border-border">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-primary flex-shrink-0">
                 <span className="material-symbols-outlined text-[20px]">send_to_mobile</span>
               </div>
               <div className="flex flex-col">
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-ink">
                   Request Information
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-ink-muted mt-0.5">
                   Send document request to {selectedPendingRetailer.ownerName} ({selectedPendingRetailer.phone}).
                 </p>
               </div>
             </div>
 
             <div className="space-y-3">
-              <label className="text-xs font-semibold text-slate-700 block">
+              <label className="text-xs font-semibold text-ink block">
                 Required Clarification / Document
               </label>
               <textarea
                 value={infoRequestDetails}
                 onChange={e => setInfoRequestDetails(e.target.value)}
                 rows={3}
-                className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
+                className="w-full p-3 bg-surface-raised border border-border rounded-xl text-xs text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
               />
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setIsRequestInfoModalOpen(false)}
-                className="h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs transition-colors cursor-pointer"
                 type="button"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendInfoRequest}
-                className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                className="h-10 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[16px]">send</span>
@@ -1837,12 +1854,12 @@ export const DistributorRetailers: React.FC = () => {
       {/* ==================================================================== */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 border border-slate-200">
+          <div className="bg-surface rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 border border-border">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">Add New Retail Partner</h3>
+              <h3 className="text-lg font-bold text-ink">Add New Retail Partner</h3>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-lg hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -1851,49 +1868,49 @@ export const DistributorRetailers: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="col-span-2 space-y-1">
-                <label className="font-semibold text-slate-700">Shop Name *</label>
+                <label className="font-semibold text-ink">Shop Name *</label>
                 <input
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl"
                   placeholder="e.g. Mahadev Garments"
                   type="text"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-700">Proprietor Name *</label>
+                <label className="font-semibold text-ink">Proprietor Name *</label>
                 <input
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl"
                   placeholder="e.g. M. Suresh"
                   type="text"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-700">Phone Number *</label>
+                <label className="font-semibold text-ink">Phone Number *</label>
                 <input
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl font-mono"
+                  className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl font-mono"
                   placeholder="+91 9XXXX XXXXX"
                   type="text"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-700">Town / Village *</label>
+                <label className="font-semibold text-ink">Town / Village *</label>
                 <input
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl"
                   placeholder="e.g. Sircilla"
                   type="text"
                 />
               </div>
               <div className="space-y-1">
-                <label className="font-semibold text-slate-700">District *</label>
+                <label className="font-semibold text-ink">District *</label>
                 <input
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl"
                   placeholder="e.g. Rajanna Sircilla"
                   type="text"
                 />
               </div>
               <div className="col-span-2 space-y-1">
-                <label className="font-semibold text-slate-700">GSTIN *</label>
+                <label className="font-semibold text-ink">GSTIN *</label>
                 <input
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl font-mono uppercase"
+                  className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl font-mono uppercase"
                   placeholder="36XXXXX0000X1ZX"
                   type="text"
                 />
@@ -1903,7 +1920,7 @@ export const DistributorRetailers: React.FC = () => {
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs transition-colors cursor-pointer"
                 type="button"
               >
                 Cancel
@@ -1913,7 +1930,7 @@ export const DistributorRetailers: React.FC = () => {
                   showToast("New retailer application submitted for onboarding.");
                   setIsAddModalOpen(false);
                 }}
-                className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors cursor-pointer"
+                className="h-10 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs transition-colors cursor-pointer"
                 type="button"
               >
                 Save Application

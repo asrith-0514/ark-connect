@@ -131,6 +131,8 @@ export interface InternalRetailerProfile extends RetailerPublicProfile {
 
 export type PricingTier = "Tier A++" | "Tier A+" | "Tier A";
 
+export type VoiceLanguage = "te" | "en" | "hi" | "ta";
+
 export interface Retailer {
   id: string;
   code: string;
@@ -149,6 +151,15 @@ export interface Retailer {
   appliedDate?: string;
   lastOrderDate?: string;
   flags?: string;
+
+  // Voice Calling & Notification Preferences
+  preferredLanguage?: VoiceLanguage;
+  phoneConsent?: boolean;
+  whatsappConsent?: boolean;
+  doNotCall?: boolean;
+  quietHours?: { start: string; end: string };
+  preferredContactPerson?: string;
+  preferredCallWindow?: string;
 
   // Derived / computed properties (default 0)
   outstanding: number;
@@ -220,6 +231,8 @@ export interface Brand {
   accentColor: string;
   image: string;
   badge: string;
+  colorHex?: string;
+  logo?: string;
 }
 
 export interface Supplier {
@@ -265,6 +278,20 @@ export interface PurchaseBill {
   notes?: string;
 }
 
+export interface CatalogueShade {
+  name: string;
+  code?: string;
+  hex?: string;
+}
+
+export interface CatalogueVariant {
+  id: string;
+  fit?: string;
+  shade: CatalogueShade;
+  size: string;
+  stockBoxes: number;
+}
+
 export interface TierPricingArticle {
   id: string;
   artNumber: string;
@@ -280,4 +307,195 @@ export interface TierPricingArticle {
   hubStockBoxes: number;
   isActive: boolean;
   hsnCode: string;
+
+  // Real product structure fields
+  pcsPerBox?: number;
+  boxesPerCase?: number;
+  pricePending?: boolean;
+  styleName?: string;
+  brandId?: string;
+  availableFits?: string[];
+  availableShades?: CatalogueShade[];
+  shades?: { name: string; hex?: string; code?: string }[];
+  availableSizes?: string[];
+  variants?: CatalogueVariant[];
 }
+
+// ============================================================================
+// Retailer Relationship Management (CRM) Types (Distributor-only)
+// ============================================================================
+
+export type CommunicationChannel = "call" | "whatsapp" | "visit" | "note" | "ai-call";
+export type CommunicationDirection = "inbound" | "outbound";
+
+export interface CommunicationLogEntry {
+  id: string;
+  retailerId: string;
+  channel: CommunicationChannel;
+  direction: CommunicationDirection;
+  summary: string;
+  createdBy: string;
+  createdAt: string; // ISO date string e.g. "2026-11-10T14:30:00Z"
+}
+
+export type ComplaintType = "shortage" | "defect" | "pricing" | "delivery" | "other";
+export type ComplaintStatus = "open" | "in-progress" | "resolved";
+
+export interface Complaint {
+  id: string;
+  retailerId: string;
+  type: ComplaintType;
+  linkedOrderId?: string;
+  linkedInvoiceId?: string;
+  status: ComplaintStatus;
+  assignee: string;
+  notes?: string;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export type FollowUpType = "payment" | "order" | "complaint" | "general";
+export type FollowUpStatus = "open" | "done";
+
+export interface FollowUp {
+  id: string;
+  retailerId: string;
+  type: FollowUpType;
+  dueDate: string; // YYYY-MM-DD
+  assignedTo: string; // Employee name
+  status: FollowUpStatus;
+  notes: string;
+  createdAt: string;
+  promisedAmount?: number;
+}
+
+export type RetailerRequestType = "credit_limit" | "address_change" | "new_product";
+export type RetailerRequestStatus = "pending" | "approved" | "rejected";
+
+export interface RetailerRequestPayload {
+  requestedCreditLimit?: number;
+  reason?: string;
+  address?: string;
+  town?: string;
+  district?: string;
+  state?: string;
+  pincode?: string;
+  productName?: string;
+  brand?: string;
+  category?: string;
+  notes?: string;
+  [key: string]: any;
+}
+
+export interface RetailerRequest {
+  id: string;
+  retailerId: string;
+  type: RetailerRequestType;
+  status: RetailerRequestStatus;
+  payload: RetailerRequestPayload;
+  createdAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+}
+
+export interface Employee {
+  id: string;
+  name: string;
+  role: "owner" | "accountant" | "sales" | "manager" | "godown";
+  phone?: string;
+  email?: string;
+}
+
+export type RetailerSegment = "Champions" | "Regular" | "New" | "At risk" | "Dormant";
+
+export interface SegmentationConfig {
+  frequencyDays: number; // e.g. 90
+  frequencyThreshold: number; // e.g. 4 orders in frequencyDays
+  valueThreshold: number; // e.g. ₹3,00,000 in 12 months
+  dormantDays: number; // e.g. 60 days without order
+  onTimePaymentThresholdPct: number; // e.g. 75%
+  newRetailerDays: number; // e.g. 60 days
+}
+
+export interface RetailerSegmentMetrics {
+  retailerId: string;
+  segment: RetailerSegment;
+  ordersLast90d: number;
+  totalSpend12m: number;
+  boxes12m: number;
+  lastOrderDate?: string;
+  daysSinceLastOrder: number;
+  preferredBrand: string;
+  preferredBrandSharePct: number;
+  onTimePaymentPct: number;
+  avgDaysToPay: number;
+  isOverdue: boolean;
+  overdueAmount: number;
+}
+
+// ============================================================================
+// VOICE CALLING AGENT (TELEPHONY ARCHITECTURE)
+// ============================================================================
+
+export type CallTaskReason =
+  | "payment_due"
+  | "overdue"
+  | "order_followup"
+  | "dispatch_update";
+
+export type CallTaskStatus =
+  | "proposed"
+  | "approved"
+  | "in_progress"
+  | "completed"
+  | "failed"
+  | "cancelled";
+
+export type CallOutcomeStatus =
+  | "connected"
+  | "busy"
+  | "unreachable"
+  | "promised_to_pay"
+  | "dispute_raised"
+  | "callback_requested"
+  | "wrong_number";
+
+export interface CallTranscriptMessage {
+  speaker: "agent" | "retailer";
+  text: string;
+  timestamp: string;
+}
+
+export interface CallTaskOutcome {
+  status: CallOutcomeStatus;
+  notes?: string;
+  promisedPaymentDate?: string; // YYYY-MM-DD
+  promisedAmount?: number;
+  sentiment?: "positive" | "neutral" | "negative";
+  durationSeconds?: number;
+}
+
+export interface CallTask {
+  id: string;
+  retailerId: string;
+  retailerName: string;
+  phone: string;
+  reason: CallTaskReason;
+  referenceType: "invoice" | "order";
+  referenceId: string; // e.g. "INV-0094" or "ARK-8841"
+  amount?: number;
+  dueDate?: string;
+  language: VoiceLanguage;
+  preferredTimeWindow: string; // e.g. "11:00 AM - 01:00 PM"
+  status: CallTaskStatus;
+  scheduledDate: string; // ISO date YYYY-MM-DD
+  createdAt: string;
+  approvedAt?: string;
+  completedAt?: string;
+  outcome?: CallTaskOutcome;
+  transcript?: CallTranscriptMessage[];
+  retryCount: number;
+  maxRetries: number;
+  promisedPaymentDate?: string;
+}
+

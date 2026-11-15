@@ -232,26 +232,26 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
   }
 
   return (
-    <div className="w-full flex flex-col gap-5 pb-16">
+    <div className="w-full flex flex-col gap-5 pb-16 text-ink">
       {/* Top Action Breadcrumb Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-1">
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+          <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
             <button
               onClick={() => {
                 if (onClose) onClose();
                 else setIsReceiptModalOpen(false);
                 setReceiptPrefillRetailerId(null);
               }}
-              className="hover:text-blue-600 transition-colors cursor-pointer"
+              className="hover:text-primary transition-colors cursor-pointer"
             >
               Finance
             </button>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-slate-900 font-bold">Record Receipt</span>
+            <span className="text-ink font-bold">Record Receipt</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Record Receipt</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="text-2xl font-bold text-ink tracking-tight font-page-title">Record Receipt</h1>
+          <p className="text-xs text-ink-muted">
             Post verified customer payment vouchers against open wholesale invoices.
           </p>
         </div>
@@ -262,7 +262,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
             <div className="flex items-center gap-2">
               <button
                 onClick={handleLoadDemoValues}
-                className="h-10 px-3.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="h-10 px-3.5 rounded-md bg-accent/10 hover:bg-accent/20 text-accent border border-accent/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 type="button"
                 title="Populate demo values for Sri Laxmi Narasimha Textiles (RET-0001, ₹40k)"
               >
@@ -272,7 +272,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
               <button
                 onClick={() => setSimulateError(!simulateError)}
-                className="h-10 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                className="h-10 px-3 rounded-md bg-surface-raised hover:bg-surface text-ink text-xs font-semibold flex items-center gap-1 transition-colors border border-border cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[16px]">
@@ -289,7 +289,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
               else setIsReceiptModalOpen(false);
               setReceiptPrefillRetailerId(null);
             }}
-            className="h-10 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+            className="h-10 px-4 rounded-md bg-surface border border-border hover:bg-surface-raised text-ink font-semibold text-xs transition-colors cursor-pointer shadow-soft-sm"
             type="button"
           >
             Cancel
@@ -298,10 +298,10 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
           <button
             onClick={() => setShowConfirmModal(true)}
             disabled={isOverApplied || hasInvoiceOverAllocation || isFutureDate || amountReceived <= 0}
-            className={`h-10 px-5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer ${
+            className={`h-10 px-5 rounded-md font-bold text-xs flex items-center gap-1.5 shadow-soft-sm transition-all cursor-pointer ${
               isOverApplied || hasInvoiceOverAllocation || isFutureDate || amountReceived <= 0
-                ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
-                : "bg-blue-600 hover:bg-blue-700 text-white active:scale-98"
+                ? "bg-surface-raised text-ink-muted opacity-50 cursor-not-allowed shadow-none"
+                : "bg-primary hover:bg-primary/90 text-primary-foreground active:scale-98"
             }`}
             type="button"
           >
@@ -313,8 +313,8 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
       {/* Validation Alert Banners (Requirement 7) */}
       {isFutureDate && (
-        <div className="flex items-center gap-2 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-semibold">
-          <span className="material-symbols-outlined text-rose-600 text-[18px]">error</span>
+        <div className="flex items-center gap-2 p-3.5 rounded-md bg-danger/10 border border-danger/20 text-danger text-xs font-semibold">
+          <span className="material-symbols-outlined text-danger text-[18px]">error</span>
           <span>
             Receipt date cannot be in the future. (Current application clock:{" "}
             {currentDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })})
@@ -323,8 +323,8 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
       )}
 
       {isOverApplied && (
-        <div className="flex items-center gap-2 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-semibold">
-          <span className="material-symbols-outlined text-rose-600 text-[18px]">error</span>
+        <div className="flex items-center gap-2 p-3.5 rounded-md bg-danger/10 border border-danger/20 text-danger text-xs font-semibold">
+          <span className="material-symbols-outlined text-danger text-[18px]">error</span>
           <span>
             Total allocated amount ({formatINR(effectiveApplied)}) exceeds amount received ({formatINR(amountReceived)}). Reduce allocated amounts.
           </span>
@@ -332,8 +332,8 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
       )}
 
       {hasInvoiceOverAllocation && (
-        <div className="flex items-center gap-2 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">
-          <span className="material-symbols-outlined text-amber-700 text-[18px]">warning</span>
+        <div className="flex items-center gap-2 p-3.5 rounded-md bg-warning/10 border border-warning/20 text-warning text-xs font-semibold">
+          <span className="material-symbols-outlined text-warning text-[18px]">warning</span>
           <span>
             One or more invoices have applied amounts exceeding their balance due. Cap allocation to the invoice balance.
           </span>
@@ -342,14 +342,14 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
       {/* Advance Notice (Requirement 7) */}
       {amountReceived > 0 && advanceAmount > 0 && !isOverApplied && !hasInvoiceOverAllocation && (
-        <div className="flex items-center justify-between p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold">
+        <div className="flex items-center justify-between p-3.5 rounded-md bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-blue-600 text-[18px]">account_balance_wallet</span>
+            <span className="material-symbols-outlined text-primary text-[18px]">account_balance_wallet</span>
             <span>
               Unapplied Advance: {formatINR(advanceAmount)} will remain as advance credit on {activeRetailer.name}&apos;s ledger.
             </span>
           </div>
-          <span className="font-mono text-[11px] font-bold bg-white px-2 py-0.5 rounded border border-blue-200">
+          <span className="font-mono num text-[11px] font-bold bg-surface px-2 py-0.5 rounded border border-primary/20">
             Applied: {formatINR(effectiveApplied)} of {formatINR(amountReceived)}
           </span>
         </div>
@@ -360,28 +360,28 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
         {/* LEFT COLUMN: Receipt Entry & Invoices Allocation */}
         <div className="lg:col-span-8 flex flex-col gap-5">
           {/* CARD 1: Receipt Details */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                <span className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
                   <span className="material-symbols-outlined text-[18px]">receipt</span>
                 </span>
-                <h2 className="text-sm font-bold text-slate-900">Receipt Details</h2>
+                <h2 className="text-sm font-bold text-ink">Receipt Details</h2>
               </div>
-              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-mono">
+              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-surface-raised text-ink-muted font-mono num border border-border">
                 Direct Voucher
               </span>
             </div>
 
             {/* Retailer Selector Field */}
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">
+              <label className="text-xs font-semibold text-ink block mb-1">
                 Retail Partner *
               </label>
               <select
                 value={selectedRetailerId}
                 onChange={e => setSelectedRetailerId(e.target.value)}
-                className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full h-10 px-3 bg-surface-raised border border-border rounded-md text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 {retailers
                   .filter(r => r.status === "Active")
@@ -398,19 +398,19 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
               {/* Amount Input with Live formatINR Preview (Requirement 5) */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-slate-700">Amount Received (₹) *</label>
+                  <label className="text-xs font-semibold text-ink">Amount Received (₹) *</label>
                   {amountReceived > 0 && (
-                    <span className="font-mono text-xs font-bold text-blue-700">
+                    <span className="font-mono num text-xs font-bold text-primary">
                       {formatINR(amountReceived)}
                     </span>
                   )}
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono font-bold text-slate-400 text-sm">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono num font-bold text-ink-muted text-sm">
                     ₹
                   </span>
                   <input
-                    className="w-full h-10 pl-8 pr-3 rounded-xl bg-slate-50 border border-slate-200 font-mono font-bold text-sm text-slate-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full h-10 pl-8 pr-3 rounded-md bg-surface-raised border border-border font-mono num font-bold text-sm text-ink focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20"
                     type="number"
                     placeholder="Enter amount..."
                     value={amountReceived === 0 ? "" : amountReceived}
@@ -421,19 +421,19 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
               {/* Received On Date */}
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">Received On *</label>
+                <label className="text-xs font-semibold text-ink block mb-1">Received On *</label>
                 <div className="relative flex items-center">
-                  <span className="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">
+                  <span className="material-symbols-outlined absolute left-3 text-ink-muted text-[18px]">
                     calendar_today
                   </span>
                   <input
-                    className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs text-slate-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full h-10 pl-9 pr-3 rounded-md bg-surface-raised border border-border font-mono num text-xs text-ink focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20"
                     type="text"
                     value={receivedDate}
                     onChange={e => setReceivedDate(e.target.value)}
                   />
                 </div>
-                <span className="text-[10px] text-slate-400 mt-1 block">
+                <span className="text-[10px] text-ink-muted mt-1 block">
                   App clock: {currentDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                 </span>
               </div>
@@ -441,16 +441,16 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
             {/* Payment Method */}
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Payment Method</label>
-              <div className="grid grid-cols-4 p-1 rounded-xl bg-slate-100 gap-1 text-xs">
+              <label className="text-xs font-semibold text-ink block mb-1">Payment Method</label>
+              <div className="grid grid-cols-4 p-1 rounded-md bg-surface-raised border border-border gap-1 text-xs">
                 {(["UPI", "Bank transfer", "Cash", "Cheque"] as const).map(method => (
                   <button
                     key={method}
                     onClick={() => setPaymentMethod(method)}
-                    className={`h-9 rounded-lg font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                    className={`h-9 rounded-sm font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer ${
                       paymentMethod === method
-                        ? "bg-white text-blue-700 font-bold shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                        ? "bg-surface text-primary font-bold shadow-soft-sm border border-border"
+                        : "text-ink-muted hover:text-ink"
                     }`}
                     type="button"
                   >
@@ -463,11 +463,11 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
             {/* Reference Number & Staff Notes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                <label className="text-xs font-semibold text-ink block mb-1">
                   Reference / UTR Number
                 </label>
                 <input
-                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs text-slate-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full h-10 px-3 rounded-md bg-surface-raised border border-border font-mono num text-xs text-ink focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20"
                   placeholder="e.g. UPI-512208 or NEFT ref"
                   type="text"
                   value={referenceNumber}
@@ -476,11 +476,11 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                <label className="text-xs font-semibold text-ink block mb-1">
                   Staff Notes (Optional)
                 </label>
                 <input
-                  className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full h-10 px-3 rounded-md bg-surface-raised border border-border text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20"
                   placeholder="e.g. Paid via PhonePe QR at counter"
                   type="text"
                   value={staffNotes}
@@ -491,11 +491,11 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
           </div>
 
           {/* CARD 2: Apply to Open Invoices (Requirement 6: Table nowrap & wider columns) */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
               <div>
-                <h2 className="text-sm font-bold text-slate-900">Apply to Open Invoices</h2>
-                <p className="text-xs text-slate-500">
+                <h2 className="text-sm font-bold text-ink">Apply to Open Invoices</h2>
+                <p className="text-xs text-ink-muted">
                   Allocates received amount against unpaid and overdue tax invoices.
                 </p>
               </div>
@@ -504,10 +504,10 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                 <button
                   onClick={applyOldestFirst}
                   disabled={amountReceived <= 0}
-                  className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                  className={`h-8 px-3 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors ${
                     amountReceived <= 0
-                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                      : "bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer"
+                      ? "bg-surface-raised text-ink-muted opacity-50 cursor-not-allowed"
+                      : "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 cursor-pointer"
                   }`}
                   type="button"
                 >
@@ -516,7 +516,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                 </button>
                 <button
                   onClick={clearAllAllocations}
-                  className="h-8 px-2.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="h-8 px-2.5 rounded-md text-xs font-semibold text-ink-muted hover:text-ink hover:bg-surface-raised transition-colors cursor-pointer border border-border"
                   type="button"
                 >
                   Clear
@@ -528,7 +528,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
+                  <tr className="bg-surface-raised border-b border-border text-ink-muted font-semibold uppercase tracking-wider">
                     <th className="py-2.5 px-3 min-w-[120px] whitespace-nowrap">Invoice #</th>
                     <th className="py-2.5 px-3 min-w-[110px] whitespace-nowrap">Billed Date</th>
                     <th className="py-2.5 px-3 min-w-[110px] whitespace-nowrap">Due Date</th>
@@ -537,7 +537,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                     <th className="py-2.5 px-3 min-w-[140px] whitespace-nowrap text-right">Apply Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-border">
                   {activeRetailerInvoices.map(inv => {
                     const daysUntil = getDaysUntil(inv.dueDate, currentDate);
                     const isOverdue = daysUntil < 0;
@@ -545,45 +545,45 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                     const isOverAllocated = allocated > inv.balanceDue;
 
                     return (
-                      <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3 px-3 font-mono font-bold text-blue-700 whitespace-nowrap">
+                      <tr key={inv.id} className="hover:bg-primary/5 transition-colors">
+                        <td className="py-3 px-3 font-mono num font-bold text-primary whitespace-nowrap">
                           {inv.invoiceNumber}
                         </td>
-                        <td className="py-3 px-3 font-mono text-slate-600 whitespace-nowrap">
+                        <td className="py-3 px-3 font-mono num text-ink-muted whitespace-nowrap">
                           {inv.date || inv.billedDate}
                         </td>
-                        <td className="py-3 px-3 font-mono whitespace-nowrap">
+                        <td className="py-3 px-3 font-mono num whitespace-nowrap">
                           {isOverdue ? (
-                            <span className="text-rose-700 font-bold flex items-center gap-1">
+                            <span className="text-danger font-bold flex items-center gap-1">
                               <span className="material-symbols-outlined text-[14px]">warning</span>
                               <span>{inv.dueDate}</span>
                             </span>
                           ) : (
-                            <span className="text-slate-700">{inv.dueDate}</span>
+                            <span className="text-ink">{inv.dueDate}</span>
                           )}
                         </td>
                         <td className="py-3 px-3 whitespace-nowrap">
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               isOverdue
-                                ? "bg-rose-100 text-rose-900 border border-rose-200"
-                                : "bg-slate-100 text-slate-700 border border-slate-200"
+                                ? "bg-danger/10 text-danger border border-danger/20"
+                                : "bg-surface-raised text-ink-muted border border-border"
                             }`}
                           >
                             {isOverdue ? `Overdue (${Math.abs(daysUntil)}d)` : "Not yet due"}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                        <td className="py-3 px-3 text-right font-mono num font-bold text-ink whitespace-nowrap">
                           {formatINR(inv.balanceDue)}
                         </td>
                         <td className="py-3 px-3 text-right whitespace-nowrap">
                           <div className="relative inline-flex items-center w-full max-w-[130px]">
-                            <span className="absolute left-2.5 text-slate-400 font-mono text-xs">₹</span>
+                            <span className="absolute left-2.5 text-ink-muted font-mono num text-xs">₹</span>
                             <input
-                              className={`w-full h-8 pl-6 pr-2 rounded-lg text-right font-mono text-xs font-bold transition-all focus:outline-none ${
+                              className={`w-full h-8 pl-6 pr-2 rounded-sm text-right font-mono num text-xs font-bold transition-all focus:outline-none ${
                                 isOverAllocated
-                                  ? "bg-rose-50 border border-rose-300 text-rose-700 focus:ring-2 focus:ring-rose-500/20"
-                                  : "bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20"
+                                  ? "bg-danger/10 border border-danger text-danger focus:ring-2 focus:ring-danger/20"
+                                  : "bg-surface-raised border border-border text-ink focus:bg-surface focus:ring-2 focus:ring-primary/20"
                               }`}
                               type="number"
                               value={allocations[inv.id] || 0}
@@ -597,7 +597,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
                   {activeRetailerInvoices.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                      <td colSpan={6} className="py-8 text-center text-ink-muted font-medium">
                         No open issued invoices for this retailer. Account is settled.
                       </td>
                     </tr>
@@ -607,29 +607,29 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
             </div>
 
             {/* Breakdown & Totals Footer (Requirement 8) */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="p-3.5 rounded-md bg-surface-raised border border-border flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
-                <span className="text-slate-500">Total Open Invoices:</span>
-                <span className="font-mono font-bold text-slate-900">
+                <span className="text-ink-muted">Total Open Invoices:</span>
+                <span className="font-mono num font-bold text-ink">
                   {formatINR(totalOpenBalance)}
                 </span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500">Applied:</span>
-                  <span className="font-mono font-bold text-blue-700">
+                  <span className="text-ink-muted">Applied:</span>
+                  <span className="font-mono num font-bold text-primary">
                     {formatINR(effectiveApplied)}
                   </span>
                 </div>
                 <div
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-sm border ${
                     leftToApply < 0
-                      ? "bg-rose-100 text-rose-900 font-bold"
-                      : "bg-slate-200 text-slate-800"
+                      ? "bg-danger/10 border-danger/20 text-danger font-bold"
+                      : "bg-surface border-border text-ink"
                   }`}
                 >
                   <span>Unapplied:</span>
-                  <span className="font-mono font-bold">
+                  <span className="font-mono num font-bold">
                     {leftToApply < 0 ? `- ${formatINR(Math.abs(leftToApply))}` : formatINR(leftToApply)}
                   </span>
                 </div>
@@ -640,54 +640,54 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
         {/* RIGHT COLUMN: Real-Time Projection Impact (Requirement 9) */}
         <div className="lg:col-span-4 flex flex-col gap-5 lg:sticky lg:top-20">
-          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900">Impact After Receipt</h3>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="text-sm font-bold text-ink">Impact After Receipt</h3>
+              <span className="text-[10px] font-bold text-success bg-success/10 border border-success/20 px-2 py-0.5 rounded-full">
                 Real-time
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
               {/* Total Outstanding */}
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+              <div className="p-3 rounded-md bg-surface-raised border border-border space-y-1">
+                <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
                   Total Outstanding
                 </span>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-slate-400 line-through">
+                  <span className="font-mono num text-ink-muted line-through">
                     {formatINR(currentOutstanding)}
                   </span>
-                  <span className="material-symbols-outlined text-slate-400 text-[16px]">
+                  <span className="material-symbols-outlined text-ink-muted text-[16px]">
                     arrow_forward
                   </span>
-                  <span className="font-mono font-bold text-sm text-slate-900">
+                  <span className="font-mono num font-bold text-sm text-ink">
                     {formatINR(projectedOutstanding)}
                   </span>
                 </div>
-                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                <span className="text-[11px] text-success font-semibold flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">trending_down</span>
                   <span>Reduced by {formatINR(effectiveApplied)}</span>
                 </span>
               </div>
 
               {/* Overdue Balance */}
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+              <div className="p-3 rounded-md bg-surface-raised border border-border space-y-1">
+                <span className="text-[10px] uppercase font-bold text-ink-muted block tracking-wider">
                   Overdue Balance
                 </span>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-rose-600 line-through">
+                  <span className="font-mono num text-danger line-through">
                     {formatINR(currentOverdue)}
                   </span>
-                  <span className="material-symbols-outlined text-slate-400 text-[16px]">
+                  <span className="material-symbols-outlined text-ink-muted text-[16px]">
                     arrow_forward
                   </span>
-                  <span className="font-mono font-bold text-sm text-emerald-700">
+                  <span className="font-mono num font-bold text-sm text-success">
                     {formatINR(projectedOverdue)}
                   </span>
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600">
+                <span className="text-[11px] font-semibold text-ink-muted">
                   {projectedOverdue <= 0
                     ? "✓ All overdue cleared (Red banner disappears)"
                     : `${formatINR(projectedOverdue)} remaining overdue`}
@@ -695,30 +695,30 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
               </div>
 
               {/* Available Credit */}
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <div className="p-3 rounded-md bg-surface-raised border border-border space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                  <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider">
                     Available Credit
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">
+                  <span className="text-[10px] text-ink-muted font-mono num">
                     Limit: {formatINR(creditLimit)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-slate-500">
+                  <span className="font-mono num text-ink-muted">
                     {formatINR(currentAvailable)}
                   </span>
-                  <span className="material-symbols-outlined text-slate-400 text-[16px]">
+                  <span className="material-symbols-outlined text-ink-muted text-[16px]">
                     arrow_forward
                   </span>
-                  <span className="font-mono font-bold text-sm text-blue-700">
+                  <span className="font-mono num font-bold text-sm text-primary">
                     {formatINR(projectedAvailable)}
                   </span>
                 </div>
                 {/* Progress bar */}
-                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden mt-1.5">
+                <div className="w-full bg-surface-raised h-2 rounded-full overflow-hidden mt-1.5 border border-border">
                   <div
-                    className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                    className="bg-primary h-full rounded-full transition-all duration-300"
                     style={{
                       width: `${Math.min(100, Math.round((projectedAvailable / (creditLimit || 1)) * 100))}%`,
                     }}
@@ -732,39 +732,39 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
       {/* CONFIRMATION DIALOG MODAL */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-2xl shadow-2xl p-6 flex flex-col gap-4 border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface max-w-md w-full rounded-lg shadow-soft-xl p-6 flex flex-col gap-4 border border-border animate-in fade-in zoom-in-95 duration-150 text-ink">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-md bg-success/10 text-success border border-success/20 flex items-center justify-center flex-shrink-0">
                 <span className="material-symbols-outlined text-[20px]">check_circle</span>
               </div>
               <div className="flex flex-col">
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-ink">
                   Save Receipt of {formatINR(amountReceived)}?
                 </h3>
-                <span className="text-xs text-slate-500 mt-0.5">
+                <span className="text-xs text-ink-muted mt-0.5">
                   Voucher date: {receivedDate} · {paymentMethod}
                 </span>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+            <div className="p-3.5 rounded-md bg-surface-raised border border-border space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Retailer:</span>
-                <span className="font-semibold text-slate-900">{activeRetailer.name}</span>
+                <span className="text-ink-muted">Retailer:</span>
+                <span className="font-semibold text-ink">{activeRetailer.name}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Reference:</span>
-                <span className="font-mono font-bold text-slate-800">{referenceNumber || "Direct Receipt"}</span>
+                <span className="text-ink-muted">Reference:</span>
+                <span className="font-mono num font-bold text-ink">{referenceNumber || "Direct Receipt"}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Total Applied:</span>
-                <span className="font-mono font-bold text-blue-700">{formatINR(effectiveApplied)}</span>
+                <span className="text-ink-muted">Total Applied:</span>
+                <span className="font-mono num font-bold text-primary">{formatINR(effectiveApplied)}</span>
               </div>
               {advanceAmount > 0 && (
-                <div className="flex items-center justify-between text-emerald-700">
+                <div className="flex items-center justify-between text-success">
                   <span>Advance Balance:</span>
-                  <span className="font-mono font-bold">+{formatINR(advanceAmount)}</span>
+                  <span className="font-mono num font-bold">+{formatINR(advanceAmount)}</span>
                 </div>
               )}
             </div>
@@ -772,14 +772,14 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                className="h-10 px-4 rounded-md bg-surface-raised hover:bg-surface text-ink font-semibold text-xs transition-colors border border-border cursor-pointer"
                 type="button"
               >
                 Go Back &amp; Edit
               </button>
               <button
                 onClick={handleSaveReceipt}
-                className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
+                className="h-10 px-5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-soft-sm transition-all cursor-pointer"
                 type="button"
               >
                 Confirm &amp; Record

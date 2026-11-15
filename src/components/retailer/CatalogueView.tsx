@@ -1,13 +1,80 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useApp } from "@/context/AppContext";
-import { MOCK_BRANDS, MOCK_PRODUCTS, Product } from "@/data/mockData";
+import { useAuth } from "@/context/AuthContext";
+import { MOCK_BRANDS, MOCK_PRODUCTS } from "@/data/mockData";
 import {
   RETAILER_PROFILE,
   SHARED_PRODUCT_CATEGORIES,
   formatINR,
 } from "@/lib/mock/retailer";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { getRetailerString } from "@/lib/i18n/retailer";
+import { useEntityImages } from "@/lib/storage/imageStore";
+
+function CatalogueProductImage({
+  product,
+}: {
+  product: { id: string; title: string; image: string };
+}) {
+  const { primaryUrl } = useEntityImages("style", product.id);
+  const display = primaryUrl || product.image;
+
+  return (
+    <img
+      src={display}
+      alt={product.title}
+      loading="lazy"
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
+    />
+  );
+}
+
+function AnimatedCounter({ value }: { value: number }) {
+  const [display, setDisplay] = useState(value);
+  const startTimeRef = useRef<number | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const prevValueRef = useRef(value);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReduced) {
+        setDisplay(value);
+        return;
+      }
+    }
+
+    const startVal = prevValueRef.current;
+    const endVal = value;
+    const duration = 400;
+
+    const animate = (timestamp: number) => {
+      if (!startTimeRef.current) startTimeRef.current = timestamp;
+      const progress = Math.min((timestamp - startTimeRef.current) / duration, 1);
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(startVal + (endVal - startVal) * easeOut);
+      setDisplay(current);
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        prevValueRef.current = endVal;
+      }
+    };
+
+    startTimeRef.current = null;
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [value]);
+
+  return <span className="num">{formatINR(display)}</span>;
+}
 
 export default function CatalogueView() {
   const {
@@ -19,26 +86,25 @@ export default function CatalogueView() {
     updateCartItemQty,
   } = useApp();
 
+  const { language } = useAuth();
+
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedBrand, setSelectedBrand] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
-  // Requirement 3: Use one shared category list everywhere
   const categories = SHARED_PRODUCT_CATEGORIES;
-  // All 9 brands dynamically from canonical brand list
   const brands = ["All", ...MOCK_BRANDS.map(b => b.name)];
 
-  // Helper to get unit short name (box, pack, set)
   const getUnitShort = (unitLabel: string) => {
     const lower = unitLabel.toLowerCase();
-    if (lower.includes("box")) return "box";
-    if (lower.includes("pack")) return "pack";
+    if (lower.includes("box")) return "bx";
+    if (lower.includes("pack")) return "pk";
     if (lower.includes("set")) return "set";
-    return "unit";
+    return "box";
   };
 
-  // Helper to adjust quantity directly from the card stepper
   const handleStepQuantity = (productId: string, delta: number) => {
     const items = cartItems.filter(i => i.productId === productId);
     if (items.length === 0) return;
@@ -46,7 +112,6 @@ export default function CatalogueView() {
     updateCartItemQty(target.productId, target.color, target.size, delta);
   };
 
-  // Filter products
   const filteredProducts = MOCK_PRODUCTS.filter(product => {
     if (selectedCategory !== "All" && product.category !== selectedCategory) return false;
     if (selectedBrand !== "All" && product.brand !== selectedBrand) return false;
@@ -63,41 +128,46 @@ export default function CatalogueView() {
     return true;
   });
 
+  const activeFiltersCount =
+    (selectedCategory !== "All" ? 1 : 0) +
+    (selectedBrand !== "All" ? 1 : 0) +
+    (inStockOnly ? 1 : 0);
+
   return (
-    <div className="flex flex-col w-full pb-36 sm:pb-32">
-      {/* Top Header & Search Area (Scrolls naturally) */}
-      <div className="bg-white border-b border-slate-100 py-4 sm:py-5 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col w-full pb-36 sm:pb-32 text-ink">
+      {/* Top Header & Search Area */}
+      <div className="bg-surface border-b border-border py-4 px-3 sm:px-6 transition-colors duration-200">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Catalogue • Sourced from Tiruppur mills
+            <h1 className="font-page-title text-xl sm:text-3xl text-ink font-normal tracking-tight">
+              {getRetailerString(language, "navShop")} • Tiruppur Wholesale
             </h1>
-            <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-              <span>Dispatched from {RETAILER_PROFILE.dispatchHub}</span>
+            <p className="text-[11px] sm:text-xs text-ink-muted mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span>{RETAILER_PROFILE.dispatchHub}</span>
               <span>•</span>
-              <span>Standard wholesale box packs</span>
+              <span>Box packed wholesale</span>
               <span>•</span>
-              <span>Wholesale net pricing</span>
+              <span>Net prices (GST extra)</span>
             </p>
           </div>
 
           {/* Search Input */}
           <div className="relative w-full sm:w-80">
-            <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-[20px]">
+            <span className="material-symbols-outlined absolute left-3.5 top-2.5 sm:top-3 text-ink-muted text-[18px]">
               search
             </span>
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search SKU, Art #, fabric, style..."
-              className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0047d3] transition-all"
+              placeholder={getRetailerString(language, "searchPlaceholder")}
+              className="w-full min-h-[44px] pl-10 pr-9 py-2 rounded-xl bg-background border border-border text-xs sm:text-sm text-ink placeholder:text-ink-muted/60 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-soft-sm"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-2.5 sm:top-3 text-ink-muted hover:text-ink cursor-pointer p-1"
                 aria-label="Clear search query"
               >
                 <span className="material-symbols-outlined text-[16px]">close</span>
@@ -107,37 +177,57 @@ export default function CatalogueView() {
         </div>
       </div>
 
-      {/* Sticky Filter Row dynamically following real header height (including demo banner and mobile) */}
+      {/* Sticky Filter & Category Bar */}
       <div
         style={{ top: "var(--retailer-header-height, 60px)" }}
-        className="sticky top-[var(--retailer-header-height,60px)] z-20 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs py-2.5 px-3 sm:px-6"
+        className="sticky top-[var(--retailer-header-height,60px)] z-20 bg-surface/95 backdrop-blur-md border-b border-border shadow-soft-sm py-2.5 px-3 sm:px-6 transition-colors duration-200"
       >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          {/* Requirement 3: Category Chips from shared canonical list (min 44px tap targets) */}
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+          {/* Filter Bottom Sheet Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setIsFilterSheetOpen(true)}
+            className={`min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 flex items-center gap-1.5 border transition-all cursor-pointer ${
+              activeFiltersCount > 0
+                ? "bg-primary text-primary-foreground border-primary shadow-soft-sm"
+                : "bg-background border-border text-ink hover:bg-surface"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">tune</span>
+            <span>{getRetailerString(language, "filterBtn")}</span>
+            {activeFiltersCount > 0 && (
+              <span className="w-5 h-5 rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+
+          <div className="h-5 w-px bg-border shrink-0" />
+
+          {/* Horizontal Category Chips Bar */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             {categories.map(cat => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`min-h-[44px] px-3.5 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   selectedCategory === cat
-                    ? "bg-[#0047d3] text-white shadow-2xs"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                    ? "bg-ink text-surface shadow-soft-sm font-bold"
+                    : "bg-surface border border-border text-ink-muted hover:text-ink hover:bg-background"
                 }`}
               >
-                {cat}
+                {cat === "All" ? getRetailerString(language, "allCategories") : cat}
               </button>
             ))}
           </div>
 
-          {/* Brand Dropdown & Hub Toggle (min 44px tap targets) */}
-          <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
-            {/* Brand Dropdown */}
+          {/* Desktop Brand Filter Select */}
+          <div className="hidden md:flex items-center gap-2 shrink-0 ml-auto">
             <select
               value={selectedBrand}
               onChange={e => setSelectedBrand(e.target.value)}
-              className="min-h-[44px] px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-800 outline-none cursor-pointer focus:ring-2 focus:ring-[#0047d3]"
+              className="min-h-[40px] px-3 py-1.5 rounded-lg bg-surface border border-border text-xs font-semibold text-ink outline-none cursor-pointer focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-soft-sm"
             >
               {brands.map(b => (
                 <option key={b} value={b}>
@@ -146,67 +236,64 @@ export default function CatalogueView() {
               ))}
             </select>
 
-            {/* Requirement 6: Match dispatch label */}
-            <label className="min-h-[44px] flex items-center gap-1.5 text-xs text-slate-700 font-medium cursor-pointer bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-200 select-none">
+            <label className="min-h-[40px] flex items-center gap-2 text-xs text-ink font-medium cursor-pointer bg-surface px-3 py-1.5 rounded-lg border border-border hover:bg-background shadow-soft-sm select-none">
               <input
                 type="checkbox"
                 checked={inStockOnly}
                 onChange={e => setInStockOnly(e.target.checked)}
-                className="w-4 h-4 rounded text-[#0047d3] focus:ring-0 cursor-pointer"
+                className="w-4 h-4 rounded text-primary focus:ring-0 cursor-pointer accent-primary"
               />
-              <span>Ready in Hub</span>
+              <span>In Hub Only</span>
             </label>
           </div>
         </div>
       </div>
 
-      {/* Product Grid Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full">
-        {/* Sub-header with count and Requirement 6 Dispatch Label */}
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Showing {filteredProducts.length} wholesale articles
+      {/* 2-Column Product Grid Main Content */}
+      <main className="max-w-7xl mx-auto px-2.5 sm:px-6 py-4 sm:py-8 w-full">
+        {/* Count Strip */}
+        <div className="flex items-center justify-between mb-3 px-1">
+          <span className="text-[11px] sm:text-xs font-bold text-ink-muted uppercase tracking-wider num">
+            {filteredProducts.length} wholesale articles
           </span>
-          {/* Requirement 6: Dispatch label matches every other page */}
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Secunderabad Hub Dispatch</span>
-          </span>
+          <Badge variant="success" size="sm" dot pulse>
+            Ready in Hub
+          </Badge>
         </div>
 
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-xs">
-            <span className="material-symbols-outlined text-[48px] text-slate-300">
+          <div className="text-center py-16 bg-surface rounded-2xl border border-border shadow-soft-sm px-4">
+            <span className="material-symbols-outlined text-[48px] text-ink-muted">
               filter_alt_off
             </span>
-            <h3 className="text-base font-bold text-slate-800 mt-2">
+            <h3 className="text-base font-bold text-ink mt-2">
               No articles match your filters
             </h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Try resetting category or search criteria.
+            <p className="text-xs text-ink-muted mt-1">
+              Try resetting the category or search criteria.
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedCategory("All");
-                setSelectedBrand("All");
-                setSearchQuery("");
-                setInStockOnly(false);
-              }}
-              className="mt-4 px-4 py-2 rounded-xl bg-[#0047d3] hover:bg-[#1e5eff] text-white text-xs font-semibold shadow-xs transition-colors"
-            >
-              Reset Filters
-            </button>
+            <div className="mt-4">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  setSelectedCategory("All");
+                  setSelectedBrand("All");
+                  setSearchQuery("");
+                  setInStockOnly(false);
+                }}
+              >
+                {getRetailerString(language, "resetFilters")}
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {filteredProducts.map(product => {
-              // Calculate price per piece
               const pieces = product.piecesPerUnit || 10;
               const pricePerPiece = product.pricePerUnit / pieces;
               const unitShort = getUnitShort(product.unitLabel);
 
-              // Check if item is already in Draft PO (Requirement 5)
               const productCartItems = cartItems.filter(item => item.productId === product.id);
               const totalBoxesInCart = productCartItems.reduce((sum, item) => sum + item.units, 0);
               const isInDraftPO = totalBoxesInCart > 0;
@@ -214,144 +301,123 @@ export default function CatalogueView() {
               return (
                 <div
                   key={product.id}
-                  className="flex flex-col bg-white rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all relative group border border-slate-200"
+                  className="flex flex-col justify-between bg-surface rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-soft-sm hover:shadow-soft-md transition-all duration-200 border border-border group"
                 >
-                  {/* Image Container with Badges */}
-                  <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 mb-4 border border-slate-100">
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-                      <span className="bg-[#0047d3] text-white text-[11px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider shadow-sm">
-                        {product.brand}
-                      </span>
-                      <span className="bg-white/90 backdrop-blur-md text-slate-800 text-[11px] px-2 py-1 rounded-md font-mono font-semibold shadow-2xs">
-                        Art #{product.artNumber}
-                      </span>
-                    </div>
-
-                    {/* Requirement 6: Dispatch badge on card */}
-                    <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-sm border border-slate-200/60">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[11px] text-emerald-800 font-bold">
-                        {product.stockUnits.toLocaleString("en-IN")} pcs in Secunderabad Hub
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="flex flex-col flex-1 justify-between">
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-1">
-                          {product.title}
-                        </h3>
+                  {/* Top Imagery Container */}
+                  <div>
+                    <div className="relative w-full aspect-square sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-background mb-2 sm:mb-3 border border-border">
+                      <CatalogueProductImage product={product} />
+                      {/* Top Badges */}
+                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 flex flex-col gap-1">
+                        <span className="bg-surface/90 backdrop-blur-md text-ink text-[10px] font-bold px-1.5 py-0.5 rounded shadow-soft-sm border border-border">
+                          {product.brand}
+                        </span>
+                        {product.pricePending && (
+                          <span className="bg-warning text-ink text-[9px] px-1.5 py-0.5 rounded font-bold uppercase shadow-soft-sm">
+                            {getRetailerString(language, "pricePending")}
+                          </span>
+                        )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+
+                      {/* Stock Badge */}
+                      <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-surface/95 backdrop-blur-md px-1.5 py-0.5 rounded flex items-center gap-1 shadow-soft-sm border border-border">
+                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                        <span className="text-[10px] text-success font-bold num">
+                          {product.stockUnits.toLocaleString("en-IN")} pcs
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Article Info */}
+                    <div>
+                      <div className="flex items-center justify-between gap-1 text-[10px] text-ink-muted font-mono num">
+                        <span>Art #{product.artNumber}</span>
+                        <span>{product.category}</span>
+                      </div>
+                      <h3 className="font-bold text-ink text-xs sm:text-sm mt-0.5 leading-snug line-clamp-1">
+                        {product.title}
+                      </h3>
+                      <p className="text-[10px] sm:text-xs text-ink-muted mt-0.5 line-clamp-1">
                         {product.description}
                       </p>
 
-                      {/* Requirement 4: Show price per piece beside pack price, and minimum order as a clear badge */}
-                      <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <div>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                              Wholesale Net Price
-                            </span>
-                            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mt-0.5">
-                              <span className="text-xl font-bold text-[#0047d3] font-mono">
+                      {/* Pricing in Mono + Pack Info */}
+                      <div className="mt-2 p-2 sm:p-2.5 bg-background rounded-lg border border-border">
+                        {product.pricePending ? (
+                          <div className="text-[11px] sm:text-xs font-bold text-warning font-mono">
+                            {getRetailerString(language, "pricePending")}
+                          </div>
+                        ) : (
+                          <div className="flex items-baseline justify-between gap-1 flex-wrap">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-xs sm:text-base font-bold text-primary font-mono num">
                                 {formatINR(product.pricePerUnit)}
                               </span>
-                              <span className="text-xs text-slate-600 font-medium">
-                                / {unitShort}
-                              </span>
-                              <span className="text-xs text-slate-400 font-medium">·</span>
-                              <span className="text-xs font-semibold text-slate-700 font-mono">
-                                {formatINR(pricePerPiece)} per pc
-                              </span>
+                              <span className="text-[10px] text-ink-muted">/{unitShort}</span>
                             </div>
-                          </div>
-                        </div>
-
-                        {/* Minimum Order as a Clear Badge */}
-                        <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold tracking-tight">
-                            <span className="material-symbols-outlined text-[15px] text-amber-700">
-                              inventory_2
+                            <span className="text-[10px] sm:text-[11px] font-semibold text-ink-muted font-mono num">
+                              {formatINR(pricePerPiece)}/{getRetailerString(language, "perPiece")}
                             </span>
-                            <span>{product.minOrderLabel || `Min: ${product.minOrderUnits || 5} ${unitShort}s`}</span>
-                          </span>
+                          </div>
+                        )}
 
-                          <span className="text-[11px] text-slate-500 font-medium">
-                            {pieces} pcs / {unitShort}
-                          </span>
+                        <div className="mt-1 pt-1 border-t border-border flex items-center justify-between text-[10px] text-ink-muted">
+                          <span>{getRetailerString(language, "boxOf")} {pieces} {getRetailerString(language, "pcs")}</span>
+                          <span className="font-medium">Min: {product.minOrderUnits || 5}</span>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Action Buttons (Requirement 5: Edit (X boxes) stepper when in draft PO) */}
-                    <div className="mt-4 pt-1 flex items-center gap-2">
-                      {isInDraftPO ? (
-                        <div className="flex-1 h-11 flex items-center bg-emerald-50 border border-emerald-300 rounded-xl overflow-hidden shadow-2xs">
-                          {/* Decrement Stepper */}
-                          <button
-                            type="button"
-                            onClick={() => handleStepQuantity(product.id, -1)}
-                            className="w-10 h-full flex items-center justify-center text-emerald-800 hover:bg-emerald-100 active:bg-emerald-200 transition-colors cursor-pointer"
-                            aria-label={`Decrease ${product.title} by 1 box`}
-                            title="Decrease 1 box"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">remove</span>
-                          </button>
+                  {/* Action Button: 48px Tap Target */}
+                  <div className="mt-2.5 pt-1">
+                    {isInDraftPO ? (
+                      <div className="w-full min-h-[44px] flex items-center bg-success/15 border border-success/30 rounded-xl overflow-hidden shadow-soft-sm">
+                        <button
+                          type="button"
+                          onClick={() => handleStepQuantity(product.id, -1)}
+                          className="w-11 min-h-[44px] flex items-center justify-center text-success hover:bg-success/20 active:bg-success/30 transition-colors cursor-pointer"
+                          aria-label={`Decrease ${product.title} by 1 box`}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">remove</span>
+                        </button>
 
-                          {/* Edit Matrix Trigger */}
-                          <button
-                            type="button"
-                            onClick={() => openMatrixModal(product)}
-                            className="flex-1 h-full px-2 flex items-center justify-center gap-1.5 text-emerald-900 hover:bg-emerald-100/70 transition-colors font-bold text-xs sm:text-sm cursor-pointer"
-                            title="Open size matrix to edit breakdown"
-                          >
-                            <span className="material-symbols-outlined text-[16px] text-emerald-700">
-                              edit_note
-                            </span>
-                            <span>
-                              Edit ({totalBoxesInCart} {totalBoxesInCart === 1 ? "box" : "boxes"})
-                            </span>
-                          </button>
-
-                          {/* Increment Stepper */}
-                          <button
-                            type="button"
-                            onClick={() => handleStepQuantity(product.id, 1)}
-                            className="w-10 h-full flex items-center justify-center text-emerald-800 hover:bg-emerald-100 active:bg-emerald-200 transition-colors cursor-pointer"
-                            aria-label={`Increase ${product.title} by 1 box`}
-                            title="Increase 1 box"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">add</span>
-                          </button>
-                        </div>
-                      ) : (
                         <button
                           type="button"
                           onClick={() => openMatrixModal(product)}
-                          className="flex-1 h-11 bg-[#0047d3] hover:bg-[#1e5eff] text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                          className="flex-1 min-h-[44px] px-1 flex items-center justify-center gap-1 text-success font-bold text-xs cursor-pointer num"
                         >
-                          <span className="material-symbols-outlined text-[18px]">grid_on</span>
-                          <span>Select Sizes & Add</span>
+                          <span>{totalBoxesInCart} {getRetailerString(language, "boxes")}</span>
                         </button>
-                      )}
 
+                        <button
+                          type="button"
+                          onClick={() => handleStepQuantity(product.id, 1)}
+                          className="w-11 min-h-[44px] flex items-center justify-center text-success hover:bg-success/20 active:bg-success/30 transition-colors cursor-pointer"
+                          aria-label={`Increase ${product.title} by 1 box`}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">add</span>
+                        </button>
+                      </div>
+                    ) : product.pricePending ? (
                       <button
                         type="button"
-                        className="w-11 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors border border-slate-200 cursor-pointer"
-                        title="Bookmark Article"
-                        aria-label="Bookmark article"
+                        onClick={() => openMatrixModal(product)}
+                        className="w-full min-h-[44px] px-2 rounded-xl bg-surface border border-warning/30 text-warning text-xs font-bold hover:bg-warning/10 flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-sm"
                       >
-                        <span className="material-symbols-outlined text-[20px]">bookmark_border</span>
+                        <span className="material-symbols-outlined text-[16px]">visibility</span>
+                        <span>{getRetailerString(language, "previewVariants")}</span>
                       </button>
-                    </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => openMatrixModal(product)}
+                        className="w-full min-h-[44px] px-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 active:scale-98 transition-transform flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-sm"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                        <span>{getRetailerString(language, "selectSizes")}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -360,46 +426,161 @@ export default function CatalogueView() {
         )}
       </main>
 
-      {/* Requirement 1: Persistent Docked Floating Cart Strip
-          - Desktop: bottom-5, centered with max-w-xl, never hiding card action buttons
-          - Mobile: full-width bottom sheet docked right above mobile bottom nav */}
+      {/* Desktop Floating PO Bar (on mobile, RetailerBottomNav handles the docked PO bar) */}
       {cartItems.length > 0 && (
         <aside
           role="region"
-          aria-label="Active Draft Purchase Order Summary"
-          className="fixed bottom-14 left-0 right-0 sm:bottom-5 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl sm:px-4 z-40 pointer-events-auto"
+          aria-label="Active Purchase Order Summary"
+          className="hidden md:block fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-xl z-40 pointer-events-auto animate-in fade-in slide-in-from-bottom-4 duration-200"
         >
-          <div className="bg-slate-900/98 backdrop-blur-xl text-white rounded-none sm:rounded-2xl p-3 sm:p-3 sm:px-5 shadow-2xl flex items-center justify-between gap-3 sm:gap-4 border-t sm:border border-slate-800">
-            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-[#0047d3] flex items-center justify-center text-white shadow-sm shrink-0">
+          <div className="bg-surface/95 backdrop-blur-md text-ink rounded-full p-3 px-5 shadow-soft-xl flex items-center justify-between gap-4 border border-border">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-soft-sm shrink-0">
                 <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
               </div>
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5 truncate">
-                  <span className="text-[10px] sm:text-[11px] text-emerald-400 uppercase font-bold tracking-wide">
+                  <Badge variant="success" size="sm" dot>
                     Ready for PO
-                  </span>
-                  <span className="text-slate-500">•</span>
-                  <span className="text-xs text-slate-300 font-mono truncate">
+                  </Badge>
+                  <span className="text-border">•</span>
+                  <span className="text-xs text-ink-muted num truncate font-medium">
                     {cartItems.length} Lines ({cartTotalBoxes} Boxes)
                   </span>
                 </div>
-                <span className="text-base sm:text-lg font-bold text-white font-mono">
-                  {formatINR(cartGrandTotal)}
-                </span>
+                <div className="text-base sm:text-lg font-bold text-primary font-mono num">
+                  <AnimatedCounter value={cartGrandTotal} />
+                </div>
               </div>
             </div>
 
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="md"
+              className="rounded-full shrink-0"
               onClick={() => setIsReviewOrderOpen(true)}
-              className="h-10 px-4 sm:px-5 bg-[#0047d3] hover:bg-[#1e5eff] text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 shadow-md transition-all active:scale-98 shrink-0 cursor-pointer"
+              rightIcon={<span className="material-symbols-outlined text-[18px]">arrow_forward</span>}
             >
-              <span>Review Order</span>
-              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-            </button>
+              Review Order
+            </Button>
           </div>
         </aside>
+      )}
+
+      {/* Filter Bottom Sheet (Mobile & Tablet) */}
+      {isFilterSheetOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-md bg-surface rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col shadow-soft-xl border border-border text-ink overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Sheet Header */}
+            <div className="p-4 bg-surface border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
+                <h3 className="font-bold text-base text-ink">
+                  {getRetailerString(language, "filterTitle")}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsFilterSheetOpen(false)}
+                className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            {/* Sheet Body */}
+            <div className="p-4 overflow-y-auto space-y-5 flex-1">
+              {/* Category Filter */}
+              <div>
+                <span className="text-xs font-bold text-ink-muted uppercase tracking-wider block mb-2">
+                  Category
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer border ${
+                        selectedCategory === cat
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border text-ink hover:bg-surface"
+                      }`}
+                    >
+                      {cat === "All" ? getRetailerString(language, "allCategories") : cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Brand Filter */}
+              <div>
+                <span className="text-xs font-bold text-ink-muted uppercase tracking-wider block mb-2">
+                  Brand
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  {brands.map(brand => (
+                    <button
+                      key={brand}
+                      type="button"
+                      onClick={() => setSelectedBrand(brand)}
+                      className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer border ${
+                        selectedBrand === brand
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background border-border text-ink hover:bg-surface"
+                      }`}
+                    >
+                      {brand === "All" ? getRetailerString(language, "allBrands") : brand}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stock Toggle */}
+              <div className="p-3 bg-background rounded-xl border border-border flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-ink block">
+                    {getRetailerString(language, "inStockOnly")}
+                  </span>
+                  <span className="text-[11px] text-ink-muted">
+                    Show only articles ready in Secunderabad hub
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={e => setInStockOnly(e.target.checked)}
+                  className="w-5 h-5 rounded text-primary focus:ring-0 cursor-pointer accent-primary"
+                />
+              </div>
+            </div>
+
+            {/* Sheet Footer CTAs */}
+            <div className="p-3.5 bg-surface border-t border-border flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCategory("All");
+                  setSelectedBrand("All");
+                  setInStockOnly(false);
+                }}
+                className="flex-1 min-h-[44px] rounded-xl bg-background border border-border text-xs font-semibold text-ink hover:bg-surface cursor-pointer"
+              >
+                {getRetailerString(language, "resetFilters")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsFilterSheetOpen(false)}
+                className="flex-1 min-h-[44px] rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 cursor-pointer shadow-soft-sm"
+              >
+                {getRetailerString(language, "applyFilters")} ({filteredProducts.length})
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -8,6 +8,8 @@ import {
   getDaysUntil,
   downloadInvoicePDF,
 } from "@/lib/mock";
+import { Badge, StatusChip } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 type SortField = "invoiceNumber" | "date" | "dueDate" | "retailerName" | "grandTotal" | "balanceDue" | "status";
 type SortOrder = "asc" | "desc";
@@ -35,6 +37,8 @@ export const DistributorInvoices: React.FC = () => {
     setViewingInvoice,
     addInvoice,
     currentDate,
+    isCreateInvoiceOpen,
+    setIsCreateInvoiceOpen,
   } = useApp();
 
   // Filter & Search states
@@ -51,7 +55,12 @@ export const DistributorInvoices: React.FC = () => {
   const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set());
 
   // Create Invoice Modal
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateModalLocal, setIsCreateModalLocal] = useState(false);
+  const isCreateModalOpen = isCreateInvoiceOpen || isCreateModalLocal;
+  const setIsCreateModalOpen = (open: boolean) => {
+    setIsCreateModalLocal(open);
+    setIsCreateInvoiceOpen(open);
+  };
   const [selectedRetailerId, setSelectedRetailerId] = useState<string>("ret-1");
   const [selectedOrderId, setSelectedOrderId] = useState<string>("");
   const [invoiceDueDays, setInvoiceDueDays] = useState<number>(30);
@@ -279,7 +288,7 @@ export const DistributorInvoices: React.FC = () => {
     <div className="w-full flex flex-col gap-5 pb-16">
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-xl border border-slate-700 animate-in fade-in slide-in-from-top-2">
+        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-ink text-surface text-xs font-semibold shadow-xl border border-border animate-in fade-in slide-in-from-top-2">
           <span className="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span>
           <span>{toast}</span>
         </div>
@@ -287,18 +296,18 @@ export const DistributorInvoices: React.FC = () => {
 
       {/* Top Breadcrumb Context */}
       <div className="flex items-center justify-between py-0.5">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-          <span className="hover:text-slate-800 transition-colors cursor-pointer">Finance</span>
+        <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
+          <span className="hover:text-ink transition-colors cursor-pointer">Finance</span>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-slate-900 font-bold">Tax Invoices</span>
+          <span className="text-ink font-bold">Tax Invoices</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsOverdueFirst(!isOverdueFirst)}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
               isOverdueFirst
-                ? "bg-rose-50 text-rose-700 border border-rose-200"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                ? "bg-danger/10 text-danger border border-danger/25"
+                : "bg-surface-raised text-ink-muted hover:text-ink border border-border"
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">
@@ -313,17 +322,17 @@ export const DistributorInvoices: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Tax Invoices</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+            <h1 className="text-2xl font-bold text-ink tracking-tight font-sans">Tax Invoices</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono num bg-surface-raised text-ink border border-border">
               {invoices.length} Invoices
             </span>
             {overdueCount > 0 && (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono num bg-danger/10 text-danger border border-danger/25">
                 {overdueCount} Overdue
               </span>
             )}
           </div>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <p className="text-sm text-ink-muted mt-0.5">
             Generated B2B GST tax invoices for wholesale dispatches across Telangana &amp; Andhra Pradesh.
           </p>
         </div>
@@ -331,7 +340,7 @@ export const DistributorInvoices: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center gap-2 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+            className="h-10 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm flex items-center gap-2 shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer"
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
@@ -341,14 +350,14 @@ export const DistributorInvoices: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap lg:flex-nowrap items-center gap-3">
+      <div className="bg-surface p-3 rounded-md border border-border shadow-soft-sm flex flex-wrap lg:flex-nowrap items-center gap-3">
         {/* Search */}
         <div className="flex-1 min-w-[240px] relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted text-[18px]">
             search
           </span>
           <input
-            className="w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full h-10 pl-9 pr-4 bg-surface-raised border border-border rounded-md text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20 transition-all font-mono"
             placeholder="Search invoice #, PO #, retailer name, town, GSTIN..."
             type="text"
             value={searchQuery}
@@ -361,26 +370,26 @@ export const DistributorInvoices: React.FC = () => {
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="h-10 px-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            className="h-10 px-3 bg-surface-raised border border-border hover:bg-surface rounded-md text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer font-sans"
           >
-            <option value="all">All Statuses</option>
-            <option value="overdue">Overdue ({overdueCount})</option>
-            <option value="open">Open / Unpaid ({openCount})</option>
-            <option value="partly paid">Partly Paid</option>
-            <option value="issued">Issued / Due Soon</option>
-            <option value="paid">Paid</option>
-            <option value="draft">Drafts ({draftCount})</option>
+            <option value="all" className="bg-surface text-ink">All Statuses</option>
+            <option value="overdue" className="bg-surface text-ink">Overdue ({overdueCount})</option>
+            <option value="open" className="bg-surface text-ink">Open / Unpaid ({openCount})</option>
+            <option value="partly paid" className="bg-surface text-ink">Partly Paid</option>
+            <option value="issued" className="bg-surface text-ink">Issued / Due Soon</option>
+            <option value="paid" className="bg-surface text-ink">Paid</option>
+            <option value="draft" className="bg-surface text-ink">Drafts ({draftCount})</option>
           </select>
 
           {/* Date Range Filter */}
           <select
             value={dateRange}
             onChange={e => setDateRange(e.target.value)}
-            className="h-10 px-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            className="h-10 px-3 bg-surface-raised border border-border hover:bg-surface rounded-md text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer font-sans"
           >
-            <option value="all">Date: All Time</option>
-            <option value="30">Last 30 Days</option>
-            <option value="90">Last 90 Days</option>
+            <option value="all" className="bg-surface text-ink">Date: All Time</option>
+            <option value="30" className="bg-surface text-ink">Last 30 Days</option>
+            <option value="90" className="bg-surface text-ink">Last 90 Days</option>
           </select>
 
           {(searchQuery || statusFilter !== "all" || dateRange !== "all") && (
@@ -390,7 +399,7 @@ export const DistributorInvoices: React.FC = () => {
                 setStatusFilter("all");
                 setDateRange("all");
               }}
-              className="h-10 px-3 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+              className="h-10 px-3 rounded-md text-xs font-semibold text-danger hover:bg-danger/10 transition-colors cursor-pointer"
               type="button"
             >
               Clear filters
@@ -399,27 +408,37 @@ export const DistributorInvoices: React.FC = () => {
         </div>
       </div>
 
-      {/* INVOICES TABLE (Requirement 1: Due date & Balance columns, nowrap dates) */}
-      <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      {/* INVOICES TABLE (Airy Rows, Sticky Header, Subtle Hover, Mono Right-Aligned Numbers) */}
+      <div className="w-full bg-surface rounded-md border border-border shadow-soft-sm overflow-hidden">
         {sortedInvoices.length === 0 ? (
-          <div className="py-16 text-center text-slate-400 text-sm">
-            No tax invoices found matching your criteria.
+          <div className="py-12 px-4 text-center">
+            <EmptyState
+              icon={<span className="material-symbols-outlined text-[28px]">description</span>}
+              title="No tax invoices found"
+              description="No tax invoices match your current search, status, or date filters."
+              actionLabel="Clear Filters"
+              onAction={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+                setDateRange("all");
+              }}
+            />
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs font-semibold uppercase tracking-wider select-none">
+                <tr className="bg-surface-raised border-b border-border text-ink-muted text-xs font-semibold uppercase tracking-wider select-none">
                   <th className="py-3.5 pl-4 pr-2 w-10">
                     <input
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 accent-blue-600 cursor-pointer"
+                      className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary cursor-pointer"
                       type="checkbox"
                       checked={selectedInvoiceIds.size > 0 && selectedInvoiceIds.size === sortedInvoices.length}
                       onChange={toggleSelectAll}
                     />
                   </th>
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("invoiceNumber")}
                   >
                     <div className="flex items-center gap-1">
@@ -433,7 +452,7 @@ export const DistributorInvoices: React.FC = () => {
                   </th>
                   <th className="py-3.5 px-3 whitespace-nowrap">PO Ref #</th>
                   <th
-                    className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("retailerName")}
                   >
                     <div className="flex items-center gap-1">
@@ -446,7 +465,7 @@ export const DistributorInvoices: React.FC = () => {
                     </div>
                   </th>
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("date")}
                   >
                     <div className="flex items-center gap-1">
@@ -460,7 +479,7 @@ export const DistributorInvoices: React.FC = () => {
                   </th>
                   {/* Due Date Column Requirement 1 */}
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("dueDate")}
                   >
                     <div className="flex items-center gap-1">
@@ -473,7 +492,7 @@ export const DistributorInvoices: React.FC = () => {
                     </div>
                   </th>
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
                     onClick={() => handleSort("grandTotal")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -487,7 +506,7 @@ export const DistributorInvoices: React.FC = () => {
                   </th>
                   {/* Balance Column Requirement 1 */}
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-slate-900"
+                    className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
                     onClick={() => handleSort("balanceDue")}
                   >
                     <div className="flex items-center justify-end gap-1">
@@ -504,7 +523,7 @@ export const DistributorInvoices: React.FC = () => {
                   <th className="py-3.5 pr-4 pl-3 text-right whitespace-nowrap">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm text-slate-800">
+              <tbody className="divide-y divide-border text-sm text-ink">
                 {sortedInvoices.map(inv => {
                   const status = inv.derivedStatus;
                   const isOverdue = status === "Overdue";
@@ -518,15 +537,15 @@ export const DistributorInvoices: React.FC = () => {
                       onClick={() => setViewingInvoice(inv)}
                       className={`transition-colors cursor-pointer group ${
                         isOverdue
-                          ? "bg-rose-50/40 hover:bg-rose-50/70"
+                          ? "bg-danger/5 hover:bg-danger/10"
                           : isSelected
-                          ? "bg-blue-50/60"
-                          : "hover:bg-slate-50/80"
+                          ? "bg-primary/10"
+                          : "hover:bg-surface-raised/70"
                       }`}
                     >
-                      <td className="py-3.5 pl-4 pr-2" onClick={e => e.stopPropagation()}>
+                      <td className="py-4 pl-4 pr-2" onClick={e => e.stopPropagation()}>
                         <input
-                          className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 accent-blue-600 cursor-pointer"
+                          className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSelectRow(inv.id)}
@@ -534,91 +553,94 @@ export const DistributorInvoices: React.FC = () => {
                       </td>
 
                       {/* Invoice # */}
-                      <td className="py-3.5 px-3 font-mono text-xs font-bold text-blue-700 whitespace-nowrap">
+                      <td className="py-4 px-3 font-mono num text-xs font-bold text-primary whitespace-nowrap group-hover:underline">
                         {inv.invoiceNumber}
                       </td>
 
                       {/* PO Ref */}
-                      <td className="py-3.5 px-3 font-mono text-xs text-slate-500 whitespace-nowrap">
+                      <td className="py-4 px-3 font-mono num text-xs text-ink-muted whitespace-nowrap">
                         #{inv.orderNumber}
                       </td>
 
                       {/* Retailer */}
-                      <td className="py-3.5 px-4 min-w-[200px]">
+                      <td className="py-4 px-4 min-w-[200px]">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                          <span className="font-semibold text-ink group-hover:text-primary transition-colors font-sans">
                             {inv.retailerName}
                           </span>
-                          <span className="text-xs text-slate-400">
-                            {inv.retailerTown} · <span className="font-mono">{inv.retailerGstin}</span>
+                          <span className="text-xs text-ink-muted">
+                            {inv.retailerTown} · <span className="font-mono num">{inv.retailerGstin}</span>
                           </span>
                         </div>
                       </td>
 
                       {/* Billed Date (Nowrap) */}
-                      <td className="py-3.5 px-3 font-mono text-xs text-slate-600 whitespace-nowrap">
+                      <td className="py-4 px-3 font-mono num text-xs text-ink-muted whitespace-nowrap">
                         {inv.billedDate || inv.date}
                       </td>
 
                       {/* Due Date (Nowrap, highlighted red if overdue) */}
-                      <td className="py-3.5 px-3 font-mono text-xs whitespace-nowrap">
+                      <td className="py-4 px-3 font-mono num text-xs whitespace-nowrap">
                         {isOverdue ? (
-                          <div className="flex items-center gap-1 text-rose-700 font-bold">
+                          <div className="flex items-center gap-1 text-danger font-bold">
                             <span className="material-symbols-outlined text-[15px]">warning</span>
                             <span>{inv.dueDate}</span>
                           </div>
                         ) : isPaid ? (
-                          <span className="text-slate-400 line-through">{inv.dueDate}</span>
+                          <span className="text-ink-muted line-through">{inv.dueDate}</span>
                         ) : (
-                          <span className="text-slate-700 font-medium">{inv.dueDate}</span>
+                          <span className="text-ink font-medium">{inv.dueDate}</span>
                         )}
                       </td>
 
                       {/* Grand Total */}
-                      <td className="py-3.5 px-3 text-right font-mono font-semibold text-slate-900 whitespace-nowrap">
+                      <td className="py-4 px-3 text-right font-mono num font-semibold text-ink whitespace-nowrap">
                         {formatINR(inv.grandTotal || inv.total)}
                       </td>
 
-                      {/* Balance Due (Requirement 1) */}
-                      <td className="py-3.5 px-3 text-right font-mono whitespace-nowrap">
+                      {/* Balance Due */}
+                      <td className="py-4 px-3 text-right font-mono num whitespace-nowrap">
                         {isPaid ? (
-                          <span className="text-slate-400 font-medium">₹0</span>
+                          <span className="text-ink-muted font-medium">₹0</span>
                         ) : isOverdue ? (
-                          <span className="text-rose-700 font-bold text-sm">
+                          <span className="text-danger font-bold text-sm">
                             {formatINR(inv.balanceDue)}
                           </span>
                         ) : (
-                          <span className="text-blue-700 font-bold">
+                          <span className="text-primary font-bold">
                             {formatINR(inv.balanceDue)}
                           </span>
                         )}
                       </td>
 
-                      {/* Status Badge (Derived from data) */}
-                      <td className="py-3.5 px-3 whitespace-nowrap">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
+                      {/* Status Badge (Derived from data using shared StatusChip) */}
+                      <td className="py-4 px-3 whitespace-nowrap">
+                        <StatusChip
+                          variant={
                             isPaid
-                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              ? "success"
                               : isOverdue
-                              ? "bg-rose-100 text-rose-900 border border-rose-300 font-black animate-pulse"
+                              ? "danger"
                               : status === "Partly Paid"
-                              ? "bg-amber-100 text-amber-800 border border-amber-200"
+                              ? "warning"
                               : isDraft
-                              ? "bg-slate-200 text-slate-700 border border-slate-300"
-                              : "bg-blue-100 text-blue-800 border border-blue-200"
-                          }`}
+                              ? "neutral"
+                              : "primary"
+                          }
+                          size="sm"
+                          dot={isOverdue}
+                          pulse={isOverdue}
                         >
                           {status}
-                        </span>
+                        </StatusChip>
                       </td>
 
                       {/* Action */}
-                      <td className="py-3.5 pr-4 pl-3 text-right whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                      <td className="py-4 pr-4 pl-3 text-right whitespace-nowrap" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => downloadInvoicePDF(inv)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="p-1.5 rounded-lg text-ink-muted hover:text-primary hover:bg-primary/10 transition-colors"
                             title="Download PDF"
                             type="button"
                           >
@@ -626,7 +648,7 @@ export const DistributorInvoices: React.FC = () => {
                           </button>
                           <button
                             onClick={() => setViewingInvoice(inv)}
-                            className="h-8 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                            className="h-8 px-3 rounded-lg bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs transition-colors cursor-pointer"
                             type="button"
                           >
                             {isDraft ? "Edit Draft" : "View"}
@@ -645,17 +667,17 @@ export const DistributorInvoices: React.FC = () => {
       {/* CREATE INVOICE MODAL (Requirement 1 & 2) */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-surface rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 border border-border animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Create Tax Invoice</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-lg font-bold text-ink">Create Tax Invoice</h3>
+                <p className="text-xs text-ink-muted">
                   Generate a wholesale GST tax invoice or draft for order fulfillment.
                 </p>
               </div>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-lg hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -665,11 +687,11 @@ export const DistributorInvoices: React.FC = () => {
             <div className="space-y-3.5 text-xs">
               {/* Select Retailer */}
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Retailer Partner *</label>
+                <label className="font-semibold text-ink block mb-1">Retailer Partner *</label>
                 <select
                   value={selectedRetailerId}
                   onChange={e => setSelectedRetailerId(e.target.value)}
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {retailers
                     .filter(r => r.status === "Active")
@@ -684,11 +706,11 @@ export const DistributorInvoices: React.FC = () => {
               {/* Order Reference */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">PO Reference #</label>
+                  <label className="font-semibold text-ink block mb-1">PO Reference #</label>
                   <select
                     value={selectedOrderId}
                     onChange={e => setSelectedOrderId(e.target.value)}
-                    className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl text-xs font-mono font-medium text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <option value="">Manual / No PO</option>
                     {orders
@@ -702,11 +724,11 @@ export const DistributorInvoices: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Payment Credit Terms</label>
+                  <label className="font-semibold text-ink block mb-1">Payment Credit Terms</label>
                   <select
                     value={invoiceDueDays}
                     onChange={e => setInvoiceDueDays(Number(e.target.value))}
-                    className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl text-xs font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     <option value={15}>15 Days Net</option>
                     <option value={30}>30 Days Net (Standard)</option>
@@ -718,19 +740,19 @@ export const DistributorInvoices: React.FC = () => {
 
               {/* Trade Discount */}
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Trade Discount (₹)</label>
+                <label className="font-semibold text-ink block mb-1">Trade Discount (₹)</label>
                 <input
                   type="number"
                   value={invoiceDiscount}
                   onChange={e => setInvoiceDiscount(Number(e.target.value) || 0)}
-                  className="w-full h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full h-10 px-3 bg-surface-raised border border-border rounded-xl text-xs font-mono font-bold text-ink focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="0"
                 />
               </div>
 
               {/* Mode Selection per Requirement 2: Draft invoices are editable & invisible to retailers */}
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold uppercase text-slate-500 block">
+              <div className="p-3 rounded-xl bg-surface-raised border border-border space-y-2">
+                <span className="text-[11px] font-bold uppercase text-ink-muted block">
                   Invoice Status Option
                 </span>
                 <div className="flex items-center gap-3">
@@ -740,9 +762,9 @@ export const DistributorInvoices: React.FC = () => {
                       name="invMode"
                       checked={isDraftMode}
                       onChange={() => setIsDraftMode(true)}
-                      className="text-blue-600 focus:ring-blue-500"
+                      className="text-primary focus:ring-primary/20"
                     />
-                    <span className="text-xs font-semibold text-slate-800">
+                    <span className="text-xs font-semibold text-ink">
                       Save as Draft (Editable · Invisible to retailer)
                     </span>
                   </label>
@@ -754,9 +776,9 @@ export const DistributorInvoices: React.FC = () => {
                       name="invMode"
                       checked={!isDraftMode}
                       onChange={() => setIsDraftMode(false)}
-                      className="text-blue-600 focus:ring-blue-500"
+                      className="text-primary focus:ring-primary/20"
                     />
-                    <span className="text-xs font-semibold text-slate-800">
+                    <span className="text-xs font-semibold text-ink">
                       Issue Immediately (Posts to retailer ledger)
                     </span>
                   </label>
@@ -767,14 +789,14 @@ export const DistributorInvoices: React.FC = () => {
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs transition-colors cursor-pointer"
                 type="button"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateInvoice}
-                className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                className="h-10 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[16px]">save</span>
