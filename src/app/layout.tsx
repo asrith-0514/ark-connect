@@ -1,9 +1,43 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
 
+const geistSans = localFont({
+  src: "./fonts/geist.woff2",
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+
+const geistMono = localFont({
+  src: "./fonts/geist-mono.woff2",
+  variable: "--font-geist-mono",
+  display: "swap",
+});
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F5F7FA" },
+    { media: "(prefers-color-scheme: dark)", color: "#07090D" },
+  ],
+};
+
 export const metadata: Metadata = {
-  title: "ARK Connect & Distributors | B2B Garment Wholesale",
-  description: "Next-gen B2B wholesale platform for garment distribution, matrix bulk ordering, invoicing and receivables.",
+  title: "ARK Connect & Backoffice | Wholesale, Connected.",
+  description: "Premium Industrial-Tech B2B Garment Distribution Platform: Matrix Bulk Ordering, Invoicing, Receivables and CRM.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/icon-192.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ARK Connect",
+  },
 };
 
 export default function RootLayout({
@@ -12,20 +46,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased overflow-x-hidden">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`h-full antialiased overflow-x-hidden ${geistSans.variable} ${geistMono.variable}`}
+    >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="light"){document.documentElement.setAttribute("data-theme","light");}else if(t==="system"){var m=window.matchMedia("(prefers-color-scheme: light)").matches;document.documentElement.setAttribute("data-theme",m?"light":"dark");}else{document.documentElement.setAttribute("data-theme","dark");}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();`,
+          }}
         />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-          rel="stylesheet"
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){if(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1'){navigator.serviceWorker.getRegistrations().then(function(regs){for(var r of regs){r.unregister();}});if('caches' in window){caches.keys().then(function(names){for(var n of names){caches.delete(n);}});}}else if(window.location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}}`,
+          }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-on-surface overflow-x-hidden w-full max-w-full">
+      <body className="min-h-full flex flex-col bg-background text-ink overflow-x-hidden w-full max-w-full">
         {children}
       </body>
     </html>

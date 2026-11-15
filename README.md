@@ -56,5 +56,66 @@ npm run start
 ---
 
 ## ⌨️ Shortcuts & Role Toggling
-* **Role Switcher**: Click the top dark bar buttons anytime to toggle between **Retailer Portal (ARK Connect)** and **Distributor Backoffice (ARK Distributors)**.
+* **Demo Mode Role Switcher**: When `?demo=true` is present, the top dark bar allows immediate toggling between **Retailer Portal (ARK Connect)** and **Distributor Backoffice (ARK Distributors)** for evaluation and testing. Outside of `?demo=true`, authentication is strictly enforced via route guards and cookies.
 * **Global Command Palette**: Press `Cmd + K` (or `Ctrl + K`) or click the search input on any page to open quick navigation.
+
+---
+
+## 🔐 Authentication & Role-Based Access Control (RBAC)
+
+### ⚠️ Security Notice: Prototype Mock Auth vs Production
+> **IMPORTANT SECURITY NOTICE:**
+> The current default `MockAuthAdapter` is an **in-memory and cookie-based prototype** intended strictly for development, design evaluation, and local demonstrations. 
+> Mock authentication is **NOT secure for production workloads** because credentials, OTPs, and authorization claims are handled in-memory without cryptographic signing from a secure backend or auth authority.
+> 
+> In production, replace `MockAuthAdapter` with `FirebaseAuthAdapter` (or a dedicated OAuth/JWT backend).
+
+---
+
+### 🔌 Pluggable `AuthProvider` Adapter Pattern
+Authentication is decoupled behind the `AuthProvider` interface defined in [`src/lib/auth/types.ts`](file:///c:/Users/harsh/Desktop/ecommerceark/src/lib/auth/types.ts):
+
+```typescript
+export interface AuthProvider {
+  sendOtp(phone: string): Promise<OtpResult>;
+  verifyOtp(phone: string, otp: string, userType: UserType): Promise<AuthResult>;
+  loginWithPassword(identifier: string, password: string): Promise<AuthResult>;
+  logout(): Promise<{ success: boolean }>;
+  getSession(): Promise<AuthUser | null>;
+}
+```
+
+#### How to Switch to Firebase Auth in ONE File:
+All route handlers, React components, and hooks consume `authAdapter` from [`src/lib/auth/adapter.ts`](file:///c:/Users/harsh/Desktop/ecommerceark/src/lib/auth/adapter.ts). To migrate to Firebase:
+1. Install the Firebase SDK: `npm install firebase`
+2. Add your Firebase project config environment variables (`NEXT_PUBLIC_FIREBASE_API_KEY`, etc.)
+3. In [`src/lib/auth/adapter.ts`](file:///c:/Users/harsh/Desktop/ecommerceark/src/lib/auth/adapter.ts), update the export:
+   ```typescript
+   export const authAdapter: AuthProvider = new FirebaseAuthAdapter();
+   ```
+No page components or UI files need to be changed.
+
+---
+
+### 👥 User Roles & Permissions Matrix
+The platform enforces granular permissions via [`src/lib/auth/permissions.ts`](file:///c:/Users/harsh/Desktop/ecommerceark/src/lib/auth/permissions.ts):
+
+| Role | Portal | Access Scope | Sensitive Data Protections |
+| :--- | :--- | :--- | :--- |
+| **Retailer** | ARK Connect | Store ordering, custom POs, own account ledger & credit line | **Zero distributor access**. Cannot see other retailers or distributor tier margins. |
+| **Owner / Super Admin** | ARK Backoffice | Complete ERP access across all operations, financials, and mill bills | Full access to Tier A++/A+/A rates and supplier payables. |
+| **Senior Accountant** | ARK Backoffice | Invoicing, payments, ageing receivables, mill purchase bills, financial reports | Read-only tier rate card access. Cannot alter physical inventory. |
+| **Godown Staff** | ARK Backoffice | **Orders & LR packing** and **Hub Stock Inventory only** | **FORBIDDEN** from viewing receivables, invoices, suppliers, bills, reports, or tier rates. |
+| **Territory Salesman** | ARK Backoffice | Store orders, active retailer visits, and catalogue browsing | **FORBIDDEN** from viewing supplier payables, mill bills, tier prices (Tier A++, Tier A+, Tier A), or profit reports. |
+
+---
+
+### 🛡️ Route Guards & Session Security
+1. **Secure Session Cookie**: Authenticated sessions are stored in an HTTP cookie (`ark_session`) configured with `SameSite=Lax` and `Secure` in production.
+2. **Strict Route Isolation**:
+   - A logged-in retailer session can **never** access distributor backoffice screens.
+   - A distributor staff session can **never** access retailer ordering screens.
+   - Attempting to force `?mode=distributor` without `?demo=true` or proper credentials renders a security access denied guard.
+3. **Data Isolation**: Retailer sessions are dynamically bound to their specific store record (e.g. `RET-0001 Sri Laxmi Narasimha Textiles`, `RET-0002 Sri Venkata Ramana Garments`). Retailers only see their own orders, invoices, and credit line.
+4. **Rate Limiting & Lockout**: Failed verification attempts are tracked per identifier. After 3 failed attempts, accounts are locked for 60 seconds with an active countdown timer.
+5. **Telugu / English Localization**: Retailer login features native Telugu translations for rural store owners across Andhra Pradesh and Telangana.

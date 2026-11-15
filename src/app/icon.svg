@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="8" fill="#07090D"/>
+  <defs>
+    <linearGradient id="ark-fav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2F6BFF"/>
+      <stop offset="100%" stop-color="#22E5FF"/>
+    </linearGradient>
+  </defs>
+  <path d="M16 4L4.8 28H10.5L12.5 23.2H19.5L21.5 28H27.2L16 4ZM16 11.5L18.6 18H13.4L16 11.5Z" fill="url(#ark-fav-grad)"/>
+  <path d="M13.4 18H18.6L19.2 19.6H12.8L13.4 18Z" fill="#22E5FF"/>
+</svg>

@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import { RETAILER_PROFILE, formatINR, getRetailerFinancials } from "@/lib/mock/retailer";
+import { getRetailerString } from "@/lib/i18n/retailer";
 
 export default function ReviewOrderModal() {
   const {
@@ -20,6 +23,7 @@ export default function ReviewOrderModal() {
     currentDate,
   } = useApp();
 
+  const { language } = useAuth();
   const [notes, setNotes] = useState("");
   const [transporter, setTransporter] = useState(RETAILER_PROFILE.preferredTransporter);
   const [showConfirmSheet, setShowConfirmSheet] = useState(false);
@@ -47,57 +51,61 @@ export default function ReviewOrderModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 overflow-y-auto animate-in fade-in"
-      onClick={e => {
-        if (e.target === e.currentTarget && !showConfirmSheet) {
-          setIsReviewOrderOpen(false);
-        }
-      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Review Purchase Order"
+      className="fixed inset-0 z-50 bg-background flex flex-col text-ink overflow-hidden animate-in fade-in duration-200"
     >
-      <div className="relative w-full max-w-3xl bg-[#f7f9fb] rounded-t-3xl sm:rounded-2xl max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
-        {/* Header */}
-        <div className="p-4 sm:p-6 bg-white border-b border-slate-200 flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0047d3] flex items-center justify-center border border-blue-100">
-              <span className="material-symbols-outlined text-[24px]">shopping_cart_checkout</span>
-            </div>
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
-                Review Active PO Request
-              </h2>
-              <p className="text-xs text-slate-500 font-mono">
-                {RETAILER_PROFILE.name} • {RETAILER_PROFILE.town}
-              </p>
-            </div>
-          </div>
-
+      {/* Full-Screen Top Header */}
+      <div className="p-3.5 sm:p-4 bg-surface border-b border-border flex items-center justify-between sticky top-0 z-20 shadow-soft-sm">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <button
+            type="button"
             onClick={() => setIsReviewOrderOpen(false)}
-            className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors"
+            className="min-h-[44px] min-w-[44px] rounded-md bg-background hover:bg-surface text-ink flex items-center justify-center transition-colors border border-border shadow-soft-sm cursor-pointer"
+            aria-label="Back to Shop"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <Icon name="arrow_back" size={20} />
           </button>
+          <div>
+            <h2 className="text-sm sm:text-lg font-bold text-ink leading-tight">
+              {getRetailerString(language, "reviewOrderTitle")}
+            </h2>
+            <p className="text-[11px] text-ink-muted font-mono num">
+              {RETAILER_PROFILE.name} • {RETAILER_PROFILE.town}
+            </p>
+          </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-6">
-          {cartItems.length === 0 ? (
-            <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
-                <span className="material-symbols-outlined text-[32px]">production_quantity_limits</span>
-              </div>
-              <h3 className="text-base font-bold text-slate-800">Your order is empty</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Browse our brand catalog and add wholesale box units.
-              </p>
-              <button
-                onClick={() => setIsReviewOrderOpen(false)}
-                className="mt-4 px-5 py-2.5 rounded-xl bg-[#0047d3] text-white font-semibold text-sm"
-              >
-                Continue Browsing
-              </button>
+        <button
+          type="button"
+          onClick={() => setIsReviewOrderOpen(false)}
+          className="min-h-[44px] px-3 rounded-md bg-background hover:bg-surface text-ink-muted hover:text-ink text-xs font-semibold flex items-center gap-1 transition-colors border border-border shadow-soft-sm cursor-pointer"
+        >
+          <Icon name="close" size={18} />
+          <span className="hidden sm:inline">Close</span>
+        </button>
+      </div>
+
+      {/* Scrollable Content Body */}
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-4xl mx-auto w-full">
+        {cartItems.length === 0 ? (
+          <div className="p-12 text-center bg-surface rounded-lg border border-border shadow-soft-sm my-8">
+            <div className="w-16 h-16 rounded-full bg-surface-raised flex items-center justify-center mx-auto mb-3 text-ink-muted">
+              <Icon name="production_quantity_limits" size={32} />
             </div>
-          ) : (
+            <h3 className="text-base font-bold text-ink">{getRetailerString(language, "cartEmpty")}</h3>
+            <p className="text-xs text-ink-muted mt-1">
+              Browse our wholesale catalog and select boxes to create your PO.
+            </p>
+            <button
+              onClick={() => setIsReviewOrderOpen(false)}
+              className="mt-4 px-5 min-h-[44px] rounded-md bg-primary text-primary-foreground font-semibold text-xs shadow-soft-sm hover:bg-primary/90 cursor-pointer"
+            >
+              {getRetailerString(language, "startShopping")}
+            </button>
+          </div>
+        ) : (
             <>
               {/* Brand Grouped Items */}
               {Object.entries(groupedByBrand).map(([brandName, items]) => {
@@ -105,28 +113,28 @@ export default function ReviewOrderModal() {
 
                 return (
                   <section key={brandName} className="space-y-3">
-                    <div className="p-3 sm:p-4 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-between">
+                    <div className="p-3 sm:p-4 rounded-md bg-surface border border-border shadow-soft-sm flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#0047d3] flex items-center justify-center font-bold">
-                          <span className="material-symbols-outlined text-[22px]">inventory_2</span>
+                        <div className="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20">
+                          <Icon name="inventory_2" size={22} />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-sm sm:text-base">
+                            <span className="font-bold text-ink text-sm sm:text-base">
                               {brandName}
                             </span>
-                            <span className="px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-600 font-semibold">
+                            <span className="px-2 py-0.5 text-xs rounded-sm bg-surface-raised text-ink-muted font-semibold border border-border">
                               {items.length} items
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500">100% Factory Certified • Sourced from Tiruppur mills</p>
+                          <p className="text-xs text-ink-muted">100% Factory Certified • Sourced from Tiruppur mills</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-[11px] uppercase tracking-wider text-slate-400 block font-semibold">
+                        <span className="text-[11px] uppercase tracking-wider text-ink-muted block font-semibold">
                           Brand Subtotal
                         </span>
-                        <span className="text-sm sm:text-base font-bold text-[#0047d3] font-mono">
+                        <span className="text-sm sm:text-base font-bold text-primary font-mono num">
                           {formatINR(brandTotal)}
                         </span>
                       </div>
@@ -136,55 +144,55 @@ export default function ReviewOrderModal() {
                       {items.map((item, idx) => (
                         <div
                           key={`${item.productId}_${item.color}_${item.size}_${idx}`}
-                          className="p-3 sm:p-4 rounded-xl bg-white border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          className="p-3 sm:p-4 rounded-md bg-surface border border-border shadow-soft-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             {(item.image || item.imageUrl) && (
                               <img
                                 src={item.image || item.imageUrl}
                                 alt={item.productTitle || item.productName || "Product"}
-                                className="w-14 h-14 rounded-lg object-cover bg-slate-100 shrink-0 border border-slate-200"
+                                className="w-14 h-14 rounded-md object-cover bg-surface-raised shrink-0 border border-border"
                               />
                             )}
                             <div className="min-w-0">
-                              <h4 className="font-semibold text-slate-900 text-sm truncate">
+                              <h4 className="font-semibold text-ink text-sm truncate">
                                 {item.productTitle || item.productName}
                               </h4>
-                              <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs text-slate-500">
-                                <span className="font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                              <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs text-ink-muted">
+                                <span className="font-medium text-ink bg-surface-raised px-2 py-0.5 rounded-sm border border-border">
                                   {item.color}
                                 </span>
                                 <span>•</span>
-                                <span className="font-medium text-slate-700">{item.size}</span>
+                                <span className="font-medium text-ink">{item.size}</span>
                                 <span>•</span>
-                                <span className="font-mono text-slate-600">
+                                <span className="font-mono num text-ink-muted">
                                   {formatINR(item.rate)}/bx
                                 </span>
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border">
                             <div className="text-right sm:mr-2">
-                              <span className="text-sm font-bold text-slate-900 font-mono block">
+                              <span className="text-sm font-bold text-ink font-mono num block">
                                 {formatINR(item.units * item.rate)}
                               </span>
-                              <span className="text-[11px] text-slate-400 font-mono">
+                              <span className="text-[11px] text-ink-muted font-mono num">
                                 {item.totalPieces} pcs
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1 border border-slate-200">
+                            <div className="flex items-center gap-1 bg-surface-raised rounded-sm p-1 border border-border">
                               <button
                                 type="button"
                                 onClick={() =>
                                   updateCartItemQty(item.productId, item.color, item.size, -1)
                                 }
-                                className="w-8 h-8 rounded bg-white hover:bg-slate-200 text-slate-800 font-bold flex items-center justify-center transition-colors shadow-2xs"
+                                className="w-8 h-8 rounded-sm bg-surface hover:bg-surface-raised text-ink font-bold flex items-center justify-center transition-colors shadow-soft-sm cursor-pointer"
                               >
                                 -
                               </button>
-                              <span className="w-12 text-center text-xs font-mono font-bold text-slate-900">
+                              <span className="w-12 text-center text-xs font-mono num font-bold text-ink">
                                 {item.units} bx
                               </span>
                               <button
@@ -192,7 +200,7 @@ export default function ReviewOrderModal() {
                                 onClick={() =>
                                   updateCartItemQty(item.productId, item.color, item.size, 1)
                                 }
-                                className="w-8 h-8 rounded bg-white hover:bg-slate-200 text-slate-800 font-bold flex items-center justify-center transition-colors shadow-2xs"
+                                className="w-8 h-8 rounded-sm bg-surface hover:bg-surface-raised text-ink font-bold flex items-center justify-center transition-colors shadow-soft-sm cursor-pointer"
                               >
                                 +
                               </button>
@@ -201,10 +209,10 @@ export default function ReviewOrderModal() {
                             <button
                               type="button"
                               onClick={() => removeCartItem(item.productId, item.color, item.size)}
-                              className="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors"
+                              className="w-8 h-8 rounded-sm text-ink-muted hover:text-danger hover:bg-danger/10 flex items-center justify-center transition-colors cursor-pointer"
                               title="Remove item"
                             >
-                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                              <Icon name="delete" size={18} />
                             </button>
                           </div>
                         </div>
@@ -215,11 +223,9 @@ export default function ReviewOrderModal() {
               })}
 
               {/* Logistics & Transporter selection */}
-              <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
-                <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[#0047d3] text-[18px]">
-                    local_shipping
-                  </span>
+              <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm space-y-3">
+                <label className="text-xs font-bold text-ink uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon name="local_shipping" size={18} className="text-primary" />
                   Transporter / Lorry Service Preference
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -231,30 +237,26 @@ export default function ReviewOrderModal() {
                     <label
                       key={t.id}
                       onClick={() => setTransporter(t.name)}
-                      className={`p-3 rounded-xl border cursor-pointer flex flex-col justify-between transition-all ${
+                      className={`p-3 rounded-md border cursor-pointer flex flex-col justify-between transition-all ${
                         transporter === t.name
-                          ? "border-[#0047d3] bg-blue-50/50 shadow-2xs"
-                          : "border-slate-200 bg-white hover:bg-slate-50"
+                          ? "border-primary bg-primary/10 shadow-soft-sm"
+                          : "border-border bg-surface hover:bg-surface-raised"
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900">{t.name}</span>
+                        <span className="text-xs font-bold text-ink">{t.name}</span>
                         {transporter === t.name && (
-                          <span className="material-symbols-outlined text-[#0047d3] text-[16px]">
-                            check_circle
-                          </span>
+                          <Icon name="check_circle" size={16} className="text-primary" />
                         )}
                       </div>
-                      <span className="text-[11px] text-slate-500 mt-1">{t.tag}</span>
+                      <span className="text-[11px] text-ink-muted mt-1">{t.tag}</span>
                     </label>
                   ))}
                 </div>
 
                 <div className="pt-2">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px] text-slate-400">
-                      edit_note
-                    </span>
+                  <label className="text-xs font-semibold text-ink flex items-center gap-1">
+                    <Icon name="edit_note" size={16} className="text-ink-muted" />
                     Delivery Instructions / Special Packaging Notes
                   </label>
                   <textarea
@@ -262,47 +264,47 @@ export default function ReviewOrderModal() {
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
                     placeholder="E.g. Siddipet Market branch unload, wrap with waterproof tarpaulin..."
-                    className="w-full mt-1.5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#0047d3] transition-colors resize-none"
+                    className="w-full mt-1.5 p-3 rounded-md bg-surface-raised border border-border text-xs sm:text-sm text-ink placeholder:text-ink-muted focus:bg-surface focus:outline-none focus:border-primary transition-colors resize-none"
                   />
                 </div>
               </div>
 
               {/* Order Summary & Credit Health */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-4">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              <div className="p-4 sm:p-5 rounded-lg bg-surface border border-border shadow-soft-sm space-y-4">
+                <h3 className="text-sm font-bold text-ink uppercase tracking-wider">
                   PO Cost & Credit Verification
                 </h3>
 
                 <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center justify-between text-ink-muted">
                     <span>Total Master Boxes</span>
-                    <span className="font-mono font-bold text-slate-900">{cartTotalBoxes} boxes</span>
+                    <span className="font-mono num font-bold text-ink">{cartTotalBoxes} boxes</span>
                   </div>
-                  <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center justify-between text-ink-muted">
                     <span>Total Pieces Quantity</span>
-                    <span className="font-mono font-bold text-slate-900">{cartTotalPieces} pieces</span>
+                    <span className="font-mono num font-bold text-ink">{cartTotalPieces} pieces</span>
                   </div>
-                  <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center justify-between text-ink-muted">
                     <span>Estimated Subtotal (Net)</span>
-                    <span className="font-mono font-bold text-slate-900">
+                    <span className="font-mono num font-bold text-ink">
                       {formatINR(cartSubtotal)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center justify-between text-ink-muted">
                     <span>Estimated 5% GST</span>
-                    <span className="font-mono text-slate-700">{formatINR(cartGst)}</span>
+                    <span className="font-mono num text-ink">{formatINR(cartGst)}</span>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-slate-50 text-[11px] text-slate-500 border border-slate-200">
+                  <div className="p-2.5 rounded-sm bg-surface-raised text-[11px] text-ink-muted border border-border">
                     GST extra (5%), charged on tax invoice upon physical dispatch from Secunderabad central hub.
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+                  <div className="pt-2 border-t border-border flex items-baseline justify-between">
                     <div>
-                      <span className="font-bold text-slate-900 text-base">Grand Estimated Total</span>
-                      <span className="text-xs text-slate-400 block">Post-verification final bill</span>
+                      <span className="font-bold text-ink text-base">Grand Estimated Total</span>
+                      <span className="text-xs text-ink-muted block">Post-verification final bill</span>
                     </div>
-                    <span className="text-xl sm:text-2xl font-bold text-[#0047d3] font-mono">
+                    <span className="text-xl sm:text-2xl font-bold text-primary font-mono num">
                       {formatINR(cartGrandTotal)}
                     </span>
                   </div>
@@ -310,24 +312,20 @@ export default function ReviewOrderModal() {
 
                 {/* Wholesaler Reassurance & Credit terms status */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200 flex items-start gap-2.5">
-                    <span className="material-symbols-outlined text-[#0047d3] text-[20px] shrink-0 mt-0.5">
-                      info
-                    </span>
-                    <p className="text-xs text-slate-700 leading-snug">
+                  <div className="p-3 rounded-md bg-primary/10 border border-primary/20 flex items-start gap-2.5">
+                    <Icon name="info" size={20} className="text-primary shrink-0 mt-0.5" />
+                    <p className="text-xs text-ink leading-snug">
                       <strong>Order request:</strong> Wholesaler reviews physical stock and confirms allocation before invoice generation.
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-start gap-2.5">
-                    <span className="material-symbols-outlined text-emerald-700 text-[20px] shrink-0 mt-0.5">
-                      verified
-                    </span>
+                  <div className="p-3 rounded-md bg-success/10 border border-success/20 flex items-start gap-2.5">
+                    <Icon name="verified" size={20} className="text-success shrink-0 mt-0.5" />
                     <div>
-                      <span className="text-xs font-bold text-emerald-800 block">
+                      <span className="text-xs font-bold text-success block">
                         Within wholesale credit terms
                       </span>
-                      <span className="text-[11px] text-emerald-700 font-mono">
+                      <span className="text-[11px] text-success/90 font-mono num">
                         {formatINR(financials.availableCredit)} available of {formatINR(financials.creditLimit)} credit limit
                       </span>
                     </div>
@@ -336,130 +334,129 @@ export default function ReviewOrderModal() {
               </div>
             </>
           )}
-        </div>
+      </div>
 
-        {/* Modal Bottom Sticky CTA */}
-        {cartItems.length > 0 && (
-          <div className="p-4 sm:p-5 bg-white border-t border-slate-200 flex items-center justify-between gap-4 sticky bottom-0 z-20 shadow-lg">
+      {/* Full-Screen Bottom Sticky CTA Bar */}
+      {cartItems.length > 0 && (
+        <div className="p-3 sm:p-4 bg-surface/95 backdrop-blur-md border-t border-border flex items-center justify-between gap-3 sticky bottom-0 z-20 shadow-soft-xl">
+          <div className="max-w-4xl mx-auto w-full flex items-center justify-between gap-3">
             <div>
-              <span className="text-xs text-slate-500 font-mono">
+              <span className="text-[11px] sm:text-xs text-ink-muted font-mono num block">
                 {cartTotalBoxes} boxes • {cartItems.length} SKUs
               </span>
-              <div className="text-lg sm:text-xl font-bold text-slate-900 font-mono">
+              <div className="text-base sm:text-xl font-bold text-primary font-mono num">
                 {formatINR(cartGrandTotal)}
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setIsReviewOrderOpen(false)}
-                className="px-4 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition-all"
+                className="hidden sm:flex px-4 min-h-[48px] rounded-md bg-background hover:bg-surface text-ink text-xs sm:text-sm font-semibold transition-all border border-border cursor-pointer items-center justify-center"
               >
-                Back to Catalog
+                Continue Shopping
               </button>
               <button
                 type="button"
                 onClick={() => setShowConfirmSheet(true)}
-                className="px-6 h-11 rounded-xl bg-[#0047d3] hover:bg-[#1e5eff] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center gap-2 active:scale-98"
+                className="px-5 sm:px-6 min-h-[48px] rounded-md bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-xs sm:text-sm shadow-soft-md transition-all flex items-center gap-2 cursor-pointer"
               >
                 <span>Submit Purchase Order</span>
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <Icon name="arrow_forward" size={18} />
               </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Nested Confirmation Slide-Up Sheet */}
-        {showConfirmSheet && (
-          <div className="absolute inset-0 z-30 bg-black/50 backdrop-blur-xs flex flex-col justify-end animate-in fade-in">
-            <div className="w-full bg-white rounded-t-3xl p-6 shadow-2xl border-t border-slate-200 space-y-4 animate-in slide-in-from-bottom duration-200">
-              <div className="w-12 h-1 bg-slate-300 rounded-full mx-auto -mt-2 mb-2" />
+      {/* Confirmation Slide-Up Bottom Sheet */}
+      {showConfirmSheet && (
+        <div className="fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex flex-col justify-end animate-in fade-in">
+          <div className="w-full max-w-lg mx-auto bg-surface rounded-t-2xl p-5 sm:p-6 shadow-soft-xl border-t border-border space-y-4 animate-in slide-in-from-bottom duration-200 text-ink">
+            <div className="w-12 h-1 bg-border rounded-full mx-auto -mt-2 mb-2" />
 
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#0047d3] flex items-center justify-center border border-blue-200">
-                    <span className="material-symbols-outlined text-[26px]">assignment_turned_in</span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900">
-                      Submit PO Allocation Request?
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      {RETAILER_PROFILE.dispatchHub}
-                    </p>
-                  </div>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-md bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                  <Icon name="assignment_turned_in" size={26} />
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmSheet(false)}
-                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200"
-                >
-                  <span className="material-symbols-outlined text-[18px]">close</span>
-                </button>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs sm:text-sm">
-                <div className="flex justify-between text-slate-600">
-                  <span>Order Items:</span>
-                  <span className="font-bold text-slate-900 font-mono">
-                    {cartTotalBoxes} boxes ({cartItems.length} SKUs)
-                  </span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Destination Store:</span>
-                  <span className="font-semibold text-slate-900">
-                    {RETAILER_PROFILE.name} ({RETAILER_PROFILE.town})
-                  </span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Preferred Transport:</span>
-                  <span className="font-semibold text-[#0047d3]">{transporter}</span>
-                </div>
-                <div className="flex justify-between text-slate-600 border-t border-slate-200 pt-1.5 font-bold">
-                  <span>Grand Total (est.):</span>
-                  <span className="text-[#0047d3] font-mono text-base">
-                    {formatINR(cartGrandTotal)}
-                  </span>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-ink">
+                    Submit PO Allocation Request?
+                  </h3>
+                  <p className="text-xs text-ink-muted">
+                    {RETAILER_PROFILE.dispatchHub}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={handleConfirmSubmit}
-                  className="w-full sm:flex-1 h-12 rounded-xl bg-[#0047d3] hover:bg-[#1e5eff] disabled:bg-blue-300 text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="material-symbols-outlined animate-spin text-[20px]">
-                        progress_activity
-                      </span>
-                      <span>Submitting PO...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined text-[20px]">check</span>
-                      <span>Confirm & Submit PO</span>
-                    </>
-                  )}
-                </button>
+              <button
+                type="button"
+                onClick={() => setShowConfirmSheet(false)}
+                className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center border border-border cursor-pointer"
+              >
+                <Icon name="close" size={18} />
+              </button>
+            </div>
 
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => setShowConfirmSheet(false)}
-                  className="w-full sm:w-auto px-5 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition-all"
-                >
-                  Edit Order
-                </button>
+            <div className="p-3.5 rounded-md bg-background border border-border space-y-1.5 text-xs sm:text-sm">
+              <div className="flex justify-between text-ink-muted">
+                <span>Order Items:</span>
+                <span className="font-bold text-ink font-mono num">
+                  {cartTotalBoxes} boxes ({cartItems.length} SKUs)
+                </span>
+              </div>
+              <div className="flex justify-between text-ink-muted">
+                <span>Destination Store:</span>
+                <span className="font-semibold text-ink">
+                  {RETAILER_PROFILE.name} ({RETAILER_PROFILE.town})
+                </span>
+              </div>
+              <div className="flex justify-between text-ink-muted">
+                <span>Preferred Transport:</span>
+                <span className="font-semibold text-primary">{transporter}</span>
+              </div>
+              <div className="flex justify-between text-ink-muted border-t border-border pt-1.5 font-bold">
+                <span>Grand Total (est.):</span>
+                <span className="text-primary font-mono num text-base">
+                  {formatINR(cartGrandTotal)}
+                </span>
               </div>
             </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={handleConfirmSubmit}
+                className="w-full sm:flex-1 min-h-[48px] rounded-md bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-bold text-xs sm:text-sm shadow-soft-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Icon name="progress_activity" size={20} className="animate-spin" />
+                    <span>Submitting PO...</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon name="check" size={20} />
+                    <span>Confirm & Submit PO</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => setShowConfirmSheet(false)}
+                className="w-full sm:w-auto px-5 min-h-[48px] rounded-md bg-background hover:bg-surface text-ink text-xs sm:text-sm font-semibold transition-all border border-border cursor-pointer"
+              >
+                Edit Order
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
