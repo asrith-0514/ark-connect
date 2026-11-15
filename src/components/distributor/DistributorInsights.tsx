@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import {
   formatINR,
@@ -53,8 +54,8 @@ export const DistributorInsights: React.FC = () => {
     <div className="w-full flex flex-col gap-6 pb-20 animate-in fade-in duration-150 text-ink">
       {/* Toast Feedback for AI Voice Call */}
       {aiCallFeedback && (
-        <div className="fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-soft-xl bg-ink text-surface border border-border text-xs font-semibold animate-in fade-in slide-in-from-top-2 duration-200">
-          <span className="material-symbols-outlined text-[18px] text-primary">smart_toy</span>
+        <div className="fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-soft-xl bg-ink text-surface border border-border text-xs font-semibold animate-in fade-in slide-in-from-top-2 duration-200">
+          <Icon name="smart_toy" size={18} className="text-primary" />
           <span>{aiCallFeedback}</span>
         </div>
       )}
@@ -64,7 +65,7 @@ export const DistributorInsights: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <h1 className="text-2xl font-bold text-ink tracking-tight">Actionable Relationship Insights</h1>
           <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
+            <Icon name="auto_awesome" size={14} />
             AI Automated
           </span>
         </div>
@@ -76,19 +77,19 @@ export const DistributorInsights: React.FC = () => {
       {/* Grid of Actionable Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* CARD 1: Retailers Who Stopped Ordering (> 60 Days) */}
-        <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm flex flex-col justify-between space-y-4">
+        <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm flex flex-col justify-between space-y-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-slate-500/10 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
-                  <span className="material-symbols-outlined text-[20px]">person_off</span>
+                <div className="w-9 h-9 rounded-md bg-ink-muted/10 text-ink-muted flex items-center justify-center font-bold">
+                  <Icon name="person_off" size={20} />
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-ink">Dormant Accounts ({insights.inactiveRetailers.length})</h3>
                   <p className="text-[11px] text-ink-muted">Zero wholesale orders placed in the last 60+ days</p>
                 </div>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/15 text-slate-700 dark:text-slate-400">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-ink-muted/15 text-ink-muted border border-border">
                 Re-engagement Needed
               </span>
             </div>
@@ -115,10 +116,10 @@ export const DistributorInsights: React.FC = () => {
                       href={`https://wa.me/${item.retailer.phone.replace(/[^0-9]/g, "")}?text=Namaste%20${encodeURIComponent(item.retailer.ownerName)}%20garu,%20ARK%20Distributors%20lo%20new%20festive%20stock%20vachindi.%20Check%20chestara?`}
                       target="_blank"
                       rel="noreferrer"
-                      className="h-8 px-2.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                      className="h-8 px-2.5 rounded-md bg-success/10 hover:bg-success/20 text-success border border-success/20 text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
                       title="Send WhatsApp catalog message"
                     >
-                      <span className="material-symbols-outlined text-[14px]">chat</span>
+                      <Icon name="chat" size={14} />
                       WhatsApp
                     </a>
                     <button
@@ -135,7 +136,7 @@ export const DistributorInsights: React.FC = () => {
                       className="h-8 w-8 rounded-lg bg-surface hover:bg-surface-raised border border-border text-ink-muted hover:text-primary flex items-center justify-center transition-colors cursor-pointer"
                       title="Trigger automated AI Voice check-in call"
                     >
-                      <span className="material-symbols-outlined text-[15px]">smart_toy</span>
+                      <Icon name="smart_toy" size={15} />
                     </button>
                   </div>
                 </div>
@@ -145,12 +146,12 @@ export const DistributorInsights: React.FC = () => {
         </div>
 
         {/* CARD 2: Declining Purchases (Last 90d vs Previous 90d) */}
-        <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm flex flex-col justify-between space-y-4">
+        <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm flex flex-col justify-between space-y-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
-                  <span className="material-symbols-outlined text-[20px]">trending_down</span>
+                  <Icon name="trending_down" size={20} />
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-ink">Declining Reorders ({insights.decliningRetailers.length})</h3>
@@ -198,11 +199,11 @@ export const DistributorInsights: React.FC = () => {
         </div>
 
         {/* CARD 3: Frequently Purchased Products Across Network */}
-        <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm space-y-4">
+        <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-                <span className="material-symbols-outlined text-[20px]">local_fire_department</span>
+                <Icon name="local_fire_department" size={20} />
               </div>
               <div>
                 <h3 className="font-bold text-sm text-ink">Network Top Movers (Fast Moving)</h3>
@@ -240,11 +241,11 @@ export const DistributorInsights: React.FC = () => {
         </div>
 
         {/* CARD 4: Retailers with Pending Complaints */}
-        <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm space-y-4">
+        <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-danger/10 text-danger flex items-center justify-center font-bold">
-                <span className="material-symbols-outlined text-[20px]">support_agent</span>
+                <Icon name="support_agent" size={20} />
               </div>
               <div>
                 <h3 className="font-bold text-sm text-ink">Open Retailer Complaints ({insights.pendingComplaints.length})</h3>
@@ -284,25 +285,25 @@ export const DistributorInsights: React.FC = () => {
         </div>
 
         {/* CARD 5: Cross-Selling & Category Expansion Opportunities */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-surface border border-border shadow-soft-sm space-y-4">
+        <div className="lg:col-span-2 p-5 rounded-lg bg-surface border border-border shadow-soft-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold">
-                <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
+              <div className="w-9 h-9 rounded-md bg-success/10 text-success flex items-center justify-center font-bold">
+                <Icon name="shopping_bag" size={20} />
               </div>
               <div>
                 <h3 className="font-bold text-sm text-ink">Cross-Selling &amp; Basket Expansion Opportunities</h3>
                 <p className="text-[11px] text-ink-muted">Identified store gaps where retailers buy only one category</p>
               </div>
             </div>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success/15 text-success border border-success/30">
               Revenue Growth
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {insights.crossSellingOpportunities.map((opp, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-background border border-border space-y-3">
+              <div key={idx} className="p-4 rounded-md bg-background border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <button
                     type="button"
@@ -311,7 +312,7 @@ export const DistributorInsights: React.FC = () => {
                   >
                     {opp.retailer.name} ({opp.retailer.town})
                   </button>
-                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-success/15 text-success border border-success/30">
                     +30% Upsell
                   </span>
                 </div>
@@ -334,16 +335,16 @@ export const DistributorInsights: React.FC = () => {
                     href={`https://wa.me/${opp.retailer.phone.replace(/[^0-9]/g, "")}?text=Namaste%20${encodeURIComponent(opp.retailer.ownerName)}%20garu,%20ARK%20lo%20${encodeURIComponent(opp.recommendedProduct)}%20sample%20box%20offer%20undi.%20Mee%20store%20kosam%20send%20cheyamantara?`}
                     target="_blank"
                     rel="noreferrer"
-                    className="h-8 px-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="h-8 px-3 rounded-md bg-success/10 hover:bg-success/20 text-success border border-success/20 text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[14px]">chat</span>
+                    <Icon name="chat" size={14} />
                     WhatsApp Offer
                   </a>
 
                   <button
                     type="button"
                     onClick={() => handleCreateFollowUp(opp.retailer.id)}
-                    className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary/90 transition-colors cursor-pointer shadow-soft-xs"
+                    className="h-8 px-3 rounded-md bg-primary text-primary-foreground text-[11px] font-bold hover:bg-primary/90 transition-colors cursor-pointer shadow-soft-xs"
                   >
                     + Pitch Task
                   </button>

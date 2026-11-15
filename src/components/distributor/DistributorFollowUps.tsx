@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import {
   formatINR,
@@ -99,7 +100,7 @@ export const DistributorFollowUps: React.FC = () => {
             <h1 className="text-2xl font-bold text-ink tracking-tight">Follow-up Management</h1>
             {grouped.counts.missed > 0 && (
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-danger/15 text-danger border border-danger/20 flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">warning</span>
+                <Icon name="warning" size={14} />
                 {grouped.counts.missed} Missed
               </span>
             )}
@@ -117,22 +118,22 @@ export const DistributorFollowUps: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsAddModalOpen(true)}
-          className="h-10 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer self-start sm:self-auto shrink-0"
+          className="h-10 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center gap-2 shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer self-start sm:self-auto shrink-0"
         >
-          <span className="material-symbols-outlined text-[18px]">add</span>
+          <Icon name="add" size={18} />
           Schedule Follow-up
         </button>
       </div>
 
       {/* Pending Retailer Requests Callout Banner */}
       {pendingRequests.length > 0 && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-ink">
+        <div className="p-4 rounded-lg bg-warning/10 border border-warning/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-ink">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px]">notifications_active</span>
+            <div className="w-9 h-9 rounded-md bg-warning/20 text-warning flex items-center justify-center shrink-0">
+              <Icon name="notifications_active" size={20} />
             </div>
             <div>
-              <div className="text-xs font-bold text-amber-900 dark:text-amber-300">
+              <div className="text-xs font-bold text-ink">
                 {pendingRequests.length} Pending Store Request{pendingRequests.length > 1 ? "s" : ""} Raised from Retailer Portal
               </div>
               <p className="text-[11px] text-ink-muted mt-0.5">
@@ -143,7 +144,7 @@ export const DistributorFollowUps: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab("requests")}
-            className="px-3.5 py-1.5 rounded-xl bg-surface border border-amber-500/30 text-xs font-bold text-ink hover:bg-surface-raised cursor-pointer transition-colors shadow-soft-xs self-start sm:self-auto"
+            className="px-3.5 py-1.5 rounded-md bg-surface border border-warning/30 text-xs font-bold text-ink hover:bg-surface-raised cursor-pointer transition-colors shadow-soft-xs self-start sm:self-auto"
           >
             Review Requests ({pendingRequests.length}) →
           </button>
@@ -155,7 +156,7 @@ export const DistributorFollowUps: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("today")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+          className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
             activeTab === "today"
               ? "bg-primary text-primary-foreground shadow-soft-xs"
               : "text-ink-muted hover:text-ink hover:bg-surface-raised"
@@ -170,7 +171,7 @@ export const DistributorFollowUps: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("missed")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+          className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
             activeTab === "missed"
               ? "bg-danger text-white shadow-soft-xs"
               : "text-danger hover:bg-danger/10"
@@ -185,7 +186,7 @@ export const DistributorFollowUps: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("upcoming")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+          className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
             activeTab === "upcoming"
               ? "bg-primary text-primary-foreground shadow-soft-xs"
               : "text-ink-muted hover:text-ink hover:bg-surface-raised"
@@ -200,7 +201,7 @@ export const DistributorFollowUps: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("byEmployee")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+          className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
             activeTab === "byEmployee"
               ? "bg-primary text-primary-foreground shadow-soft-xs"
               : "text-ink-muted hover:text-ink hover:bg-surface-raised"
@@ -212,10 +213,10 @@ export const DistributorFollowUps: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("requests")}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+          className={`px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
             activeTab === "requests"
-              ? "bg-amber-600 text-white shadow-soft-xs"
-              : "text-amber-700 dark:text-amber-400 hover:bg-amber-500/10"
+              ? "bg-warning text-background font-bold shadow-soft-xs"
+              : "text-warning hover:bg-warning/10"
           }`}
         >
           <span>Pending Requests</span>
@@ -227,9 +228,9 @@ export const DistributorFollowUps: React.FC = () => {
 
       {/* Filter & Search Controls */}
       {activeTab !== "requests" && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface p-3 rounded-2xl border border-border shadow-soft-xs">
-          <div className="flex items-center gap-2 flex-1 max-w-md bg-background px-3 py-1.5 rounded-xl border border-border">
-            <span className="material-symbols-outlined text-[18px] text-ink-muted">search</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface p-3 rounded-lg border border-border shadow-soft-xs">
+          <div className="flex items-center gap-2 flex-1 max-w-md bg-background px-3 py-1.5 rounded-md border border-border">
+            <Icon name="search" size={18} className="text-ink-muted" />
             <input
               type="text"
               placeholder="Search by store name, town, or task note..."
@@ -244,7 +245,7 @@ export const DistributorFollowUps: React.FC = () => {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="h-9 px-3 bg-background border border-border rounded-xl text-xs font-semibold text-ink focus:outline-hidden"
+              className="h-9 px-3 bg-background border border-border rounded-md text-xs font-semibold text-ink focus:outline-hidden"
             >
               <option value="all">All Task Types</option>
               <option value="payment">Payment / Collection</option>
@@ -258,7 +259,7 @@ export const DistributorFollowUps: React.FC = () => {
               <select
                 value={selectedEmployee}
                 onChange={(e) => setSelectedEmployee(e.target.value)}
-                className="h-9 px-3 bg-background border border-border rounded-xl text-xs font-semibold text-ink focus:outline-hidden"
+                className="h-9 px-3 bg-background border border-border rounded-md text-xs font-semibold text-ink focus:outline-hidden"
               >
                 <option value="All">All Staff ({employeeNames.length})</option>
                 {employeeNames.map((emp) => (
@@ -275,9 +276,9 @@ export const DistributorFollowUps: React.FC = () => {
       {/* Content Area */}
       {activeTab === "requests" ? (
         /* Retailer Requests List */
-        <div className="bg-surface rounded-2xl border border-border shadow-soft-sm overflow-hidden p-5 space-y-4">
+        <div className="bg-surface rounded-lg border border-border shadow-soft-sm overflow-hidden p-5 space-y-4">
           <h3 className="font-bold text-sm text-ink flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px] text-amber-500">assignment_turned_in</span>
+            <Icon name="assignment_turned_in" size={18} className="text-warning" />
             Retailer Portal Requests ({retailerRequests.length})
           </h3>
 
@@ -290,7 +291,7 @@ export const DistributorFollowUps: React.FC = () => {
                     <div className="flex items-center gap-2.5">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
                         req.status === "pending"
-                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                          ? "bg-warning/15 text-warning border border-warning/30"
                           : req.status === "approved"
                           ? "bg-success/15 text-success"
                           : "bg-danger/15 text-danger"
@@ -357,14 +358,14 @@ export const DistributorFollowUps: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => updateRetailerRequestStatus(req.id, "approved")}
-                        className="px-3.5 py-1.5 rounded-xl bg-success hover:bg-success/90 text-white text-xs font-bold transition-all shadow-soft-xs cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-md bg-success hover:bg-success/90 text-white text-xs font-bold transition-all shadow-soft-xs cursor-pointer"
                       >
                         Approve
                       </button>
                       <button
                         type="button"
                         onClick={() => updateRetailerRequestStatus(req.id, "rejected")}
-                        className="px-3.5 py-1.5 rounded-xl bg-surface border border-border hover:bg-danger/10 text-danger text-xs font-bold transition-all cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-md bg-surface border border-border hover:bg-danger/10 text-danger text-xs font-bold transition-all cursor-pointer"
                       >
                         Decline
                       </button>
@@ -377,12 +378,10 @@ export const DistributorFollowUps: React.FC = () => {
         </div>
       ) : (
         /* Follow-ups Task Cards / Table */
-        <div className="bg-surface rounded-2xl border border-border shadow-soft-sm overflow-hidden p-5">
+        <div className="bg-surface rounded-lg border border-border shadow-soft-sm overflow-hidden p-5">
           {tabItems.length === 0 ? (
             <div className="text-center py-12 text-ink-muted text-xs">
-              <span className="material-symbols-outlined text-[36px] text-ink-muted/50 block mb-2">
-                task_alt
-              </span>
+              <Icon name="task_alt" size={36} className="text-ink-muted/50 block mb-2" />
               No follow-up tasks found for this view.
             </div>
           ) : (
@@ -392,7 +391,7 @@ export const DistributorFollowUps: React.FC = () => {
                 return (
                   <div
                     key={f.id}
-                    className="py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-surface-raised/40 p-2 rounded-xl transition-colors"
+                    className="py-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-surface-raised/40 p-2 rounded-md transition-colors"
                   >
                     <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -466,16 +465,16 @@ export const DistributorFollowUps: React.FC = () => {
                               href={`tel:${ret.phone}`}
                               className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-semibold"
                             >
-                              <span className="material-symbols-outlined text-[13px]">call</span>
+                              <Icon name="call" size={13} />
                               Call {ret.phone}
                             </a>
                             <a
                               href={`https://wa.me/${ret.phone.replace(/[^0-9]/g, "")}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-emerald-600 hover:underline flex items-center gap-1 cursor-pointer font-semibold"
+                              className="text-success hover:underline flex items-center gap-1 cursor-pointer font-semibold"
                             >
-                              <span className="material-symbols-outlined text-[13px]">chat</span>
+                              <Icon name="chat" size={13} />
                               WhatsApp
                             </a>
                           </div>
@@ -521,7 +520,7 @@ export const DistributorFollowUps: React.FC = () => {
                             onClick={() => updateFollowUpStatus(f.id, "done")}
                             className="h-8 px-3 rounded-lg bg-success hover:bg-success/90 text-white text-xs font-bold transition-all shadow-soft-xs cursor-pointer flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[15px]">check</span>
+                            <Icon name="check" size={15} />
                             Done
                           </button>
                         </>

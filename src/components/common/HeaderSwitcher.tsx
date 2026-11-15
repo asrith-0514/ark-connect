@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { isDemoModeEnabled } from "@/lib/mock/retailer";
+import { Icon } from "@/components/ui/Icon";
 
 export function HeaderSwitcher() {
   const { portalMode, setPortalMode, cartTotalBoxes, orders, retailers } = useApp();
@@ -54,7 +55,7 @@ export function HeaderSwitcher() {
               : "text-surface/80 hover:text-surface hover:bg-surface/10"
           }`}
         >
-          <span className="material-symbols-outlined text-[16px]">storefront</span>
+          <Icon name="storefront" size={15} />
           <span>Retailer Portal (ARK Connect)</span>
           {cartTotalBoxes > 0 && (
             <span className="px-1.5 py-0.2 rounded-full bg-primary/30 text-surface font-mono tabular-nums text-[10px]">
@@ -71,7 +72,7 @@ export function HeaderSwitcher() {
               : "text-surface/80 hover:text-surface hover:bg-surface/10"
           }`}
         >
-          <span className="material-symbols-outlined text-[16px]">inventory_2</span>
+          <Icon name="inventory_2" size={15} />
           <span>Distributor Hub (ARK Backoffice)</span>
           {(pendingApprovals > 0 || submittedOrders > 0) && (
             <span className="px-1.5 py-0.2 rounded-full bg-warning text-ink font-semibold text-[10px]">

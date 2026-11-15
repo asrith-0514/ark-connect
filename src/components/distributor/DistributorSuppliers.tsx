@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { Supplier } from "@/data/mockData";
-import { EmptyState } from "@/components/ui";
+import { EmptyState , Icon } from "@/components/ui";
 
 export const DistributorSuppliers: React.FC = () => {
   const { suppliers, purchaseBills } = useApp();
@@ -96,7 +96,7 @@ export const DistributorSuppliers: React.FC = () => {
             onClick={exportSuppliersCSV}
             className="h-10 px-4 rounded-md bg-surface hover:bg-surface-raised text-ink font-semibold text-xs flex items-center gap-2 border border-border shadow-soft-sm transition-colors cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px] text-ink-muted">download</span>
+            <Icon name="download" size={18} className="text-ink-muted" />
             <span>Export Statement</span>
           </button>
         </div>
@@ -147,9 +147,7 @@ export const DistributorSuppliers: React.FC = () => {
       {/* Search Bar */}
       <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm flex items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
-          <span className="material-symbols-outlined text-[18px] text-ink-muted absolute left-3 top-2.5">
-            search
-          </span>
+          <Icon name="search" size={18} className="text-ink-muted absolute left-3 top-2.5" />
           <input
             type="text"
             value={searchQuery}
@@ -185,7 +183,7 @@ export const DistributorSuppliers: React.FC = () => {
                   <tr>
                     <td colSpan={7} className="py-12 text-center">
                       <EmptyState
-                        icon={<span className="material-symbols-outlined text-[28px]">domain_disabled</span>}
+                        icon={<Icon name="domain_disabled" size={28} />}
                         title="No suppliers found"
                         description="Try adjusting your search query or clear the filter."
                         actionLabel="Clear Filter"
@@ -285,7 +283,7 @@ export const DistributorSuppliers: React.FC = () => {
                 onClick={() => setIsDrawerOpen(false)}
                 className="w-7 h-7 rounded-sm text-ink-muted hover:text-ink hover:bg-surface-raised flex items-center justify-center border border-border cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
@@ -332,7 +330,7 @@ export const DistributorSuppliers: React.FC = () => {
             {selectedSupplier.bankDetails && (
               <div className="p-3 rounded-md bg-primary/10 border border-primary/20 text-xs space-y-1.5">
                 <div className="flex items-center gap-1.5 font-bold text-primary">
-                  <span className="material-symbols-outlined text-[16px]">account_balance</span>
+                  <Icon name="account_balance" size={16} />
                   <span>NEFT / RTGS Settlement Account</span>
                 </div>
                 <div className="text-ink space-y-0.5 pt-1">
@@ -365,8 +363,8 @@ export const DistributorSuppliers: React.FC = () => {
                       <span
                         className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
                           b.status === "Paid"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-amber-100 text-amber-900"
+                            ? "bg-success/15 text-success border border-success/30"
+                            : "bg-warning/15 text-warning border border-warning/30"
                         }`}
                       >
                         {b.status}

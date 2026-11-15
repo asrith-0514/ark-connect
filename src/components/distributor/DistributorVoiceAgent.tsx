@@ -11,6 +11,8 @@ import {
   renderScriptTemplate,
 } from "@/lib/mock";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Icon } from "@/components/ui/Icon";
 
 export const DistributorVoiceAgent: React.FC = () => {
   const {
@@ -26,6 +28,8 @@ export const DistributorVoiceAgent: React.FC = () => {
     generateCallTasksFromRules,
     setSelectedRetailer360Id,
     setDistributorNav,
+    invoices,
+    orders,
   } = useApp();
 
   // Tab State
@@ -131,10 +135,10 @@ export const DistributorVoiceAgent: React.FC = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Top Banner & Header */}
-      <div className="bg-surface rounded-2xl p-6 border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-surface rounded-lg p-6 border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-serif text-ink font-bold">AI Voice Calling Agent</h1>
+            <h1 className="text-2xl font-sans tracking-tight text-ink font-bold">AI Voice Calling Agent</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
               Telephony Adapter Active
             </span>
@@ -152,7 +156,7 @@ export const DistributorVoiceAgent: React.FC = () => {
               const count = generateCallTasksFromRules();
               alert(`Rule evaluation complete: ${count} new proposed call task(s) added.`);
             }}
-            className="px-4 py-2 rounded-xl bg-surface-raised border border-border hover:bg-border/40 text-ink text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2 rounded-md bg-surface-raised border border-border hover:bg-border/40 text-ink text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
           >
             <span>⚡</span>
             <span>Evaluate Rules</span>
@@ -162,7 +166,7 @@ export const DistributorVoiceAgent: React.FC = () => {
             <button
               type="button"
               onClick={() => approveAllProposedTasks()}
-              className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2 rounded-md bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2 cursor-pointer"
             >
               <span>✓</span>
               <span>Approve All Proposed ({proposedCount})</span>
@@ -173,25 +177,25 @@ export const DistributorVoiceAgent: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-surface rounded-xl p-4 border border-border shadow-sm">
+        <div className="bg-surface rounded-lg p-4 border border-border shadow-sm">
           <div className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Awaiting Approval</div>
-          <div className="text-2xl font-serif font-bold text-warning mt-1">{proposedCount}</div>
+          <div className="text-2xl font-mono num font-bold text-warning mt-1">{proposedCount}</div>
           <div className="text-[11px] text-ink-muted mt-0.5">Proposed by rules · 0 dialed</div>
         </div>
 
-        <div className="bg-surface rounded-xl p-4 border border-border shadow-sm">
+        <div className="bg-surface rounded-lg p-4 border border-border shadow-sm">
           <div className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Approved Queue</div>
-          <div className="text-2xl font-serif font-bold text-primary mt-1">{approvedCount}</div>
+          <div className="text-2xl font-mono num font-bold text-primary mt-1">{approvedCount}</div>
           <div className="text-[11px] text-ink-muted mt-0.5">Ready for telephony dialing</div>
         </div>
 
-        <div className="bg-surface rounded-xl p-4 border border-border shadow-sm">
+        <div className="bg-surface rounded-lg p-4 border border-border shadow-sm">
           <div className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Completed Calls</div>
-          <div className="text-2xl font-serif font-bold text-success mt-1">{completedCount}</div>
+          <div className="text-2xl font-mono num font-bold text-success mt-1">{completedCount}</div>
           <div className="text-[11px] text-ink-muted mt-0.5">Logs & transcripts saved</div>
         </div>
 
-        <div className="bg-surface rounded-xl p-4 border border-border shadow-sm">
+        <div className="bg-surface rounded-lg p-4 border border-border shadow-sm">
           <div className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Captured Commitments</div>
           <div className="text-2xl font-mono font-bold text-ink mt-1">{formatINR(totalPromisedAmount)}</div>
           <div className="text-[11px] text-ink-muted mt-0.5">Auto-written to Follow-ups</div>
@@ -265,7 +269,7 @@ export const DistributorVoiceAgent: React.FC = () => {
       {activeTab === "queue" && (
         <div className="space-y-4">
           {/* Filter Bar */}
-          <div className="bg-surface p-4 rounded-xl border border-border shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="bg-surface p-4 rounded-md border border-border shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-bold text-ink-muted mr-1">Status:</span>
               {["all", "proposed", "approved", "completed", "cancelled"].map((st) => (
@@ -316,17 +320,20 @@ export const DistributorVoiceAgent: React.FC = () => {
           {/* Tasks List */}
           <div className="space-y-3">
             {filteredTasks.length === 0 ? (
-              <div className="bg-surface p-12 text-center rounded-xl border border-border text-ink-muted">
-                No call tasks found matching the selected filters.
-              </div>
+              <EmptyState
+                icon={<Icon name="phone" size={28} />}
+                title="No call tasks found"
+                description="No tasks match the selected status, reason, or language filters."
+                className="bg-surface rounded-lg border border-border"
+              />
             ) : (
               filteredTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="bg-surface p-4 rounded-xl border border-border shadow-xs hover:border-border/80 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="bg-surface p-4 rounded-md border border-border shadow-xs hover:border-border/80 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="p-2.5 rounded-xl bg-surface-raised border border-border text-lg shrink-0">
+                    <div className="p-2.5 rounded-md bg-surface-raised border border-border text-lg shrink-0">
                       {task.reason === "overdue" ? "⚠️" : task.reason === "dispatch_update" ? "🚚" : task.reason === "payment_due" ? "⏳" : "📞"}
                     </div>
 
@@ -445,7 +452,7 @@ export const DistributorVoiceAgent: React.FC = () => {
       {activeTab === "transcripts" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Calls List Sidebar */}
-          <div className="bg-surface rounded-xl border border-border p-4 shadow-sm space-y-2">
+          <div className="bg-surface rounded-md border border-border p-4 shadow-sm space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted mb-3">Completed Call Logs</h3>
             {callTasks
               .filter((t) => t.status === "completed" || t.transcript)
@@ -472,7 +479,7 @@ export const DistributorVoiceAgent: React.FC = () => {
           </div>
 
           {/* Transcript & Audio Dialog */}
-          <div className="lg:col-span-2 bg-surface rounded-xl border border-border p-6 shadow-sm space-y-5">
+          <div className="lg:col-span-2 bg-surface rounded-md border border-border p-6 shadow-sm space-y-5">
             {selectedTask ? (
               <>
                 <div className="border-b border-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -498,7 +505,7 @@ export const DistributorVoiceAgent: React.FC = () => {
                 </div>
 
                 {/* Simulated Audio Player */}
-                <div className="bg-surface-raised p-3.5 rounded-xl border border-border flex items-center gap-4">
+                <div className="bg-surface-raised p-3.5 rounded-md border border-border flex items-center gap-4">
                   <button
                     type="button"
                     onClick={() => setIsPlayingAudio(!isPlayingAudio)}
@@ -544,7 +551,7 @@ export const DistributorVoiceAgent: React.FC = () => {
                         </div>
 
                         <div
-                          className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
+                          className={`p-3.5 rounded-lg text-xs leading-relaxed ${
                             msg.speaker === "agent"
                               ? "bg-surface-raised border border-border text-ink"
                               : "bg-primary/10 border border-primary/20 text-ink"
@@ -567,7 +574,7 @@ export const DistributorVoiceAgent: React.FC = () => {
 
                 {/* Outcome Commitments Box */}
                 {selectedTask.outcome && (
-                  <div className="mt-4 p-4 rounded-xl bg-success/5 border border-success/20 text-xs text-ink space-y-1.5">
+                  <div className="mt-4 p-4 rounded-md bg-success/5 border border-success/20 text-xs text-ink space-y-1.5">
                     <div className="font-bold text-success flex items-center gap-2">
                       <span>✓</span>
                       <span>Extracted Call Outcome & System Write-Backs</span>
@@ -598,7 +605,7 @@ export const DistributorVoiceAgent: React.FC = () => {
       {activeTab === "scripts" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Reason Selector */}
-          <div className="bg-surface rounded-xl border border-border p-4 shadow-sm space-y-2">
+          <div className="bg-surface rounded-md border border-border p-4 shadow-sm space-y-2">
             <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted mb-3">Calling Reasons</h3>
             {(Object.keys(scriptTemplates) as CallTaskReason[]).map((r) => (
               <button
@@ -618,7 +625,7 @@ export const DistributorVoiceAgent: React.FC = () => {
           </div>
 
           {/* Script Editor & Preview */}
-          <div className="lg:col-span-2 bg-surface rounded-xl border border-border p-6 shadow-sm space-y-5">
+          <div className="lg:col-span-2 bg-surface rounded-md border border-border p-6 shadow-sm space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
               <div>
                 <h2 className="text-base font-bold text-ink">{scriptTemplates[selectedScriptReason].title}</h2>
@@ -626,7 +633,7 @@ export const DistributorVoiceAgent: React.FC = () => {
               </div>
 
               {/* Language Selector */}
-              <div className="flex items-center gap-1 bg-surface-raised p-1 rounded-xl border border-border">
+              <div className="flex items-center gap-1 bg-surface-raised p-1 rounded-md border border-border">
                 {(["te", "en", "hi", "ta"] as VoiceLanguage[]).map((lang) => (
                   <button
                     key={lang}
@@ -671,23 +678,23 @@ export const DistributorVoiceAgent: React.FC = () => {
                 rows={5}
                 value={editedScriptText}
                 onChange={(e) => setEditedScriptText(e.target.value)}
-                className="w-full p-3.5 bg-surface-raised border border-border rounded-xl text-ink text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 font-sans"
+                className="w-full p-3.5 bg-surface-raised border border-border rounded-md text-ink text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 font-sans"
               />
             </div>
 
             {/* Live Interpolation Preview */}
-            <div className="bg-surface-raised/60 p-4 rounded-xl border border-border space-y-1">
+            <div className="bg-surface-raised/60 p-4 rounded-md border border-border space-y-1">
               <div className="text-[11px] font-bold uppercase tracking-wider text-ink-muted">Live Speech Synthesis Preview:</div>
               <p className="text-xs text-ink leading-relaxed whitespace-pre-wrap">
                 {renderScriptTemplate(editedScriptText, {
-                  name: "Sri Laxmi Narasimha Textiles",
-                  amount: 31000,
-                  invoiceNumber: "INV-0094",
-                  dueDate: "28 Oct 2026",
+                  name: retailers[0]?.name || "Retailer",
+                  amount: invoices.find(i => i.balanceDue > 0)?.balanceDue || 31000,
+                  invoiceNumber: invoices[0]?.invoiceNumber || "INV-0001",
+                  dueDate: invoices[0]?.dueDate || "28 Oct 2026",
                   daysOverdue: 15,
-                  orderNumber: "ARK-8841",
-                  lrNumber: "NAV-948102",
-                  transportName: "Navata Road Transport",
+                  orderNumber: orders[0]?.orderNumber || "PO-0001",
+                  lrNumber: orders[0]?.lrNumber || "LR-1001",
+                  transportName: orders[0]?.transporter || "Navata Road Transport",
                 })}
               </p>
             </div>
@@ -698,7 +705,7 @@ export const DistributorVoiceAgent: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSaveScript}
-                className="px-5 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
+                className="px-5 py-2 rounded-md bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all shadow-sm cursor-pointer"
               >
                 Save Script Template
               </button>
@@ -711,7 +718,7 @@ export const DistributorVoiceAgent: React.FC = () => {
       {/* TAB 4: RETAILER TELEPHONY CONSENT & PREFERENCES */}
       {/* ===================================================================== */}
       {activeTab === "preferences" && (
-        <div className="bg-surface rounded-xl border border-border p-6 shadow-sm space-y-4">
+        <div className="bg-surface rounded-md border border-border p-6 shadow-sm space-y-4">
           <div>
             <h2 className="text-base font-bold text-ink">Retailer Telephony Consent & Calling Profiles</h2>
             <p className="text-xs text-ink-muted mt-0.5">

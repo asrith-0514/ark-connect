@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Icon } from "@/components/ui/Icon";
 import { formatINR } from "@/lib/mock/retailer";
 
 export interface CreditMeterProps {
@@ -30,9 +31,7 @@ export default function CreditMeter({
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-primary text-[18px]">
-            verified_user
-          </span>
+          <Icon name="verified_user" size={18} className="text-primary" />
           <span className="text-xs font-bold text-ink">Credit Line Health</span>
         </div>
 

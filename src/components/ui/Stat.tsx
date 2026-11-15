@@ -49,7 +49,8 @@ export function Stat({
 
     const startVal = 0;
     const endVal = value as number;
-    const duration = 800; // ms
+    // Brand spec: Motion duration strictly 120-250ms
+    const duration = 200;
 
     const animate = (timestamp: number) => {
       if (!startTimeRef.current) startTimeRef.current = timestamp;
@@ -81,11 +82,11 @@ export function Stat({
 
   return (
     <div
-      className={`bg-surface border border-border rounded-lg p-5 shadow-soft-sm text-ink transition-all duration-200 ease-out flex flex-col justify-between ${className}`}
+      className={`bg-surface border border-border rounded-md p-4 shadow-soft-xs text-ink transition-all duration-150 ease-out flex flex-col justify-between ${className}`}
       {...props}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="text-xs font-semibold text-ink-muted uppercase tracking-wider">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider font-mono">
           {label}
         </span>
         {delta && (
@@ -101,27 +102,29 @@ export function Stat({
         )}
       </div>
 
-      <div className="flex items-baseline gap-1 my-1">
+      <div className="flex items-baseline gap-1 my-0.5">
         {prefix && (
-          <span className="text-xl sm:text-2xl font-bold text-ink-muted select-none">
+          <span className="text-lg sm:text-xl font-bold text-ink-muted select-none font-mono">
             {prefix}
           </span>
         )}
-        <span className="text-2xl sm:text-3xl font-bold text-ink num tracking-tight">
+        <span className="text-xl sm:text-2xl font-bold text-ink num tracking-tight">
           {formattedValue}
         </span>
         {suffix && (
-          <span className="text-sm font-medium text-ink-muted select-none ml-1">
+          <span className="text-xs font-medium text-ink-muted select-none ml-1">
             {suffix}
           </span>
         )}
       </div>
 
       {caption && (
-        <p className="text-xs text-ink-muted mt-2 border-t border-border/50 pt-2">
+        <p className="text-[11px] text-ink-muted mt-2 border-t border-border pt-1.5 leading-snug">
           {caption}
         </p>
       )}
     </div>
   );
 }
+
+export default Stat;

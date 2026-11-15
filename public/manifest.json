@@ -1,13 +1,19 @@
 {
-  "name": "ARK Connect — B2B Garment & Innerwear Wholesale",
+  "name": "ARK Connect — Wholesale, Connected.",
   "short_name": "ARK Connect",
-  "description": "Wholesale garment and innerwear ordering platform for retail stores in AP and Telangana.",
+  "description": "Premium industrial-tech wholesale platform for retail stores in AP and Telangana.",
   "start_url": "/?mode=retailer",
   "display": "standalone",
-  "background_color": "#FAF7F2",
-  "theme_color": "#3B3BF5",
+  "background_color": "#07090D",
+  "theme_color": "#07090D",
   "orientation": "portrait",
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",

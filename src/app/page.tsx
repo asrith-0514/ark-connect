@@ -1,11 +1,13 @@
 import React, { Suspense } from "react";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { ClientApp } from "@/components/ClientApp";
 import { decodeSessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/adapter";
 
 async function HomeContent(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  await connection();
   const searchParams = await props.searchParams;
 
   const isDemo = searchParams?.demo === "true" || searchParams?.demo === "1";

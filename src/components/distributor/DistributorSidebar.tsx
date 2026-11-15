@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { DISTRIBUTOR_GSTIN, getFollowUpsGrouped } from "@/lib/mock";
+import { Icon } from "@/components/ui/Icon";
+import { ArkMonogram, ArkWordmark } from "@/components/ui/ArkLogo";
 
 export default function DistributorSidebar() {
   const {
@@ -67,20 +69,23 @@ export default function DistributorSidebar() {
           setIsMobileMoreOpen(false);
         }}
         title={label}
-        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs transition-all duration-150 group cursor-pointer ${
+        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 group cursor-pointer relative overflow-hidden ${
           isActive
-            ? "bg-primary/10 text-primary font-bold shadow-soft-xs"
-            : "text-ink-muted hover:bg-surface-raised hover:text-ink"
+            ? "bg-primary/10 text-primary font-bold border border-primary/25 pl-3.5 shadow-soft-xs"
+            : "text-ink-muted hover:bg-surface-raised hover:text-ink font-medium border border-transparent"
         }`}
       >
+        {isActive && (
+          <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-accent rounded-r-full shadow-[0_0_8px_rgba(34,229,255,0.8)]" />
+        )}
         <div className="flex items-center gap-2.5 min-w-0">
-          <span
-            className={`material-symbols-outlined text-[19px] transition-transform group-hover:scale-105 shrink-0 ${
+          <Icon
+            name={icon}
+            size={18}
+            className={`transition-transform group-hover:scale-105 shrink-0 ${
               isActive ? "text-primary" : "text-ink-muted group-hover:text-ink"
             }`}
-          >
-            {icon}
-          </span>
+          />
           {!isCollapsed && (
             <span className="truncate font-sans tracking-tight text-xs">
               {label}
@@ -107,44 +112,28 @@ export default function DistributorSidebar() {
 
   return (
     <>
-      {/* 1. Desktop & Laptop Collapsible Sidebar (>= 1024px) */}
+      {/* 1. Desktop & Laptop Collapsible Sidebar (>= 1024px: 240px expanded / 72px collapsed) */}
       <aside
         className={`hidden lg:flex flex-col border-r border-border bg-surface shrink-0 sticky top-0 h-screen transition-all duration-200 z-30 select-none ${
-          isCollapsed ? "w-16" : "w-64"
+          isCollapsed ? "w-[72px]" : "w-[240px]"
         }`}
       >
         {/* Brand Header */}
         <div className="h-16 px-4 border-b border-border flex items-center justify-between shrink-0">
           {!isCollapsed ? (
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground font-bold flex items-center justify-center text-sm shadow-soft-sm">
-                A
-              </div>
-              <div className="min-w-0">
-                <span className="font-bold text-sm text-ink leading-tight block truncate">
-                  ARK Backoffice
-                </span>
-                <span className="text-[10px] text-ink-muted block uppercase tracking-wider font-semibold">
-                  Distributor Hub
-                </span>
-              </div>
-            </div>
+            <ArkWordmark product="Backoffice" size="sm" />
           ) : (
-            <div className="w-8 h-8 mx-auto rounded-lg bg-primary text-primary-foreground font-bold flex items-center justify-center text-sm shadow-soft-sm">
-              A
-            </div>
+            <ArkMonogram size={24} variant="gradient" className="mx-auto" />
           )}
 
           {/* Collapse Toggle */}
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="w-7 h-7 rounded-lg bg-surface-raised hover:bg-surface text-ink-muted hover:text-ink flex items-center justify-center transition-colors border border-border cursor-pointer"
+            className="w-7 h-7 rounded-sm bg-surface-raised hover:bg-surface text-ink-muted hover:text-ink flex items-center justify-center transition-colors border border-border cursor-pointer"
             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
-            <span className="material-symbols-outlined text-[16px]">
-              {isCollapsed ? "chevron_right" : "chevron_left"}
-            </span>
+            <Icon name={isCollapsed ? "chevron_right" : "chevron_left"} size={14} />
           </button>
         </div>
 
@@ -153,7 +142,7 @@ export default function DistributorSidebar() {
           {/* Section 1: OVERVIEW */}
           <div className="space-y-0.5">
             {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold text-ink-muted/70 uppercase tracking-wider block mb-1">
+              <span className="px-3 font-mono text-[9px] font-bold text-ink-muted/80 uppercase tracking-wider block mb-1">
                 Overview
               </span>
             )}
@@ -172,7 +161,7 @@ export default function DistributorSidebar() {
           {/* Section 2: COLLECTIONS */}
           <div className="space-y-0.5">
             {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold text-ink-muted/70 uppercase tracking-wider block mb-1">
+              <span className="px-3 font-mono text-[9px] font-bold text-ink-muted/80 uppercase tracking-wider block mb-1">
                 Collections
               </span>
             )}
@@ -185,7 +174,7 @@ export default function DistributorSidebar() {
           {/* Section 3: INVENTORY & MILL */}
           <div className="space-y-0.5">
             {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold text-ink-muted/70 uppercase tracking-wider block mb-1">
+              <span className="px-3 font-mono text-[9px] font-bold text-ink-muted/80 uppercase tracking-wider block mb-1">
                 Inventory &amp; Mill
               </span>
             )}
@@ -202,7 +191,7 @@ export default function DistributorSidebar() {
           {/* Section 4: NETWORK & CRM */}
           <div className="space-y-0.5">
             {!isCollapsed && (
-              <span className="px-3 text-[10px] font-bold text-ink-muted/70 uppercase tracking-wider block mb-1">
+              <span className="px-3 font-mono text-[9px] font-bold text-ink-muted/80 uppercase tracking-wider block mb-1">
                 Network &amp; CRM
               </span>
             )}
@@ -265,10 +254,10 @@ export default function DistributorSidebar() {
               <button
                 type="button"
                 onClick={logout}
-                className="w-7 h-7 rounded-lg hover:bg-danger/10 text-ink-muted hover:text-danger flex items-center justify-center transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-sm hover:bg-danger/10 text-ink-muted hover:text-danger flex items-center justify-center transition-colors cursor-pointer"
                 title="Log out session"
               >
-                <span className="material-symbols-outlined text-[16px]">logout</span>
+                <Icon name="logout" size={15} />
               </button>
             )}
           </div>
@@ -276,88 +265,113 @@ export default function DistributorSidebar() {
       </aside>
 
       {/* 2. Tablet & Mobile Fixed Bottom Bar (< 1024px) for the Owner on his phone */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border shadow-soft-xl px-2 py-1 flex items-center justify-around select-none">
-        {/* 1. Today */}
-        <button
-          type="button"
-          onClick={() => setDistributorNav("dashboard")}
-          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center rounded-xl transition-all cursor-pointer ${
-            distributorNav === "dashboard"
-              ? "text-primary font-bold bg-primary/10"
-              : "text-ink-muted hover:text-ink"
-          }`}
+      {/* Restyled to match the Retailer floating glass pill with cyan active indicator */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px)+8px)] px-3 max-w-lg mx-auto">
+        <nav
+          aria-label="Distributor Mobile Navigation"
+          className="pointer-events-auto w-full bg-surface/85 backdrop-blur-xl text-ink rounded-full p-1.5 border border-border/80 shadow-[0_8px_32px_rgba(0,0,0,0.36)] flex items-center justify-around select-none ring-1 ring-white/5"
         >
-          <span className="material-symbols-outlined text-[20px]">today</span>
-          <span className="text-[10px] font-sans mt-0.5 leading-none">Today</span>
-        </button>
+          {/* 1. Today */}
+          <button
+            type="button"
+            onClick={() => setDistributorNav("dashboard")}
+            className={`min-h-[48px] py-1 px-2.5 rounded-full relative flex flex-col items-center justify-center transition-all duration-150 cursor-pointer ${
+              distributorNav === "dashboard"
+                ? "text-primary font-bold"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            <Icon name="today" size={20} className={distributorNav === "dashboard" ? "text-primary" : "text-ink-muted"} />
+            <span className="text-[10px] font-sans mt-0.5 leading-none">Today</span>
+            {distributorNav === "dashboard" && (
+              <span className="absolute bottom-1 w-4 h-0.5 rounded-full bg-accent shadow-[0_0_8px_rgba(34,229,255,0.8)]" />
+            )}
+          </button>
 
-        {/* 2. Orders */}
-        <button
-          type="button"
-          onClick={() => setDistributorNav("orders")}
-          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center rounded-xl transition-all cursor-pointer relative ${
-            distributorNav === "orders"
-              ? "text-primary font-bold bg-primary/10"
-              : "text-ink-muted hover:text-ink"
-          }`}
-        >
-          <span className="material-symbols-outlined text-[20px]">inventory_2</span>
-          <span className="text-[10px] font-sans mt-0.5 leading-none">Orders</span>
-          {activeOrdersCount > 0 && (
-            <span className="absolute top-1.5 right-4 w-4 h-4 rounded-full bg-primary text-white text-[9px] font-mono font-bold flex items-center justify-center">
-              {activeOrdersCount}
-            </span>
-          )}
-        </button>
+          {/* 2. Orders */}
+          <button
+            type="button"
+            onClick={() => setDistributorNav("orders")}
+            className={`min-h-[48px] py-1 px-2.5 rounded-full relative flex flex-col items-center justify-center transition-all duration-150 cursor-pointer ${
+              distributorNav === "orders"
+                ? "text-primary font-bold"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            <div className="relative">
+              <Icon name="inventory_2" size={20} className={distributorNav === "orders" ? "text-primary" : "text-ink-muted"} />
+              {activeOrdersCount > 0 && (
+                <span className="absolute -top-1 -right-2 px-1 py-0.2 rounded-full bg-primary text-white text-[9px] font-mono font-bold leading-tight">
+                  {activeOrdersCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-sans mt-0.5 leading-none">Orders</span>
+            {distributorNav === "orders" && (
+              <span className="absolute bottom-1 w-4 h-0.5 rounded-full bg-accent shadow-[0_0_8px_rgba(34,229,255,0.8)]" />
+            )}
+          </button>
 
-        {/* 3. Receivables */}
-        <button
-          type="button"
-          onClick={() => setDistributorNav("receivables")}
-          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center rounded-xl transition-all cursor-pointer ${
-            distributorNav === "receivables"
-              ? "text-primary font-bold bg-primary/10"
-              : "text-ink-muted hover:text-ink"
-          }`}
-        >
-          <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
-          <span className="text-[10px] font-sans mt-0.5 leading-none">Receivables</span>
-        </button>
+          {/* 3. Receivables */}
+          <button
+            type="button"
+            onClick={() => setDistributorNav("receivables")}
+            className={`min-h-[48px] py-1 px-2.5 rounded-full relative flex flex-col items-center justify-center transition-all duration-150 cursor-pointer ${
+              distributorNav === "receivables"
+                ? "text-primary font-bold"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            <Icon name="account_balance_wallet" size={20} className={distributorNav === "receivables" ? "text-primary" : "text-ink-muted"} />
+            <span className="text-[10px] font-sans mt-0.5 leading-none">Receivables</span>
+            {distributorNav === "receivables" && (
+              <span className="absolute bottom-1 w-4 h-0.5 rounded-full bg-accent shadow-[0_0_8px_rgba(34,229,255,0.8)]" />
+            )}
+          </button>
 
-        {/* 4. Products */}
-        <button
-          type="button"
-          onClick={() => setDistributorNav("products-pricing")}
-          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center rounded-xl transition-all cursor-pointer relative ${
-            distributorNav === "products-pricing" || distributorNav === "products"
-              ? "text-primary font-bold bg-primary/10"
-              : "text-ink-muted hover:text-ink"
-          }`}
-        >
-          <span className="material-symbols-outlined text-[20px]">sell</span>
-          <span className="text-[10px] font-sans mt-0.5 leading-none">Products</span>
-          {pricePendingCount > 0 && (
-            <span className="absolute top-1.5 right-4 w-2 h-2 rounded-full bg-warning animate-pulse" />
-          )}
-        </button>
+          {/* 4. Products */}
+          <button
+            type="button"
+            onClick={() => setDistributorNav("products-pricing")}
+            className={`min-h-[48px] py-1 px-2.5 rounded-full relative flex flex-col items-center justify-center transition-all duration-150 cursor-pointer ${
+              distributorNav === "products-pricing" || distributorNav === "products"
+                ? "text-primary font-bold"
+                : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            <div className="relative">
+              <Icon name="sell" size={20} className={distributorNav === "products-pricing" || distributorNav === "products" ? "text-primary" : "text-ink-muted"} />
+              {pricePendingCount > 0 && (
+                <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-warning animate-pulse" />
+              )}
+            </div>
+            <span className="text-[10px] font-sans mt-0.5 leading-none">Products</span>
+            {(distributorNav === "products-pricing" || distributorNav === "products") && (
+              <span className="absolute bottom-1 w-4 h-0.5 rounded-full bg-accent shadow-[0_0_8px_rgba(34,229,255,0.8)]" />
+            )}
+          </button>
 
-        {/* 5. More Menu Trigger */}
-        <button
-          type="button"
-          onClick={() => setIsMobileMoreOpen(true)}
-          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center rounded-xl transition-all cursor-pointer ${
-            isMobileMoreOpen ? "text-primary font-bold bg-primary/10" : "text-ink-muted hover:text-ink"
-          }`}
-        >
-          <span className="material-symbols-outlined text-[20px]">more_horiz</span>
-          <span className="text-[10px] font-sans mt-0.5 leading-none">More</span>
-        </button>
+          {/* 5. More Menu Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMoreOpen(true)}
+            className={`min-h-[48px] py-1 px-2.5 rounded-full relative flex flex-col items-center justify-center transition-all duration-150 cursor-pointer ${
+              isMobileMoreOpen ? "text-primary font-bold" : "text-ink-muted hover:text-ink"
+            }`}
+          >
+            <Icon name="more_horiz" size={20} className={isMobileMoreOpen ? "text-primary" : "text-ink-muted"} />
+            <span className="text-[10px] font-sans mt-0.5 leading-none">More</span>
+            {isMobileMoreOpen && (
+              <span className="absolute bottom-1 w-4 h-0.5 rounded-full bg-accent shadow-[0_0_8px_rgba(34,229,255,0.8)]" />
+            )}
+          </button>
+        </nav>
       </div>
 
       {/* 3. Mobile "More" Drawer for Secondary Distributor Views */}
       {isMobileMoreOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex flex-col justify-end animate-in fade-in duration-200"
+          className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col justify-end animate-in fade-in duration-200"
           onClick={() => setIsMobileMoreOpen(false)}
         >
           <div
@@ -375,7 +389,7 @@ export default function DistributorSidebar() {
                 onClick={() => setIsMobileMoreOpen(false)}
                 className="w-7 h-7 rounded-full bg-background hover:bg-surface-raised flex items-center justify-center text-ink-muted hover:text-ink"
               >
-                <span className="material-symbols-outlined text-[16px]">close</span>
+                <Icon name="close" size={15} />
               </button>
             </div>
 
@@ -387,11 +401,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("invoices");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    description
-                  </span>
+                  <Icon name="description" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Invoices</span>
                     <span className="text-[10px] text-ink-muted">Billing &amp; GST</span>
@@ -406,11 +418,9 @@ export default function DistributorSidebar() {
                     setIsReceiptModalOpen(true);
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-success text-[20px]">
-                    payments
-                  </span>
+                  <Icon name="payments" size={18} className="text-success shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Record Receipt</span>
                     <span className="text-[10px] text-ink-muted">Post payment</span>
@@ -425,9 +435,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("suppliers");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">factory</span>
+                  <Icon name="factory" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Mill Suppliers</span>
                     <span className="text-[10px] text-ink-muted">Tiruppur Mills</span>
@@ -442,11 +452,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("purchase-bills");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    receipt_long
-                  </span>
+                  <Icon name="receipt_long" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Purchase Bills</span>
                     <span className="text-[10px] text-ink-muted">Inward stock</span>
@@ -461,11 +469,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("retailers");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    storefront
-                  </span>
+                  <Icon name="storefront" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Retailer Directory</span>
                     <span className="text-[10px] text-ink-muted">28 store accounts</span>
@@ -480,11 +486,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("follow-ups");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    event_repeat
-                  </span>
+                  <Icon name="event_repeat" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Follow-ups</span>
                     <span className="text-[10px] text-ink-muted">{followUpBadge} tasks due</span>
@@ -499,11 +503,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("segments");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    pie_chart
-                  </span>
+                  <Icon name="pie_chart" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Segmentation</span>
                     <span className="text-[10px] text-ink-muted">5 account cohorts</span>
@@ -518,11 +520,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("voice-agent");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    phone_in_talk
-                  </span>
+                  <Icon name="phone_in_talk" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Voice Calling</span>
                     <span className="text-[10px] text-ink-muted">{proposedCallsCount} proposed calls</span>
@@ -537,11 +537,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("insights");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    auto_awesome
-                  </span>
+                  <Icon name="sparkles" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Insights</span>
                     <span className="text-[10px] text-ink-muted">Actionable intelligence</span>
@@ -556,11 +554,9 @@ export default function DistributorSidebar() {
                     setDistributorNav("reports");
                     setIsMobileMoreOpen(false);
                   }}
-                  className="min-h-[48px] p-2.5 rounded-xl bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
+                  className="min-h-[48px] p-2.5 rounded-sm bg-background hover:bg-surface-raised border border-border flex items-center gap-2 text-left cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-primary text-[20px]">
-                    analytics
-                  </span>
+                  <Icon name="show_chart" size={18} className="text-primary shrink-0" />
                   <div>
                     <span className="text-xs font-bold text-ink block">Reports &amp; P&amp;L</span>
                     <span className="text-[10px] text-ink-muted">Profit margins</span>

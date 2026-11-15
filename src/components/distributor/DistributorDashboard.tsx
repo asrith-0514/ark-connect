@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -48,6 +49,10 @@ export default function DistributorDashboard() {
   const activeFollowUps = useMemo(() => [...followUpGrouped.missed, ...followUpGrouped.today], [followUpGrouped]);
 
   const draftInvoice = invoices.find(i => i.status === "Draft") || invoices[0];
+  const reviewOrder = useMemo(
+    () => orders.find((o) => o.status === "Submitted") || orders[0],
+    [orders]
+  );
 
   // Derive all data via selectors (filtered by selectedMonth)
   const kpis = useMemo(
@@ -145,7 +150,7 @@ export default function DistributorDashboard() {
             }}
             className="px-3.5 min-h-[40px] rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 active:scale-98 transition-all shadow-soft-sm flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[17px]">receipt</span>
+            <Icon name="receipt" size={17} />
             <span>Create Invoice</span>
           </button>
 
@@ -154,7 +159,7 @@ export default function DistributorDashboard() {
             onClick={() => setIsReceiptModalOpen(true)}
             className="px-3.5 min-h-[40px] rounded-xl bg-surface-raised hover:bg-surface border border-border text-ink font-bold text-xs active:scale-98 transition-all shadow-soft-sm flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[17px] text-success">payments</span>
+            <Icon name="payments" size={17} className="text-success" />
             <span>Record Receipt</span>
           </button>
 
@@ -163,11 +168,44 @@ export default function DistributorDashboard() {
             onClick={() => setIsAddFollowUpOpen(true)}
             className="px-3.5 min-h-[40px] rounded-xl bg-surface-raised hover:bg-surface border border-border text-ink font-bold text-xs active:scale-98 transition-all shadow-soft-sm flex items-center gap-1.5 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[17px] text-accent">phone_callback</span>
+            <Icon name="phone_callback" size={17} className="text-accent" />
             <span>Add Follow-up</span>
           </button>
         </div>
       </div>
+
+      {/* Needs Attention Strip */}
+      {(pipeline.submittedCount > 0 || overdueAccounts.length > 0 || pendingRequestsCount > 0) && (
+        <div className="p-3.5 sm:p-4 rounded-xl bg-danger/10 border border-danger/30 text-ink flex items-center justify-between gap-3 flex-wrap animate-in fade-in duration-200">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="w-8 h-8 rounded-lg bg-danger/20 text-danger flex items-center justify-center shrink-0 border border-danger/30">
+              <Icon name="warning" size={18} />
+            </span>
+            <div className="text-xs min-w-0">
+              <span className="font-bold text-danger uppercase tracking-wider font-mono mr-2">Needs Attention:</span>
+              <span className="text-ink">
+                {pipeline.submittedCount > 0 && `${pipeline.submittedCount} order awaiting review • `}
+                {overdueAccounts.length > 0 && `${overdueAccounts.length} store accounts overdue (${formatINR(kpis.overdueReceivables)}) • `}
+                {pendingRequestsCount > 0 && `${pendingRequestsCount} pending requests`}
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (pipeline.submittedCount > 0) {
+                setOrderTabFilter("review");
+                setDistributorNav("orders");
+              } else {
+                setDistributorNav("receivables");
+              }
+            }}
+            className="px-3 py-1.5 rounded-lg bg-danger/20 hover:bg-danger/30 text-danger text-xs font-bold border border-danger/40 transition-colors cursor-pointer shrink-0"
+          >
+            Review Issues →
+          </button>
+        </div>
+      )}
 
       {/* 2. Tasks Bento Strip: Action-First Tasks (Orders to review, Follow-ups due, Overdue payments) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -183,14 +221,14 @@ export default function DistributorDashboard() {
                 {pipeline.submittedCount} Pending
               </span>
             </div>
-            {pipeline.submittedCount > 0 ? (
+            {pipeline.submittedCount > 0 && reviewOrder ? (
               <div className="p-2.5 rounded-lg bg-surface-raised border border-border mt-1">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-ink">PO #ARK-8839</span>
-                  <span className="font-mono font-bold text-primary num">₹38,400</span>
+                  <span className="font-bold text-ink">PO #{reviewOrder.orderNumber}</span>
+                  <span className="font-mono font-bold text-primary num">{formatINR(reviewOrder.grandTotal)}</span>
                 </div>
                 <div className="text-[11px] text-ink-muted mt-0.5">
-                  Sri Balaji Textiles • 96 boxes awaiting credit allocation
+                  {reviewOrder.retailerName} • {reviewOrder.totalBoxes} boxes awaiting credit allocation
                 </div>
               </div>
             ) : (
@@ -206,7 +244,7 @@ export default function DistributorDashboard() {
             className="mt-3 w-full py-1.5 rounded-lg bg-background hover:bg-surface text-warning font-bold text-xs border border-border hover:border-warning/40 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <span>Review Store Orders</span>
-            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            <Icon name="arrow_forward" size={14} />
           </button>
         </div>
 
@@ -258,7 +296,7 @@ export default function DistributorDashboard() {
                       className="w-6 h-6 rounded-md bg-background hover:bg-success/20 text-ink-muted hover:text-success flex items-center justify-center border border-border shrink-0 cursor-pointer"
                       title="Mark Done"
                     >
-                      <span className="material-symbols-outlined text-[14px]">check</span>
+                      <Icon name="check" size={14} />
                     </button>
                   </div>
                 );
@@ -279,7 +317,7 @@ export default function DistributorDashboard() {
               className="py-1.5 px-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center cursor-pointer shadow-soft-xs"
               title="Schedule Follow-up"
             >
-              <span className="material-symbols-outlined text-[15px]">add</span>
+              <Icon name="add" size={15} />
             </button>
           </div>
         </div>
@@ -314,7 +352,7 @@ export default function DistributorDashboard() {
             className="mt-3 w-full py-1.5 rounded-lg bg-background hover:bg-surface text-danger font-bold text-xs border border-border hover:border-danger/40 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <span>Open Overdue Ledgers</span>
-            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            <Icon name="arrow_forward" size={14} />
           </button>
         </div>
       </div>
@@ -335,7 +373,7 @@ export default function DistributorDashboard() {
 
             <div className="grid grid-cols-2 gap-4 my-2">
               <div>
-                <span className="text-[11px] font-semibold text-ink-muted uppercase block tracking-wider">
+                <span className="text-[11px] font-semibold text-ink-muted uppercase block tracking-wider font-mono">
                   Total Receivables
                 </span>
                 <div className="text-2xl sm:text-3xl font-extrabold text-ink font-mono num tracking-tight mt-0.5">
@@ -347,7 +385,7 @@ export default function DistributorDashboard() {
               </div>
 
               <div>
-                <span className="text-[11px] font-semibold text-danger uppercase block tracking-wider">
+                <span className="text-[11px] font-semibold text-danger uppercase block tracking-wider font-mono">
                   Overdue Terms
                 </span>
                 <div className="text-2xl sm:text-3xl font-extrabold text-danger font-mono num tracking-tight mt-0.5">
@@ -356,6 +394,41 @@ export default function DistributorDashboard() {
                 <span className="text-xs text-danger/80 mt-1 block">
                   Past 30-day terms ({overduePercent}% of book)
                 </span>
+              </div>
+            </div>
+
+            {/* Cyan Sparkline Trend Indicator */}
+            <div className="my-2.5 py-2 px-3 rounded-xl bg-surface-raised/70 border border-border/80 flex items-center justify-between gap-4">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] uppercase font-bold text-ink-muted font-mono tracking-wider truncate">
+                  Collections Pace
+                </span>
+                <span className="text-xs font-mono font-bold text-accent truncate">
+                  {formatINR(kpis.collectionsReceived)} collected MTD
+                </span>
+              </div>
+              <div className="w-28 sm:w-36 h-7 shrink-0">
+                <svg className="w-full h-full overflow-visible" viewBox="0 0 144 28">
+                  <defs>
+                    <linearGradient id="cyanSparklineGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.30" />
+                      <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  <polygon
+                    fill="url(#cyanSparklineGrad)"
+                    points="0,24 24,20 48,22 72,14 96,16 120,8 144,3 144,28 0,28"
+                  />
+                  <polyline
+                    fill="none"
+                    stroke="var(--accent)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    points="0,24 24,20 48,22 72,14 96,16 120,8 144,3"
+                  />
+                  <circle cx="144" cy="3" r="2.5" fill="var(--accent)" />
+                </svg>
               </div>
             </div>
 
@@ -392,7 +465,7 @@ export default function DistributorDashboard() {
               className="text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>View Receivables Table</span>
-              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              <Icon name="arrow_forward" size={16} />
             </button>
           </div>
         </div>
@@ -416,9 +489,7 @@ export default function DistributorDashboard() {
             </div>
             <div className="mt-3 pt-2.5 flex items-center justify-between text-xs text-ink-muted border-t border-border">
               <span className="truncate">Demand ({kpis.orderCount} orders)</span>
-              <span className="material-symbols-outlined text-primary text-[18px] shrink-0">
-                shopping_bag
-              </span>
+              <Icon name="shopping_bag" size={18} className="text-primary shrink-0" />
             </div>
           </div>
 
@@ -439,9 +510,7 @@ export default function DistributorDashboard() {
             </div>
             <div className="mt-3 pt-2.5 flex items-center justify-between text-xs text-ink-muted border-t border-border">
               <span className="truncate">{kpis.invoicedCount} invoices billed</span>
-              <span className="material-symbols-outlined text-success text-[18px] shrink-0">
-                verified
-              </span>
+              <Icon name="verified" size={18} className="text-success shrink-0" />
             </div>
           </div>
 
@@ -462,9 +531,7 @@ export default function DistributorDashboard() {
             </div>
             <div className="mt-3 pt-2.5 flex items-center justify-between text-xs text-ink-muted border-t border-border">
               <span className="truncate">{kpis.collectionsCount} collections settled</span>
-              <span className="material-symbols-outlined text-ink-muted text-[18px] shrink-0">
-                account_balance
-              </span>
+              <Icon name="account_balance" size={18} className="text-ink-muted shrink-0" />
             </div>
           </div>
 
@@ -487,14 +554,14 @@ export default function DistributorDashboard() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-ink-muted text-xs py-1.5 font-semibold">
-                  <span className="material-symbols-outlined text-[16px] text-warning">lock</span>
+                  <Icon name="lock" size={16} className="text-warning" />
                   <span>Restricted to Finance &amp; Owner</span>
                 </div>
               )}
             </div>
             <div className="mt-3 pt-2.5 flex items-center justify-between text-xs text-ink-muted border-t border-border">
               <span className="truncate">Tiruppur mill payables</span>
-              <span className="material-symbols-outlined text-ink-muted text-[18px] shrink-0">factory</span>
+              <Icon name="factory" size={18} className="text-ink-muted shrink-0" />
             </div>
           </div>
         </div>
@@ -524,7 +591,7 @@ export default function DistributorDashboard() {
               <span className="text-xs font-semibold text-ink">Invoiced Sales (incl. GST)</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-success" />
+              <span className="w-3 h-3 rounded-full bg-accent shadow-[0_0_6px_rgba(34,229,255,0.7)]" />
               <span className="text-xs font-semibold text-ink">Collections Recv.</span>
             </div>
             <div className="px-3 py-1.5 rounded-md bg-surface-raised border border-border flex items-center gap-2 text-xs">
@@ -550,8 +617,8 @@ export default function DistributorDashboard() {
                 <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
               </linearGradient>
               <linearGradient id="collectionsGrad" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="var(--success)" stopOpacity="0.20" />
-                <stop offset="100%" stopColor="var(--success)" stopOpacity="0.0" />
+                <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
@@ -562,10 +629,10 @@ export default function DistributorDashboard() {
             <line stroke="currentColor" className="text-border" strokeDasharray="4 4" x1="50" x2="960" y1="180" y2="180" />
 
             {/* Y-Axis Labels */}
-            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="34">₹12L</text>
-            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="84">₹11L</text>
-            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="134">₹10L</text>
-            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="184">₹9L</text>
+            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="34">12L</text>
+            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="84">11L</text>
+            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="134">10L</text>
+            <text className="fill-ink-muted font-mono text-[11px]" x="15" y="184">9L</text>
 
             {/* Area Fills */}
             <polygon
@@ -577,7 +644,7 @@ export default function DistributorDashboard() {
               points="100,210 100,185 270,160 440,175 610,127 780,195 950,162 950,210"
             />
 
-            {/* Invoiced Sales Polyline */}
+            {/* Invoiced Sales Polyline (Primary Blue #2F6BFF) */}
             <polyline
               fill="none"
               points="100,140 270,120 440,92 610,75 780,107 950,33"
@@ -586,11 +653,11 @@ export default function DistributorDashboard() {
               strokeLinejoin="round"
               strokeWidth="3"
             />
-            {/* Collections Polyline */}
+            {/* Collections Polyline (Neon Cyan #22E5FF) */}
             <polyline
               fill="none"
               points="100,185 270,160 440,175 610,127 780,195 950,162"
-              stroke="var(--success)"
+              stroke="var(--accent)"
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="3"
@@ -640,13 +707,13 @@ export default function DistributorDashboard() {
                     className="transition-all duration-150"
                   />
 
-                  {/* Collections Point */}
+                  {/* Collections Point (Cyan) */}
                   <circle
                     cx={xPos}
                     cy={collectedY}
-                    fill={isHovered ? "var(--success)" : "var(--surface)"}
+                    fill={isHovered ? "var(--accent)" : "var(--surface)"}
                     r={isHovered ? 7 : 5}
-                    stroke="var(--success)"
+                    stroke="var(--accent)"
                     strokeWidth={isHovered ? 3 : 2.5}
                     className="transition-all duration-150"
                   />
@@ -657,8 +724,8 @@ export default function DistributorDashboard() {
                       isHovered
                         ? "fill-primary text-[13px] font-bold font-sans"
                         : pt.isCurrent
-                        ? "fill-primary text-[12px] font-bold font-sans"
-                        : "fill-ink-muted text-[12px] font-medium font-sans"
+                          ? "fill-primary text-[12px] font-bold font-sans"
+                          : "fill-ink-muted text-[12px] font-medium font-sans"
                     }
                     textAnchor="middle"
                     x={xPos}
@@ -694,8 +761,8 @@ export default function DistributorDashboard() {
                 <span className="font-bold text-ink">{formatINR(trend[hoveredPointIndex].invoiced)}</span>
               </div>
               <div className="flex items-center justify-between gap-4 font-mono num text-xs mt-1">
-                <span className="text-success font-medium flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-success" />
+                <span className="text-accent font-medium flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-accent" />
                   Collected:
                 </span>
                 <span className="font-bold text-ink">{formatINR(trend[hoveredPointIndex].collected)}</span>
@@ -857,12 +924,12 @@ export default function DistributorDashboard() {
                 title={`Not yet due: ${ageing.notYetDuePct}%`}
               />
               <div
-                className="bg-warning h-full transition-all duration-300"
+                className="bg-primary h-full transition-all duration-300"
                 style={{ width: `${ageing.d1_30Pct}%` }}
-                title={`1-30 days overdue: ${ageing.d1_30Pct}%`}
+                title={`1-30 days: ${ageing.d1_30Pct}%`}
               />
               <div
-                className="bg-accent h-full transition-all duration-300"
+                className="bg-warning h-full transition-all duration-300"
                 style={{ width: `${ageing.d31_60Pct}%` }}
                 title={`31-60 days overdue: ${ageing.d31_60Pct}%`}
               />
@@ -886,8 +953,8 @@ export default function DistributorDashboard() {
 
               <div className="flex items-center justify-between p-2.5 rounded-md bg-surface-raised border border-border">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-warning shrink-0" />
-                  <span className="text-ink font-medium">1–30 days overdue</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0" />
+                  <span className="text-ink font-medium">1–30 days</span>
                   <span className="text-[11px] text-ink-muted font-mono num">({ageing.d1_30Pct}%)</span>
                 </div>
                 <span className="font-mono num font-bold text-ink">{formatINR(ageing.d1_30)}</span>
@@ -895,7 +962,7 @@ export default function DistributorDashboard() {
 
               <div className="flex items-center justify-between p-2.5 rounded-md bg-surface-raised border border-border">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-warning shrink-0" />
                   <span className="text-ink font-medium">31–60 days overdue</span>
                   <span className="text-[11px] text-ink-muted font-mono num">({ageing.d31_60Pct}%)</span>
                 </div>
@@ -921,7 +988,7 @@ export default function DistributorDashboard() {
               className="text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>Ledger Aging Audit</span>
-              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              <Icon name="arrow_forward" size={16} />
             </button>
           </div>
         </div>
@@ -998,11 +1065,10 @@ export default function DistributorDashboard() {
                     </h4>
                     <div className="flex items-center gap-2 mt-0.5 text-[11px] text-ink-muted">
                       <span
-                        className={`px-1.5 py-0.2 rounded font-medium ${
-                          r.isInterState
+                        className={`px-1.5 py-0.2 rounded font-medium ${r.isInterState
                             ? "bg-accent/15 text-accent font-semibold"
                             : "bg-surface text-ink-muted border border-border"
-                        }`}
+                          }`}
                       >
                         {r.stateDisplay}
                       </span>
@@ -1016,11 +1082,10 @@ export default function DistributorDashboard() {
                     {formatINR(r.amount)}
                   </span>
                   <span
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 font-mono ${
-                      r.isOverdue
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 font-mono ${r.isOverdue
                         ? "bg-danger/10 text-danger border border-danger/25"
                         : "bg-success/10 text-success border border-success/25"
-                    }`}
+                      }`}
                   >
                     {r.statusBadge}
                   </span>

@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "@/components/ui/Icon";
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
@@ -288,8 +289,8 @@ export const DistributorInvoices: React.FC = () => {
     <div className="w-full flex flex-col gap-5 pb-16">
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-ink text-surface text-xs font-semibold shadow-xl border border-border animate-in fade-in slide-in-from-top-2">
-          <span className="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span>
+        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-md bg-ink text-surface text-xs font-semibold shadow-xl border border-border animate-in fade-in slide-in-from-top-2">
+          <Icon name="check_circle" size={18} className="text-success" />
           <span>{toast}</span>
         </div>
       )}
@@ -298,7 +299,7 @@ export const DistributorInvoices: React.FC = () => {
       <div className="flex items-center justify-between py-0.5">
         <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
           <span className="hover:text-ink transition-colors cursor-pointer">Finance</span>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+          <Icon name="chevron_right" size={14} />
           <span className="text-ink font-bold">Tax Invoices</span>
         </div>
         <div className="flex items-center gap-2">
@@ -310,9 +311,7 @@ export const DistributorInvoices: React.FC = () => {
                 : "bg-surface-raised text-ink-muted hover:text-ink border border-border"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">
-              {isOverdueFirst ? "priority_high" : "sort"}
-            </span>
+            <Icon name={isOverdueFirst ? "priority_high" : "sort"} size={16} />
             <span>Overdue First: {isOverdueFirst ? "ON" : "OFF"}</span>
           </button>
         </div>
@@ -343,7 +342,7 @@ export const DistributorInvoices: React.FC = () => {
             className="h-10 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm flex items-center gap-2 shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer"
             type="button"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
+            <Icon name="add" size={18} />
             Create invoice
           </button>
         </div>
@@ -353,9 +352,7 @@ export const DistributorInvoices: React.FC = () => {
       <div className="bg-surface p-3 rounded-md border border-border shadow-soft-sm flex flex-wrap lg:flex-nowrap items-center gap-3">
         {/* Search */}
         <div className="flex-1 min-w-[240px] relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted text-[18px]">
-            search
-          </span>
+          <Icon name="search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <input
             className="w-full h-10 pl-9 pr-4 bg-surface-raised border border-border rounded-md text-sm text-ink placeholder:text-ink-muted focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20 transition-all font-mono"
             placeholder="Search invoice #, PO #, retailer name, town, GSTIN..."
@@ -413,7 +410,7 @@ export const DistributorInvoices: React.FC = () => {
         {sortedInvoices.length === 0 ? (
           <div className="py-12 px-4 text-center">
             <EmptyState
-              icon={<span className="material-symbols-outlined text-[28px]">description</span>}
+              icon={<Icon name="description" size={28} />}
               title="No tax invoices found"
               description="No tax invoices match your current search, status, or date filters."
               actionLabel="Clear Filters"
@@ -427,9 +424,9 @@ export const DistributorInvoices: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-surface-raised border-b border-border text-ink-muted text-xs font-semibold uppercase tracking-wider select-none">
-                  <th className="py-3.5 pl-4 pr-2 w-10">
+              <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
+                <tr className="text-ink-muted text-xs font-semibold uppercase tracking-wider font-mono">
+                  <th className="py-2.5 pl-4 pr-2 w-10">
                     <input
                       className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary cursor-pointer"
                       type="checkbox"
@@ -438,92 +435,80 @@ export const DistributorInvoices: React.FC = () => {
                     />
                   </th>
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
+                    className="py-2.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("invoiceNumber")}
                   >
                     <div className="flex items-center gap-1">
                       <span>Invoice #</span>
                       {sortField === "invoiceNumber" && (
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
-                        </span>
+                        <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
                     </div>
                   </th>
-                  <th className="py-3.5 px-3 whitespace-nowrap">PO Ref #</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap">PO Ref #</th>
                   <th
-                    className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-ink"
+                    className="py-2.5 px-4 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("retailerName")}
                   >
                     <div className="flex items-center gap-1">
                       <span>Retailer / Shop</span>
                       {sortField === "retailerName" && (
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
-                        </span>
+                        <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
                     </div>
                   </th>
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
+                    className="py-2.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("date")}
                   >
                     <div className="flex items-center gap-1">
                       <span>Billed Date</span>
                       {sortField === "date" && (
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
-                        </span>
+                        <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
                     </div>
                   </th>
                   {/* Due Date Column Requirement 1 */}
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
+                    className="py-2.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("dueDate")}
                   >
                     <div className="flex items-center gap-1">
                       <span>Due Date</span>
                       {sortField === "dueDate" && (
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
-                        </span>
+                        <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
                     </div>
                   </th>
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
+                    className="py-2.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
                     onClick={() => handleSort("grandTotal")}
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span>Grand Total</span>
                       {sortField === "grandTotal" && (
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
-                        </span>
+                        <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
                     </div>
                   </th>
                   {/* Balance Column Requirement 1 */}
                   <th
-                    className="py-3.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
+                    className="py-2.5 px-3 whitespace-nowrap text-right cursor-pointer hover:text-ink"
                     onClick={() => handleSort("balanceDue")}
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span>Balance Due</span>
                       {sortField === "balanceDue" && (
-                        <span className="material-symbols-outlined text-[14px]">
-                          {sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
-                        </span>
+                        <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
                     </div>
                   </th>
                   {/* Status Derived From Data Requirement 1 */}
-                  <th className="py-3.5 px-3 whitespace-nowrap">Status</th>
-                  <th className="py-3.5 pr-4 pl-3 text-right whitespace-nowrap">Action</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap">Status</th>
+                  <th className="py-2.5 pr-4 pl-3 text-right whitespace-nowrap">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border text-sm text-ink">
+              <tbody className="divide-y divide-border text-xs sm:text-sm text-ink">
                 {sortedInvoices.map(inv => {
                   const status = inv.derivedStatus;
                   const isOverdue = status === "Overdue";
@@ -540,10 +525,10 @@ export const DistributorInvoices: React.FC = () => {
                           ? "bg-danger/5 hover:bg-danger/10"
                           : isSelected
                           ? "bg-primary/10"
-                          : "hover:bg-surface-raised/70"
+                          : "hover:bg-surface-raised"
                       }`}
                     >
-                      <td className="py-4 pl-4 pr-2" onClick={e => e.stopPropagation()}>
+                      <td className="py-2.5 sm:py-3 pl-4 pr-2" onClick={e => e.stopPropagation()}>
                         <input
                           className="w-4 h-4 rounded text-primary focus:ring-primary accent-primary cursor-pointer"
                           type="checkbox"
@@ -553,17 +538,17 @@ export const DistributorInvoices: React.FC = () => {
                       </td>
 
                       {/* Invoice # */}
-                      <td className="py-4 px-3 font-mono num text-xs font-bold text-primary whitespace-nowrap group-hover:underline">
+                      <td className="py-2.5 sm:py-3 px-3 font-mono num text-xs font-bold text-primary whitespace-nowrap group-hover:underline">
                         {inv.invoiceNumber}
                       </td>
 
                       {/* PO Ref */}
-                      <td className="py-4 px-3 font-mono num text-xs text-ink-muted whitespace-nowrap">
+                      <td className="py-2.5 sm:py-3 px-3 font-mono num text-xs text-ink-muted whitespace-nowrap">
                         #{inv.orderNumber}
                       </td>
 
                       {/* Retailer */}
-                      <td className="py-4 px-4 min-w-[200px]">
+                      <td className="py-2.5 sm:py-3 px-4 min-w-[200px]">
                         <div className="flex flex-col">
                           <span className="font-semibold text-ink group-hover:text-primary transition-colors font-sans">
                             {inv.retailerName}
@@ -575,15 +560,15 @@ export const DistributorInvoices: React.FC = () => {
                       </td>
 
                       {/* Billed Date (Nowrap) */}
-                      <td className="py-4 px-3 font-mono num text-xs text-ink-muted whitespace-nowrap">
+                      <td className="py-2.5 sm:py-3 px-3 font-mono num text-xs text-ink-muted whitespace-nowrap">
                         {inv.billedDate || inv.date}
                       </td>
 
                       {/* Due Date (Nowrap, highlighted red if overdue) */}
-                      <td className="py-4 px-3 font-mono num text-xs whitespace-nowrap">
+                      <td className="py-2.5 sm:py-3 px-3 font-mono num text-xs whitespace-nowrap">
                         {isOverdue ? (
                           <div className="flex items-center gap-1 text-danger font-bold">
-                            <span className="material-symbols-outlined text-[15px]">warning</span>
+                            <Icon name="warning" size={15} />
                             <span>{inv.dueDate}</span>
                           </div>
                         ) : isPaid ? (
@@ -594,16 +579,16 @@ export const DistributorInvoices: React.FC = () => {
                       </td>
 
                       {/* Grand Total */}
-                      <td className="py-4 px-3 text-right font-mono num font-semibold text-ink whitespace-nowrap">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num font-semibold text-ink whitespace-nowrap">
                         {formatINR(inv.grandTotal || inv.total)}
                       </td>
 
                       {/* Balance Due */}
-                      <td className="py-4 px-3 text-right font-mono num whitespace-nowrap">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num whitespace-nowrap">
                         {isPaid ? (
-                          <span className="text-ink-muted font-medium">₹0</span>
+                          <span className="text-ink-muted font-medium">{formatINR(0)}</span>
                         ) : isOverdue ? (
-                          <span className="text-danger font-bold text-sm">
+                          <span className="text-danger font-bold">
                             {formatINR(inv.balanceDue)}
                           </span>
                         ) : (
@@ -614,7 +599,7 @@ export const DistributorInvoices: React.FC = () => {
                       </td>
 
                       {/* Status Badge (Derived from data using shared StatusChip) */}
-                      <td className="py-4 px-3 whitespace-nowrap">
+                      <td className="py-2.5 sm:py-3 px-3 whitespace-nowrap">
                         <StatusChip
                           variant={
                             isPaid
@@ -636,7 +621,7 @@ export const DistributorInvoices: React.FC = () => {
                       </td>
 
                       {/* Action */}
-                      <td className="py-4 pr-4 pl-3 text-right whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                      <td className="py-2.5 sm:py-3 pr-4 pl-3 text-right whitespace-nowrap" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => downloadInvoicePDF(inv)}
@@ -644,7 +629,7 @@ export const DistributorInvoices: React.FC = () => {
                             title="Download PDF"
                             type="button"
                           >
-                            <span className="material-symbols-outlined text-[18px]">download</span>
+                            <Icon name="download" size={18} />
                           </button>
                           <button
                             onClick={() => setViewingInvoice(inv)}
@@ -666,8 +651,8 @@ export const DistributorInvoices: React.FC = () => {
 
       {/* CREATE INVOICE MODAL (Requirement 1 & 2) */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-5 border border-border animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface rounded-lg shadow-xl max-w-lg w-full p-6 space-y-5 border border-border animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-ink">Create Tax Invoice</h3>
@@ -680,7 +665,7 @@ export const DistributorInvoices: React.FC = () => {
                 className="w-8 h-8 rounded-lg hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <Icon name="close" size={20} />
               </button>
             </div>
 
@@ -799,7 +784,7 @@ export const DistributorInvoices: React.FC = () => {
                 className="h-10 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[16px]">save</span>
+                <Icon name="save" size={16} />
                 <span>{isDraftMode ? "Save Draft Invoice" : "Issue Tax Invoice"}</span>
               </button>
             </div>

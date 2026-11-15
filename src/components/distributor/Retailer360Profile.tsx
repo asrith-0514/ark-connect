@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import {
   Retailer,
@@ -157,7 +158,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
           onClick={onBack}
           className="flex items-center gap-2 text-xs font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <Icon name="arrow_back" size={18} />
           <span>Back to Retailers Network</span>
         </button>
 
@@ -170,10 +171,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
       </div>
 
       {/* Hero Header Card */}
-      <div className="bg-surface rounded-2xl border border-border shadow-soft-sm p-5 sm:p-6 text-ink flex flex-col gap-5">
+      <div className="bg-surface rounded-lg border border-border shadow-soft-sm p-5 sm:p-6 text-ink flex flex-col gap-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary font-bold text-xl flex items-center justify-center shrink-0 border border-primary/20 shadow-soft-xs">
+            <div className="w-14 h-14 rounded-lg bg-primary/10 text-primary font-bold text-xl flex items-center justify-center shrink-0 border border-primary/20 shadow-soft-xs">
               {retailer.name.substring(0, 2).toUpperCase()}
             </div>
             <div>
@@ -185,14 +186,14 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                       segmentMetric.segment === "Champions"
-                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                        ? "bg-warning/15 text-warning border border-warning/30"
                         : segmentMetric.segment === "Regular"
                         ? "bg-primary/15 text-primary border border-primary/30"
                         : segmentMetric.segment === "New"
-                        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"
+                        ? "bg-success/15 text-success border border-success/30"
                         : segmentMetric.segment === "At risk"
-                        ? "bg-orange-500/15 text-orange-700 dark:text-orange-400 border border-orange-500/30"
-                        : "bg-slate-500/15 text-slate-700 dark:text-slate-400 border border-slate-500/30"
+                        ? "bg-danger/15 text-danger border border-danger/30"
+                        : "bg-surface-raised text-ink-muted border border-border"
                     }`}
                   >
                     ★ {segmentMetric.segment}
@@ -205,7 +206,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                 )}
                 {retailer.creditHold && (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-danger/15 text-danger border border-danger/30 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[13px]">block</span>
+                    <Icon name="block" size={13} />
                     Credit Hold
                   </span>
                 )}
@@ -213,15 +214,15 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
 
               <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-ink-muted mt-1.5">
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[15px] text-ink-muted">person</span>
+                  <Icon name="person" size={15} className="text-ink-muted" />
                   <span className="font-semibold text-ink">{retailer.ownerName}</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[15px] text-ink-muted">location_on</span>
+                  <Icon name="location_on" size={15} className="text-ink-muted" />
                   <span>{retailer.town}, {retailer.district} ({retailer.state})</span>
                 </span>
                 <span className="flex items-center gap-1 font-mono">
-                  <span className="material-symbols-outlined text-[15px] text-ink-muted">receipt</span>
+                  <Icon name="receipt" size={15} className="text-ink-muted" />
                   <span>{retailer.gstin}</span>
                 </span>
               </div>
@@ -232,48 +233,48 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             <a
               href={`tel:${retailer.phone}`}
-              className="h-9 px-3 rounded-xl bg-surface hover:bg-surface-raised border border-border text-ink text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-soft-xs"
+              className="h-9 px-3 rounded-md bg-surface hover:bg-surface-raised border border-border text-ink text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-soft-xs"
             >
-              <span className="material-symbols-outlined text-[16px] text-success">call</span>
+              <Icon name="call" size={16} className="text-success" />
               {retailer.phone}
             </a>
             <a
               href={`https://wa.me/${retailer.phone.replace(/[^0-9]/g, "")}`}
               target="_blank"
               rel="noreferrer"
-              className="h-9 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-9 px-3 rounded-md bg-success/10 hover:bg-success/20 text-success border border-success/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">chat</span>
+              <Icon name="chat" size={16} />
               WhatsApp
             </a>
             <button
               type="button"
               onClick={() => setDistributorNav("voice-agent")}
-              className="h-9 px-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 border border-purple-500/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-9 px-3 rounded-md bg-accent/10 hover:bg-accent/20 text-accent border border-accent/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">phone_in_talk</span>
+              <Icon name="phone_in_talk" size={16} />
               AI Voice Call
             </button>
             <button
               type="button"
               onClick={() => setIsLogCommOpen(true)}
-              className="h-9 px-3 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-9 px-3 rounded-md bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">record_voice_over</span>
+              <Icon name="record_voice_over" size={16} />
               Log Call / Note
             </button>
             <button
               type="button"
               onClick={() => setIsAddFollowUpOpen(true)}
-              className="h-9 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-primary/90 transition-colors cursor-pointer"
+              className="h-9 px-3 rounded-md bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-primary/90 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">add_task</span>
+              <Icon name="add_task" size={16} />
               + Follow-up
             </button>
             <button
               type="button"
               onClick={() => toggleCreditHold(retailer.id)}
-              className={`h-9 px-3 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${
+              className={`h-9 px-3 rounded-md border text-xs font-bold transition-colors cursor-pointer ${
                 retailer.creditHold
                   ? "bg-danger text-white border-danger hover:bg-danger/90"
                   : "bg-surface hover:bg-danger/10 text-danger border-border hover:border-danger/30"
@@ -285,7 +286,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
         </div>
 
         {/* Financial & Credit Meter Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-background rounded-xl border border-border">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-background rounded-md border border-border">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted block">
               Credit Limit
@@ -377,7 +378,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                 : "border-transparent text-ink-muted hover:text-ink hover:bg-surface-raised"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">{t.icon}</span>
+            <Icon name={t.icon} size={16} />
             <span>{t.label}</span>
           </button>
         ))}
@@ -389,7 +390,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
           {/* Key Metrics */}
           <div className="lg:col-span-2 space-y-5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-4 rounded-xl bg-surface border border-border shadow-soft-xs">
+              <div className="p-4 rounded-md bg-surface border border-border shadow-soft-xs">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted block">
                   12M Total Spend
                 </span>
@@ -401,7 +402,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-surface border border-border shadow-soft-xs">
+              <div className="p-4 rounded-md bg-surface border border-border shadow-soft-xs">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted block">
                   12M Boxes
                 </span>
@@ -413,7 +414,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-surface border border-border shadow-soft-xs">
+              <div className="p-4 rounded-md bg-surface border border-border shadow-soft-xs">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted block">
                   On-Time Payments
                 </span>
@@ -425,7 +426,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                 </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-surface border border-border shadow-soft-xs">
+              <div className="p-4 rounded-md bg-surface border border-border shadow-soft-xs">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted block">
                   Last Order
                 </span>
@@ -439,10 +440,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             </div>
 
             {/* Recent Purchases Mini Table */}
-            <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm">
+            <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-sm text-ink flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-primary">local_shipping</span>
+                  <Icon name="local_shipping" size={18} className="text-primary" />
                   Recent Orders &amp; Dispatches
                 </h3>
                 <button
@@ -479,10 +480,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
           {/* Side Column: Contacts & Open Follow-ups */}
           <div className="space-y-5">
             {/* Open Follow-up Callout */}
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+            <div className="p-4 rounded-md bg-primary/5 border border-primary/20">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px]">priority_high</span>
+                  <Icon name="priority_high" size={16} />
                   Pending Tasks
                 </h4>
                 <button
@@ -516,7 +517,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             </div>
 
             {/* Store Information Card */}
-            <div className="p-4 rounded-xl bg-surface border border-border text-xs space-y-2.5">
+            <div className="p-4 rounded-md bg-surface border border-border text-xs space-y-2.5">
               <h4 className="font-bold text-ink uppercase tracking-wider text-[10px]">
                 Authorized Partner Details
               </h4>
@@ -541,10 +542,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             </div>
 
             {/* Voice Calling & Telephony Profile */}
-            <div className="p-4 rounded-xl bg-surface border border-border text-xs space-y-2.5">
+            <div className="p-4 rounded-md bg-surface border border-border text-xs space-y-2.5">
               <div className="flex items-center justify-between">
                 <h4 className="font-bold text-ink uppercase tracking-wider text-[10px] flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px] text-purple-600">phone_in_talk</span>
+                  <Icon name="phone_in_talk" size={16} className="text-purple-600" />
                   Voice Agent Telephony
                 </h4>
                 <button
@@ -607,11 +608,11 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
       {activeTab === "purchases" && (
         <div className="space-y-6">
           {/* Trend Chart */}
-          <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-bold text-sm text-ink flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-primary">show_chart</span>
+                  <Icon name="show_chart" size={18} className="text-primary" />
                   12-Month Purchase Volume Trend
                 </h3>
                 <p className="text-xs text-ink-muted">Wholesale spend (₹) and box volume per month</p>
@@ -650,7 +651,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
           </div>
 
           {/* All Purchases Table */}
-          <div className="bg-surface rounded-2xl border border-border shadow-soft-sm overflow-hidden">
+          <div className="bg-surface rounded-lg border border-border shadow-soft-sm overflow-hidden">
             <div className="p-4 border-b border-border flex items-center justify-between">
               <h3 className="font-bold text-sm text-ink">All Purchase Orders ({retPurchases.length})</h3>
             </div>
@@ -694,9 +695,9 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
       {/* Tab 3: Preferred Brands */}
       {activeTab === "brands" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm space-y-4">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm space-y-4">
             <h3 className="font-bold text-sm text-ink flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-primary">pie_chart</span>
+              <Icon name="pie_chart" size={18} className="text-primary" />
               Preferred Brand Spend Share
             </h3>
 
@@ -721,14 +722,14 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             </div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm space-y-3">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm space-y-3">
             <h3 className="font-bold text-sm text-ink">Category Opportunity Rationale</h3>
             <p className="text-xs text-ink-muted leading-relaxed">
               Based on wholesale reorder history, <span className="font-semibold text-ink">{retailer.name}</span> concentrates{" "}
               {preferredBrands[0]?.sharePct || 50}% of their purchases on{" "}
               <span className="font-semibold text-primary">{preferredBrands[0]?.brand || "Within"}</span>.
             </p>
-            <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-primary space-y-1">
+            <div className="p-3 rounded-md bg-primary/5 border border-primary/20 text-xs text-primary space-y-1">
               <div className="font-bold">Recommended Cross-Selling Action:</div>
               <p className="text-[11px] text-ink-muted leading-relaxed">
                 Offer introductory sample cartons of complementary product lines during next ordering cycle to increase ticket size.
@@ -741,7 +742,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
       {/* Tab 4: Ledger & Invoices */}
       {activeTab === "ledger" && (
         <div className="space-y-5">
-          <div className="bg-surface rounded-2xl border border-border shadow-soft-sm overflow-hidden">
+          <div className="bg-surface rounded-lg border border-border shadow-soft-sm overflow-hidden">
             <div className="p-4 border-b border-border flex items-center justify-between">
               <h3 className="font-bold text-sm text-ink">Invoices Statement ({retInvoices.length})</h3>
             </div>
@@ -824,15 +825,15 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             <button
               type="button"
               onClick={() => setIsLogCommOpen(true)}
-              className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-primary/90 transition-colors cursor-pointer self-start sm:self-auto"
+              className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-primary/90 transition-colors cursor-pointer self-start sm:self-auto"
             >
-              <span className="material-symbols-outlined text-[16px]">record_voice_over</span>
+              <Icon name="record_voice_over" size={16} />
               Log Interaction
             </button>
           </div>
 
           {/* Timeline List */}
-          <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm space-y-4">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm space-y-4">
             {filteredComms.length === 0 ? (
               <div className="text-center py-8 text-ink-muted text-xs">
                 No communications recorded under this channel.
@@ -843,12 +844,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                   <div key={comm.id} className="relative group">
                     {/* Timeline Node Icon */}
                     <div className="absolute -left-[35px] top-0 w-8 h-8 rounded-full bg-surface border-2 border-primary/40 flex items-center justify-center text-primary shadow-soft-xs">
-                      <span className="material-symbols-outlined text-[16px]">
-                        {getChannelIcon(comm.channel)}
-                      </span>
+                      <Icon name={getChannelIcon(comm.channel)} size={16} />
                     </div>
 
-                    <div className="bg-background p-3.5 rounded-xl border border-border">
+                    <div className="bg-background p-3.5 rounded-md border border-border">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary">
@@ -890,14 +889,14 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             <button
               type="button"
               onClick={() => setIsRaiseComplaintOpen(true)}
-              className="px-4 py-2 rounded-xl bg-danger text-white text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-danger/90 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-md bg-danger text-white text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-danger/90 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">report_problem</span>
+              <Icon name="report_problem" size={16} />
               Raise Complaint
             </button>
           </div>
 
-          <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm">
             {retComplaints.length === 0 ? (
               <div className="text-center py-8 text-ink-muted text-xs">
                 Zero complaints recorded. Customer satisfaction record is clean!
@@ -959,14 +958,14 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             <button
               type="button"
               onClick={() => setIsAddFollowUpOpen(true)}
-              className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-primary/90 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs hover:bg-primary/90 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">add_task</span>
+              <Icon name="add_task" size={16} />
               + Follow-up
             </button>
           </div>
 
-          <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm">
+          <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm">
             {retFollowUps.length === 0 ? (
               <div className="text-center py-8 text-ink-muted text-xs">
                 No follow-ups currently scheduled for this retailer.
@@ -1028,7 +1027,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                         </>
                       ) : (
                         <span className="text-xs text-success font-semibold flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                          <Icon name="check_circle" size={16} />
                           Completed
                         </span>
                       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import {
   formatINR,
@@ -129,7 +130,7 @@ export const DistributorSegments: React.FC = () => {
             onClick={() => setIsConfigOpen(!isConfigOpen)}
             className="h-10 px-3.5 rounded-xl bg-surface border border-border hover:bg-surface-raised text-ink font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-soft-xs"
           >
-            <span className="material-symbols-outlined text-[18px] text-ink-muted">tune</span>
+            <Icon name="tune" size={18} className="text-ink-muted" />
             {isConfigOpen ? "Hide Rules" : "Configure Rules"}
           </button>
 
@@ -138,7 +139,7 @@ export const DistributorSegments: React.FC = () => {
             onClick={handleExportCSV}
             className="h-10 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs flex items-center gap-1.5 shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px]">download</span>
+            <Icon name="download" size={18} />
             Export CSV
           </button>
         </div>
@@ -146,10 +147,10 @@ export const DistributorSegments: React.FC = () => {
 
       {/* Collapsible Rules Configuration Panel */}
       {isConfigOpen && (
-        <div className="p-5 rounded-2xl bg-surface border border-border shadow-soft-sm text-ink space-y-4 animate-in fade-in duration-200">
+        <div className="p-5 rounded-lg bg-surface border border-border shadow-soft-sm text-ink space-y-4 animate-in fade-in duration-200">
           <div className="flex items-center justify-between border-b border-border pb-3">
             <h3 className="font-bold text-sm text-ink flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] text-primary">settings_suggest</span>
+              <Icon name="settings_suggest" size={18} className="text-primary" />
               Segmentation Threshold Rules
             </h3>
             <button
@@ -186,7 +187,7 @@ export const DistributorSegments: React.FC = () => {
                 onChange={(e) => setConfig({ ...config, valueThreshold: Number(e.target.value) || 100000 })}
                 className="w-full h-9 px-3 bg-background border border-border rounded-xl font-mono text-ink focus:outline-hidden"
               />
-              <span className="text-[10px] text-ink-muted mt-1 block">Default: ≥ ₹3,00,000</span>
+              <span className="text-[10px] text-ink-muted mt-1 block">Default: ≥ {formatINR(DEFAULT_SEGMENTATION_CONFIG.valueThreshold)}</span>
             </div>
 
             <div>
@@ -223,17 +224,17 @@ export const DistributorSegments: React.FC = () => {
         {/* Champions */}
         <div
           onClick={() => setSelectedSegmentTab("Champions")}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer shadow-soft-xs ${
+          className={`p-4 rounded-lg border transition-all cursor-pointer shadow-soft-xs ${
             selectedSegmentTab === "Champions"
-              ? "bg-amber-500/10 border-amber-500/40 shadow-soft-sm scale-[1.02]"
+              ? "bg-warning/10 border-warning/40 shadow-soft-sm scale-[1.02]"
               : "bg-surface border-border hover:bg-surface-raised"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-warning">
               ★ Champions
             </span>
-            <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold text-xs flex items-center justify-center font-mono">
+            <span className="w-6 h-6 rounded-full bg-warning/20 text-warning font-bold text-xs flex items-center justify-center font-mono">
               {segmentation.counts.Champions}
             </span>
           </div>
@@ -246,7 +247,7 @@ export const DistributorSegments: React.FC = () => {
         {/* Regular */}
         <div
           onClick={() => setSelectedSegmentTab("Regular")}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer shadow-soft-xs ${
+          className={`p-4 rounded-lg border transition-all cursor-pointer shadow-soft-xs ${
             selectedSegmentTab === "Regular"
               ? "bg-primary/10 border-primary/40 shadow-soft-sm scale-[1.02]"
               : "bg-surface border-border hover:bg-surface-raised"
@@ -269,17 +270,17 @@ export const DistributorSegments: React.FC = () => {
         {/* New */}
         <div
           onClick={() => setSelectedSegmentTab("New")}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer shadow-soft-xs ${
+          className={`p-4 rounded-lg border transition-all cursor-pointer shadow-soft-xs ${
             selectedSegmentTab === "New"
-              ? "bg-emerald-500/10 border-emerald-500/40 shadow-soft-sm scale-[1.02]"
+              ? "bg-success/10 border-success/40 shadow-soft-sm scale-[1.02]"
               : "bg-surface border-border hover:bg-surface-raised"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-success">
               New Onboarded
             </span>
-            <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center justify-center font-mono">
+            <span className="w-6 h-6 rounded-full bg-success/20 text-success font-bold text-xs flex items-center justify-center font-mono">
               {segmentation.counts.New}
             </span>
           </div>
@@ -292,17 +293,17 @@ export const DistributorSegments: React.FC = () => {
         {/* At Risk */}
         <div
           onClick={() => setSelectedSegmentTab("At risk")}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer shadow-soft-xs ${
+          className={`p-4 rounded-lg border transition-all cursor-pointer shadow-soft-xs ${
             selectedSegmentTab === "At risk"
-              ? "bg-orange-500/10 border-orange-500/40 shadow-soft-sm scale-[1.02]"
+              ? "bg-danger/10 border-danger/40 shadow-soft-sm scale-[1.02]"
               : "bg-surface border-border hover:bg-surface-raised"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-danger">
               At Risk
             </span>
-            <span className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-700 dark:text-orange-300 font-bold text-xs flex items-center justify-center font-mono">
+            <span className="w-6 h-6 rounded-full bg-danger/20 text-danger font-bold text-xs flex items-center justify-center font-mono">
               {segmentation.counts["At risk"]}
             </span>
           </div>
@@ -315,17 +316,17 @@ export const DistributorSegments: React.FC = () => {
         {/* Dormant */}
         <div
           onClick={() => setSelectedSegmentTab("Dormant")}
-          className={`p-4 rounded-2xl border transition-all cursor-pointer shadow-soft-xs col-span-2 sm:col-span-1 ${
+          className={`p-4 rounded-lg border transition-all cursor-pointer shadow-soft-xs col-span-2 sm:col-span-1 ${
             selectedSegmentTab === "Dormant"
-              ? "bg-slate-500/10 border-slate-500/40 shadow-soft-sm scale-[1.02]"
+              ? "bg-ink-muted/10 border-border-strong shadow-soft-sm scale-[1.02]"
               : "bg-surface border-border hover:bg-surface-raised"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">
               Dormant (&gt;60d)
             </span>
-            <span className="w-6 h-6 rounded-full bg-slate-500/20 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center font-mono">
+            <span className="w-6 h-6 rounded-full bg-ink-muted/20 text-ink font-bold text-xs flex items-center justify-center font-mono">
               {segmentation.counts.Dormant}
             </span>
           </div>
@@ -337,7 +338,7 @@ export const DistributorSegments: React.FC = () => {
       </div>
 
       {/* Cohort Tabs & Filter Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface p-3 rounded-2xl border border-border shadow-soft-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface p-3 rounded-lg border border-border shadow-soft-xs">
         <div className="flex items-center gap-1 overflow-x-auto pb-1">
           {[
             { id: "ALL", label: `All Active (${segmentation.counts.total})` },
@@ -363,7 +364,7 @@ export const DistributorSegments: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 max-w-xs w-full bg-background px-3 py-1.5 rounded-xl border border-border">
-          <span className="material-symbols-outlined text-[18px] text-ink-muted">search</span>
+          <Icon name="search" size={18} className="text-ink-muted" />
           <input
             type="text"
             placeholder="Search store name, town, ID..."
@@ -375,7 +376,7 @@ export const DistributorSegments: React.FC = () => {
       </div>
 
       {/* Retailers Table */}
-      <div className="bg-surface rounded-2xl border border-border shadow-soft-sm overflow-hidden">
+      <div className="bg-surface rounded-lg border border-border shadow-soft-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-surface-raised border-b border-border text-ink-muted uppercase font-bold text-[10px]">
@@ -416,14 +417,14 @@ export const DistributorSegments: React.FC = () => {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                           m.segment === "Champions"
-                            ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                            ? "bg-warning/15 text-warning border border-warning/30"
                             : m.segment === "Regular"
                             ? "bg-primary/15 text-primary border border-primary/30"
                             : m.segment === "New"
-                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"
+                            ? "bg-success/15 text-success border border-success/30"
                             : m.segment === "At risk"
-                            ? "bg-orange-500/15 text-orange-700 dark:text-orange-400 border border-orange-500/30"
-                            : "bg-slate-500/15 text-slate-700 dark:text-slate-400 border border-slate-500/30"
+                            ? "bg-danger/15 text-danger border border-danger/30"
+                            : "bg-surface-raised text-ink-muted border border-border"
                         }`}
                       >
                         {m.segment}

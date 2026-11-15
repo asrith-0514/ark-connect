@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { ComplaintType, Order, Invoice } from "@/lib/mock";
 
 interface RaiseComplaintModalProps {
@@ -59,7 +60,7 @@ export const RaiseComplaintModal: React.FC<RaiseComplaintModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
       <div
         className="relative w-full max-w-lg bg-surface rounded-2xl shadow-soft-xl border border-border text-ink overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -68,7 +69,7 @@ export const RaiseComplaintModal: React.FC<RaiseComplaintModalProps> = ({
         <div className="p-4 sm:p-5 bg-surface border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-danger/10 text-danger flex items-center justify-center font-bold border border-danger/20">
-              <span className="material-symbols-outlined text-[22px]">report_problem</span>
+              <Icon name="report_problem" size={22} />
             </div>
             <div>
               <h3 className="font-bold text-base text-ink">Raise Retailer Issue / Complaint</h3>
@@ -83,7 +84,7 @@ export const RaiseComplaintModal: React.FC<RaiseComplaintModalProps> = ({
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer border border-border"
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <Icon name="close" size={18} />
           </button>
         </div>
 
@@ -188,7 +189,7 @@ export const RaiseComplaintModal: React.FC<RaiseComplaintModalProps> = ({
               type="submit"
               className="px-5 py-2.5 rounded-xl bg-danger hover:bg-danger/90 text-white text-xs font-bold shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
             >
-              <span className="material-symbols-outlined text-[16px]">priority_high</span>
+              <Icon name="priority_high" size={16} />
               Open Complaint
             </button>
           </div>

@@ -41,6 +41,8 @@ import { DistributorInsights } from "@/components/distributor/DistributorInsight
 import { DistributorVoiceAgent } from "@/components/distributor/DistributorVoiceAgent";
 import { Retailer360Profile } from "@/components/distributor/Retailer360Profile";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { ArkMonogram } from "@/components/ui/ArkLogo";
+import { Icon } from "@/components/ui/Icon";
 
 function MainApp() {
   const {
@@ -56,14 +58,20 @@ function MainApp() {
 
   const { user, isLoading, isDemo, hasPermission } = useAuth();
 
-  // 1. Initial authentication loading state
+  // 1. Initial authentication loading state (Splash Screen with Tagline)
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-base animate-pulse">
-          A
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center select-none">
+        <ArkMonogram size={56} variant="gradient" className="animate-pulse" />
+        <div className="flex flex-col items-center mt-4">
+          <span className="font-sans font-bold text-base tracking-tight text-ink">
+            ARK
+          </span>
+          <span className="font-mono text-xs text-ink-muted mt-1">
+            Wholesale, Connected.
+          </span>
         </div>
-        <p className="text-xs text-ink-muted mt-3 font-medium">
+        <p className="text-[11px] text-ink-muted mt-4 font-mono">
           Verifying security session...
         </p>
       </div>
@@ -83,10 +91,10 @@ function MainApp() {
   if (user.type === "retailer" && portalMode === "distributor" && !isDemo) {
     return (
       <div className="min-h-screen bg-background text-ink flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mb-4">
-          <span className="material-symbols-outlined text-[32px]">block</span>
+        <div className="w-14 h-14 rounded-md bg-danger/10 text-danger border border-danger/30 flex items-center justify-center mb-4">
+          <Icon name="block" size={28} />
         </div>
-        <h2 className="text-xl font-bold text-ink">Access Denied: Retailer Session</h2>
+        <h2 className="text-xl font-bold text-ink font-sans tracking-tight">Access Denied: Retailer Session</h2>
         <p className="text-xs text-ink-muted max-w-md mt-1 mb-6 leading-relaxed">
           Your active session ({user.name}) is registered as a Retail Store Owner.
           Retailer accounts are strictly isolated from ARK Distributor Backoffice.
@@ -94,7 +102,7 @@ function MainApp() {
         <button
           type="button"
           onClick={() => setPortalMode("retailer")}
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs shadow-soft-sm cursor-pointer"
+          className="px-4 py-2 rounded-sm bg-primary text-primary-foreground font-semibold text-xs shadow-soft-xs cursor-pointer hover:bg-primary-hover transition-colors"
         >
           Return to Retailer Portal (ARK Connect)
         </button>
@@ -106,10 +114,10 @@ function MainApp() {
   if (user.type === "distributor" && portalMode === "retailer" && !isDemo) {
     return (
       <div className="min-h-screen bg-background text-ink flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mb-4">
-          <span className="material-symbols-outlined text-[32px]">block</span>
+        <div className="w-14 h-14 rounded-md bg-danger/10 text-danger border border-danger/30 flex items-center justify-center mb-4">
+          <Icon name="block" size={28} />
         </div>
-        <h2 className="text-xl font-bold text-ink">Access Denied: Distributor Staff Session</h2>
+        <h2 className="text-xl font-bold text-ink font-sans tracking-tight">Access Denied: Distributor Staff Session</h2>
         <p className="text-xs text-ink-muted max-w-md mt-1 mb-6 leading-relaxed">
           Your active session ({user.name} • {user.roleTitle}) is a Distributor Staff account.
           Distributor staff cannot open the Retailer Ordering Portal.
@@ -117,7 +125,7 @@ function MainApp() {
         <button
           type="button"
           onClick={() => setPortalMode("distributor")}
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs shadow-soft-sm cursor-pointer"
+          className="px-4 py-2 rounded-sm bg-primary text-primary-foreground font-semibold text-xs shadow-soft-xs cursor-pointer hover:bg-primary-hover transition-colors"
         >
           Return to Distributor Backoffice
         </button>
@@ -203,22 +211,22 @@ function MainApp() {
         </div>
       ) : (
         /* ================= DISTRIBUTOR BACKOFFICE (ARK DISTRIBUTORS) ================= */
-        <div className="flex flex-col min-h-screen bg-surface">
+        <div className="flex flex-col min-h-screen bg-background">
           <HeaderSwitcher />
-          <div className="flex flex-1 min-h-0 bg-surface relative items-start">
-            {/* Fixed Left Sidebar */}
+          <div className="flex flex-1 min-h-0 bg-background relative items-start">
+            {/* Fixed Left Sidebar (240px expanded / 72px collapsed) */}
             <DistributorSidebar />
 
             {/* Right Main Workspace */}
             <div className="flex-1 min-w-0 flex flex-col min-h-screen">
               <DistributorHeader />
 
-              <main className="flex-1 w-full max-w-[1600px] mx-auto px-6 lg:px-8 pt-6 pb-16 bg-surface overflow-y-auto">
+              <main className="flex-1 w-full max-w-[1600px] mx-auto px-7 lg:px-8 py-7 lg:py-8 pb-28 lg:pb-12 bg-background overflow-y-auto">
                 {/* Godown Staff Route Enforcement */}
                 {isGodownStaff && !godownAllowedTabs.includes(distributorNav) ? (
                   <div className="w-full p-12 bg-surface rounded-xl border border-border text-center flex flex-col items-center justify-center my-8 shadow-soft-sm">
                     <div className="w-12 h-12 rounded-xl bg-warning/15 text-warning flex items-center justify-center mb-3">
-                      <span className="material-symbols-outlined text-[26px]">lock</span>
+                      <Icon name="lock" size={26} />
                     </div>
                     <h3 className="text-lg font-bold text-ink mb-1">
                       Access Restricted: Godown Staff Role
@@ -238,7 +246,7 @@ function MainApp() {
                   /* Salesman Route Enforcement */
                   <div className="w-full p-12 bg-surface rounded-xl border border-border text-center flex flex-col items-center justify-center my-8 shadow-soft-sm">
                     <div className="w-12 h-12 rounded-xl bg-warning/15 text-warning flex items-center justify-center mb-3">
-                      <span className="material-symbols-outlined text-[26px]">lock</span>
+                      <Icon name="lock" size={26} />
                     </div>
                     <h3 className="text-lg font-bold text-ink mb-1">
                       Access Restricted: Territory Salesman Role

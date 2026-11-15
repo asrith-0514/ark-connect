@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { Button } from "./Button";
+import { Icon } from "./Icon";
 
 export interface DrawerProps {
   isOpen: boolean;
@@ -57,27 +58,27 @@ export function Drawer({
       aria-modal="true"
       role="dialog"
     >
-      {/* Backdrop */}
+      {/* Glass Backdrop (glass only on overlays per brand spec) */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-ink/40 backdrop-blur-xs transition-opacity duration-200 ease-out"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ease-out"
       />
 
-      <div className="fixed inset-y-0 right-0 flex pl-10 pointer-events-none">
-        {/* Slide-over panel */}
+      <div className="fixed inset-y-0 right-0 flex pl-6 pointer-events-none">
+        {/* Slide-over panel: 200ms motion, transform only */}
         <div
-          className={`pointer-events-auto w-screen ${widthStyles[width]} bg-surface text-ink border-l border-border shadow-soft-xl flex flex-col justify-between transform transition-transform duration-250 ease-out translate-x-0 ${className}`}
+          className={`pointer-events-auto w-screen ${widthStyles[width]} bg-surface text-ink border-l border-border shadow-soft-xl flex flex-col justify-between transform transition-transform duration-200 ease-out translate-x-0 ${className}`}
         >
           {/* Header */}
-          <div className="px-6 py-5 border-b border-border flex items-start justify-between gap-4 shrink-0">
+          <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-4 shrink-0">
             <div>
               {title && (
-                <h3 className="text-lg font-bold text-ink tracking-tight font-sans">
+                <h3 className="text-base font-bold text-ink tracking-tight font-sans">
                   {title}
                 </h3>
               )}
               {description && (
-                <p className="text-xs text-ink-muted mt-1">{description}</p>
+                <p className="text-xs text-ink-muted mt-0.5">{description}</p>
               )}
             </div>
             <Button
@@ -85,20 +86,20 @@ export function Drawer({
               size="icon"
               onClick={onClose}
               aria-label="Close drawer"
-              className="rounded-full text-ink-muted hover:text-ink shrink-0 -mr-2 -mt-1"
+              className="rounded-sm text-ink-muted hover:text-ink shrink-0 -mr-1 -mt-1 h-8 w-8"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <Icon name="close" size={18} />
             </Button>
           </div>
 
           {/* Body */}
-          <div className="px-6 py-5 overflow-y-auto flex-1 select-text">
+          <div className="px-5 py-4 overflow-y-auto flex-1 select-text">
             {children}
           </div>
 
           {/* Footer */}
           {footer && (
-            <div className="px-6 py-4 border-t border-border bg-surface-raised flex items-center justify-end gap-3 shrink-0">
+            <div className="px-5 py-3 border-t border-border bg-surface-raised flex items-center justify-end gap-2.5 shrink-0">
               {footer}
             </div>
           )}
@@ -107,3 +108,5 @@ export function Drawer({
     </div>
   );
 }
+
+export default Drawer;

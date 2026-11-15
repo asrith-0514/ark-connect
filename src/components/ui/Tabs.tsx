@@ -28,17 +28,18 @@ export function Tabs({
     return (
       <div
         role="tablist"
-        className={`flex items-center gap-6 border-b border-border overflow-x-auto ${className}`}
+        className={`flex items-center gap-4 sm:gap-6 border-b border-border overflow-x-auto ${className}`}
       >
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
             <button
               key={tab.id}
+              type="button"
               role="tab"
               aria-selected={isActive}
               onClick={() => onChange(tab.id)}
-              className={`min-h-[44px] pb-3 pt-2 text-sm font-semibold inline-flex items-center gap-2 border-b-2 transition-all duration-200 ease-out cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
+              className={`h-9 pb-2 pt-1 text-xs sm:text-sm font-semibold inline-flex items-center gap-2 border-b-2 transition-all duration-150 ease-out cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${
                 isActive
                   ? "border-primary text-primary"
                   : "border-transparent text-ink-muted hover:text-ink hover:border-border"
@@ -48,10 +49,10 @@ export function Tabs({
               <span>{tab.label}</span>
               {tab.count !== undefined && (
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full font-bold num ${
+                  className={`text-[11px] px-1.5 py-0.2 rounded-xs font-mono font-bold num ${
                     isActive
-                      ? "bg-primary/10 text-primary"
-                      : "bg-surface border border-border text-ink-muted"
+                      ? "bg-primary/15 text-primary"
+                      : "bg-surface-raised border border-border text-ink-muted"
                   }`}
                 >
                   {tab.count}
@@ -64,34 +65,35 @@ export function Tabs({
     );
   }
 
-  // "pills" variant
+  // Pills variant
   return (
     <div
       role="tablist"
-      className={`inline-flex items-center p-1 bg-surface border border-border rounded-lg shadow-soft-sm overflow-x-auto ${className}`}
+      className={`inline-flex items-center p-0.5 bg-surface border border-border rounded-md overflow-x-auto shadow-soft-xs ${className}`}
     >
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab;
         return (
           <button
             key={tab.id}
+            type="button"
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(tab.id)}
-            className={`min-h-[44px] px-4 py-2 text-sm font-semibold rounded-md inline-flex items-center gap-2 transition-all duration-200 ease-out cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
+            className={`h-7 px-3 text-xs font-medium rounded-sm inline-flex items-center justify-center gap-1.5 transition-all duration-150 ease-out cursor-pointer whitespace-nowrap focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 ${
               isActive
-                ? "bg-primary text-primary-foreground shadow-soft-sm"
-                : "text-ink-muted hover:text-ink hover:bg-background/80"
+                ? "bg-surface-raised text-primary border border-border-strong shadow-soft-xs"
+                : "text-ink-muted hover:text-ink hover:bg-surface-raised/50"
             }`}
           >
             {tab.icon && <span className="inline-flex shrink-0">{tab.icon}</span>}
             <span>{tab.label}</span>
             {tab.count !== undefined && (
               <span
-                className={`text-xs px-2 py-0.5 rounded-full font-bold num transition-colors ${
+                className={`text-[10px] px-1 rounded-xs font-mono font-bold num ${
                   isActive
-                    ? "bg-white/20 text-white"
-                    : "bg-background border border-border text-ink-muted"
+                    ? "bg-primary/20 text-primary"
+                    : "text-ink-muted"
                 }`}
               >
                 {tab.count}
@@ -104,5 +106,4 @@ export function Tabs({
   );
 }
 
-// Alias for Pills
-export const Pills = Tabs;
+export default Tabs;

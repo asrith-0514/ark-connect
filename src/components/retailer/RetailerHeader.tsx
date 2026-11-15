@@ -6,6 +6,8 @@ import { useAuth } from "@/context/AuthContext";
 import { RETAILER_PROFILE, formatINR } from "@/lib/mock/retailer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { getRetailerString } from "@/lib/i18n/retailer";
+import { Icon } from "@/components/ui/Icon";
+import { ArkMonogram, ArkWordmark } from "@/components/ui/ArkLogo";
 
 export function RetailerHeader() {
   const {
@@ -15,6 +17,8 @@ export function RetailerHeader() {
     cartTotalBoxes,
     setIsReviewOrderOpen,
     setIsSearchOpen,
+    orders,
+    payments,
   } = useApp();
   const { user, logout, language, setLanguage, t } = useAuth();
 
@@ -38,19 +42,22 @@ export function RetailerHeader() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const latestDispatched = orders.find(o => o.status === "Dispatched") || orders[0];
+  const latestPayment = payments[0];
+
   const notifications = [
     {
       id: "notif-1",
-      title: "Order Dispatched #ARK-8841",
-      desc: "Navata Transport (LR #NRT-77492-SDP) • 120 boxes",
+      title: latestDispatched ? `Order Dispatched #${latestDispatched.orderNumber}` : "Order Dispatched",
+      desc: latestDispatched?.transporter ? `${latestDispatched.transporter} • ${latestDispatched.totalBoxes} boxes` : "In transit with logistics partner",
       time: "2h ago",
       type: "dispatch",
       read: false,
     },
     {
       id: "notif-2",
-      title: "Payment Received ₹10,000",
-      desc: "REC-0842 applied to INV-0094 • Credit restored",
+      title: latestPayment ? `Payment Received ${formatINR(latestPayment.amount)}` : "Payment Received",
+      desc: latestPayment?.referenceId ? `${latestPayment.referenceId} reconciled • Credit restored` : "Reconciled against open invoices",
       time: "1d ago",
       type: "payment",
       read: true,
@@ -74,38 +81,36 @@ export function RetailerHeader() {
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-6">
           {/* Main Top Row: Mobile Optimized (Logo + Search Pill + Bell + Lang/Avatar) */}
           <div className="flex items-center justify-between gap-2 h-14 min-w-0">
-            {/* 1. Logo */}
+            {/* 1. Logo (Monogram on mobile, Wordmark on tablet/desktop) */}
             <button
               type="button"
-              className="flex items-center gap-2 cursor-pointer select-none min-h-[48px] text-left rounded-md shrink-0 focus-visible:outline-2 focus-visible:outline-primary"
+              className="flex items-center gap-2 cursor-pointer select-none min-h-[48px] text-left rounded-md shrink-0 focus-visible:outline-2 focus-visible:outline-accent"
               onClick={() => setRetailerNav("home")}
               aria-label="Go to Home"
             >
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm tracking-tight shadow-soft-sm shrink-0">
-                A
+              <div className="flex sm:hidden items-center gap-1.5">
+                <ArkMonogram size={28} variant="gradient" />
+                <span className="font-mono text-[10px] font-bold text-accent tracking-widest uppercase">CONNECT</span>
               </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-sm text-ink leading-tight tracking-tight whitespace-nowrap">
-                  ARK Connect
-                </span>
-                <span className="text-[10px] text-ink-muted font-medium hidden sm:inline whitespace-nowrap">
-                  Wholesale Portal
-                </span>
+              <div className="hidden sm:block">
+                <ArkWordmark product="Connect" size="sm" />
               </div>
             </button>
 
-            {/* 2. Search Pill (Tap opens search modal) */}
+            {/* 2. Search Pill with Cyan Focus Glow (Tap opens search modal) */}
             <div className="flex-1 max-w-md mx-1 sm:mx-3">
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="w-full h-10 px-3 bg-surface-raised hover:bg-background rounded-full border border-border flex items-center justify-between text-xs text-ink-muted hover:text-ink shadow-soft-xs transition-colors cursor-pointer group"
+                className="w-full h-9.5 px-3 bg-surface-raised hover:bg-background rounded-full border border-border flex items-center justify-between text-xs text-ink-muted hover:text-ink shadow-soft-xs transition-all duration-150 cursor-pointer group hover:border-accent/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:shadow-[0_0_12px_rgba(34,229,255,0.25)]"
                 title="Search (⌘K)"
               >
                 <div className="flex items-center gap-2 min-w-0 truncate">
-                  <span className="material-symbols-outlined text-primary text-[18px] shrink-0 group-hover:scale-105 transition-transform">
-                    search
-                  </span>
+                  <Icon
+                    name="search"
+                    size={16}
+                    className="text-primary shrink-0 group-hover:scale-105 group-hover:text-accent transition-all"
+                  />
                   <span className="truncate text-[11px] sm:text-xs">
                     {getRetailerString(language, "searchPlaceholder")}
                   </span>
@@ -155,13 +160,13 @@ export function RetailerHeader() {
                   title="Notifications"
                   aria-label="View notifications"
                 >
-                  <span className="material-symbols-outlined text-[20px]">notifications</span>
-                  <span className="w-2 h-2 rounded-full bg-accent absolute top-2 right-2 border-2 border-surface" />
+                  <Icon name="notifications" size={18} />
+                  <span className="w-2 h-2 rounded-full bg-accent absolute top-2.5 right-2.5 border border-surface" />
                 </button>
 
                 {/* Notifications Popover Drawer */}
                 {isNotificationsOpen && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface text-ink border border-border rounded-2xl shadow-soft-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface text-ink border border-border rounded-lg shadow-soft-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                     <div className="flex items-center justify-between pb-3 border-b border-border">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-xs uppercase tracking-wider text-ink font-mono">
@@ -186,9 +191,10 @@ export function RetailerHeader() {
                                 : "bg-warning/15 text-warning"
                             }`}
                           >
-                            <span className="material-symbols-outlined text-[16px]">
-                              {n.type === "dispatch" ? "local_shipping" : n.type === "payment" ? "payments" : "info"}
-                            </span>
+                            <Icon
+                              name={n.type === "dispatch" ? "local_shipping" : n.type === "payment" ? "payments" : "info"}
+                              size={15}
+                            />
                           </span>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold text-ink truncate">{n.title}</p>
@@ -209,7 +215,7 @@ export function RetailerHeader() {
                   onClick={() => setIsReviewOrderOpen(true)}
                   className="hidden md:flex min-h-[40px] items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary hover:bg-primary/15 transition-all text-xs font-semibold cursor-pointer shrink-0"
                 >
-                  <span className="material-symbols-outlined text-[18px]">shopping_bag</span>
+                  <Icon name="shopping_bag" size={16} />
                   <span className="font-mono num font-bold">{cartTotalBoxes} bx</span>
                   <span className="font-mono num">({formatINR(cartGrandTotal)})</span>
                 </button>
@@ -225,13 +231,13 @@ export function RetailerHeader() {
                   aria-label="Account Menu"
                 >
                   <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs">
-                    <span className="material-symbols-outlined text-[16px]">person</span>
+                    <Icon name="person" size={14} />
                   </div>
                 </button>
 
                 {/* Dropdown Menu */}
                 {isAvatarMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-surface text-ink border border-border rounded-xl shadow-soft-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="absolute right-0 mt-2 w-64 bg-surface text-ink border border-border rounded-md shadow-soft-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                     <div className="pb-3 border-b border-border">
                       <p className="text-xs font-bold text-ink truncate">
                         {user?.name || RETAILER_PROFILE.name}
@@ -261,9 +267,7 @@ export function RetailerHeader() {
                         }}
                         className="w-full min-h-[36px] px-2.5 py-1.5 rounded-md text-xs font-semibold text-ink hover:bg-background flex items-center gap-2 cursor-pointer transition-colors"
                       >
-                        <span className="material-symbols-outlined text-[18px] text-primary">
-                          account_circle
-                        </span>
+                        <Icon name="person" size={16} className="text-primary" />
                         <span>Manage Account</span>
                       </button>
 
@@ -275,7 +279,7 @@ export function RetailerHeader() {
                         }}
                         className="w-full min-h-[36px] px-2.5 py-1.5 rounded-md text-xs font-semibold text-danger hover:bg-danger/10 flex items-center gap-2 cursor-pointer transition-colors"
                       >
-                        <span className="material-symbols-outlined text-[18px]">logout</span>
+                        <Icon name="logout" size={16} />
                         <span>{t("logoutBtn")}</span>
                       </button>
                     </div>

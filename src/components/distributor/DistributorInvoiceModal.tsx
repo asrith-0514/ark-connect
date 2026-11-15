@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { DISTRIBUTOR_GSTIN, formatINR, downloadInvoicePDF } from "@/lib/mock";
 
@@ -96,7 +97,7 @@ export default function DistributorInvoiceModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto animate-in fade-in"
       onClick={e => {
         if (e.target === e.currentTarget && !showIssueConfirm) {
           setViewingInvoice(null);
@@ -108,7 +109,7 @@ export default function DistributorInvoiceModal() {
         <div className="p-4 sm:p-6 bg-surface border-b border-border flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <span className="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20">
-              <span className="material-symbols-outlined text-[24px]">receipt_long</span>
+              <Icon name="receipt_long" size={24} />
             </span>
             <div>
               <div className="flex items-center gap-2">
@@ -134,7 +135,7 @@ export default function DistributorInvoiceModal() {
               onClick={() => downloadInvoicePDF(viewingInvoice)}
               className="h-10 px-4 rounded-md bg-surface border border-border hover:bg-surface-raised text-ink font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-soft-sm transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px] text-primary">download</span>
+              <Icon name="download" size={18} className="text-primary" />
               <span>Download PDF</span>
             </button>
 
@@ -144,12 +145,12 @@ export default function DistributorInvoiceModal() {
                 onClick={() => setShowIssueConfirm(true)}
                 className="h-10 px-5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm flex items-center gap-2 shadow-soft-sm transition-all active:scale-98 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">send</span>
+                <Icon name="send" size={18} />
                 <span>Issue Tax Invoice</span>
               </button>
             ) : (
               <span className="px-3 py-2 rounded-md bg-success/10 text-success border border-success/20 text-xs font-bold flex items-center gap-1">
-                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                <Icon name="check_circle" size={16} />
                 <span>Issued ({viewingInvoice.status})</span>
               </span>
             )}
@@ -159,7 +160,7 @@ export default function DistributorInvoiceModal() {
               onClick={() => setViewingInvoice(null)}
               className="w-9 h-9 rounded-full bg-surface hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center transition-colors border border-border cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <Icon name="close" size={20} />
             </button>
           </div>
         </div>
@@ -290,7 +291,7 @@ export default function DistributorInvoiceModal() {
                   &ldquo;{numberToWordsINR(grandTotal)}&rdquo;
                 </p>
                 <span className="text-[11px] text-success flex items-center gap-1 font-semibold pt-1">
-                  <span className="material-symbols-outlined text-[15px]">verified</span>
+                  <Icon name="verified" size={15} />
                   Rates quoted are wholesale trade pack figures
                 </span>
               </div>
@@ -412,7 +413,7 @@ export default function DistributorInvoiceModal() {
               </div>
 
               <div className="p-2.5 rounded-md bg-primary/10 text-[11px] text-primary border border-primary/20 flex items-center gap-1.5 font-semibold">
-                <span className="material-symbols-outlined text-[16px]">account_tree</span>
+                <Icon name="account_tree" size={16} />
                 <span>
                   {isIntraState
                     ? "GST type: CGST (2.5%) + SGST (2.5%) (Intra-state Telangana)"
@@ -425,10 +426,10 @@ export default function DistributorInvoiceModal() {
 
         {/* Issue Confirmation Modal */}
         {showIssueConfirm && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-ink/50 backdrop-blur-xs p-4">
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-surface rounded-lg p-6 max-w-sm w-full space-y-4 shadow-soft-xl border border-border text-center text-ink">
               <span className="w-12 h-12 rounded-full bg-primary/10 text-primary border border-primary/20 inline-flex items-center justify-center mx-auto">
-                <span className="material-symbols-outlined text-[24px]">send</span>
+                <Icon name="send" size={24} />
               </span>
               <h3 className="text-base font-bold text-ink">Issue Tax Invoice?</h3>
               <p className="text-xs text-ink-muted">

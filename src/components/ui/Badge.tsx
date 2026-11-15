@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 export type BadgeVariant =
@@ -20,7 +22,7 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 export function Badge({
   variant = "default",
-  size = "md",
+  size = "sm",
   dot = false,
   pulse = false,
   className = "",
@@ -29,15 +31,15 @@ export function Badge({
 }: BadgeProps) {
   const variantStyles: Record<BadgeVariant, { container: string; dot: string }> = {
     default: {
-      container: "bg-surface text-ink border border-border",
+      container: "bg-surface-raised text-ink border border-border",
       dot: "bg-ink-muted",
     },
     neutral: {
-      container: "bg-ink-muted/10 text-ink-muted border border-ink-muted/20",
+      container: "bg-surface-raised text-ink-muted border border-border",
       dot: "bg-ink-muted",
     },
     primary: {
-      container: "bg-primary/10 text-primary border border-primary/25",
+      container: "bg-primary/10 text-primary-link border border-primary/25",
       dot: "bg-primary",
     },
     accent: {
@@ -59,31 +61,62 @@ export function Badge({
   };
 
   const sizeStyles: Record<BadgeSize, string> = {
-    sm: "px-2 py-0.5 text-[11px] font-medium rounded-sm gap-1.5",
-    md: "px-2.5 py-1 text-xs font-semibold rounded-sm gap-2",
+    sm: "px-2 py-0.5 text-[11px] font-medium rounded-xs gap-1.5",
+    md: "px-2.5 py-0.5 text-xs font-semibold rounded-xs gap-1.5",
   };
 
   const currentVariant = variantStyles[variant];
 
   return (
     <span
-      className={`inline-flex items-center tracking-tight transition-colors duration-200 ease-out select-none whitespace-nowrap ${currentVariant.container} ${sizeStyles[size]} ${className}`}
+      className={`inline-flex items-center tracking-tight transition-colors duration-150 ease-out select-none whitespace-nowrap ${currentVariant.container} ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {dot && (
-        <span className="relative flex h-2 w-2 shrink-0">
+        <span className="relative flex h-1.5 w-1.5 shrink-0">
           {pulse && (
             <span
               className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${currentVariant.dot}`}
             />
           )}
-          <span className={`relative inline-flex rounded-full h-2 w-2 ${currentVariant.dot}`} />
+          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${currentVariant.dot}`} />
         </span>
       )}
-      {children}
+      <span>{children}</span>
     </span>
   );
 }
 
-// Alias for StatusChip
-export const StatusChip = Badge;
+/**
+ * StatusChip primitive per brand kit:
+ * Always pairs a status dot indicator with a text label (never color alone).
+ */
+export interface StatusChipProps extends BadgeProps {
+  label?: string;
+}
+
+export function StatusChip({
+  variant = "default",
+  size = "sm",
+  dot = true,
+  pulse = false,
+  className = "",
+  label,
+  children,
+  ...props
+}: StatusChipProps) {
+  return (
+    <Badge
+      variant={variant}
+      size={size}
+      dot={dot}
+      pulse={pulse}
+      className={`font-sans ${className}`}
+      {...props}
+    >
+      {label || children}
+    </Badge>
+  );
+}
+
+export default Badge;

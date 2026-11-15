@@ -5,6 +5,9 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Icon } from "@/components/ui/Icon";
+import { ArkWordmark } from "@/components/ui/ArkLogo";
+import { MOCK_RETAILERS } from "@/lib/mock";
 
 export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void }) {
   const {
@@ -82,21 +85,9 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
 
   return (
     <div className="w-full max-w-lg mx-auto p-4 sm:p-6 flex flex-col gap-6">
-      {/* Language Toggle & Brand Header */}
+      {/* Language Toggle & Brand Header with Geometric ARK Logo & Tagline */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-primary text-primary-foreground font-bold flex items-center justify-center text-sm shadow-soft-sm">
-            A
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-ink leading-tight">
-              {t("portalTitle")}
-            </h1>
-            <p className="text-[11px] text-ink-muted">
-              {t("portalSubtitle")}
-            </p>
-          </div>
-        </div>
+        <ArkWordmark product="Connect" size="md" withTagline />
 
         {/* Telugu / English Pill Toggle */}
         <div className="flex items-center bg-surface border border-border rounded-full p-0.5 shadow-soft-xs text-xs">
@@ -169,14 +160,14 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
             {/* Error / Rate Limit Alert */}
             {errorMsg && (
               <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+                <Icon name="error" size={18} className="shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {rateLimitSeconds > 0 && (
               <div className="p-3 rounded-lg bg-warning/15 border border-warning/30 text-ink text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] text-warning shrink-0">timer</span>
+                <Icon name="timer" size={18} className="text-warning shrink-0" />
                 <span>
                   {t("rateLimitError")} ({rateLimitSeconds}s remaining)
                 </span>
@@ -189,7 +180,7 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
               size="lg"
               disabled={isSubmitting || rateLimitSeconds > 0}
               className="w-full mt-2 cursor-pointer font-bold"
-              leftIcon={<span className="material-symbols-outlined text-[20px]">sms</span>}
+              leftIcon={<Icon name="sms" size={18} />}
             >
               {isSubmitting ? t("sendingOtp") : t("sendOtpBtn")}
             </Button>
@@ -206,37 +197,24 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
                   </Badge>
                 </div>
                 <div className="grid grid-cols-1 gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleDemoStoreSelect("9440123456")}
-                    className="p-2.5 rounded-lg border border-border bg-background hover:bg-surface-raised hover:border-primary/40 text-left transition-colors flex items-center justify-between text-xs cursor-pointer group"
-                  >
-                    <div>
-                      <p className="font-semibold text-ink group-hover:text-primary">
-                        Sri Laxmi Narasimha Textiles
-                      </p>
-                      <p className="text-[11px] text-ink-muted">
-                        RET-0001 • Siddipet • +91 94401 23456
-                      </p>
-                    </div>
-                    <span className="text-primary text-xs font-semibold">Select</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDemoStoreSelect("9440122890")}
-                    className="p-2.5 rounded-lg border border-border bg-background hover:bg-surface-raised hover:border-primary/40 text-left transition-colors flex items-center justify-between text-xs cursor-pointer group"
-                  >
-                    <div>
-                      <p className="font-semibold text-ink group-hover:text-primary">
-                        Sri Venkata Ramana Garments
-                      </p>
-                      <p className="text-[11px] text-ink-muted">
-                        RET-0002 • Warangal • +91 94401 22890
-                      </p>
-                    </div>
-                    <span className="text-primary text-xs font-semibold">Select</span>
-                  </button>
+                  {MOCK_RETAILERS.slice(0, 2).map(store => (
+                    <button
+                      key={store.id}
+                      type="button"
+                      onClick={() => handleDemoStoreSelect(store.phone.replace(/[^0-9]/g, "").slice(-10))}
+                      className="p-2.5 rounded-lg border border-border bg-background hover:bg-surface-raised hover:border-primary/40 text-left transition-colors flex items-center justify-between text-xs cursor-pointer group"
+                    >
+                      <div>
+                        <p className="font-semibold text-ink group-hover:text-primary">
+                          {store.name}
+                        </p>
+                        <p className="text-[11px] text-ink-muted">
+                          {store.code} • {store.town} • {store.phone}
+                        </p>
+                      </div>
+                      <span className="text-primary text-xs font-semibold">Select</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -261,7 +239,7 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
             {isDemo && mockOtpHint && (
               <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between text-xs text-primary font-medium">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">verified</span>
+                  <Icon name="verified" size={18} />
                   <span>{t("demoOtpBadge")}:</span>
                   <span className="font-mono font-bold text-sm bg-primary/20 px-2 py-0.5 rounded text-primary">
                     {mockOtpHint}
@@ -299,7 +277,7 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
             {/* Error Alert */}
             {errorMsg && (
               <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+                <Icon name="error" size={18} className="shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -310,7 +288,7 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
               size="lg"
               disabled={isSubmitting || otpCode.length < 6 || rateLimitSeconds > 0}
               className="w-full font-bold cursor-pointer"
-              leftIcon={<span className="material-symbols-outlined text-[20px]">check_circle</span>}
+              leftIcon={<Icon name="check_circle" size={18} />}
             >
               {isSubmitting ? t("verifying") : t("verifyBtn")}
             </Button>
@@ -325,7 +303,7 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
                 }}
                 className="text-ink-muted hover:text-primary font-medium flex items-center gap-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+                <Icon name="arrow_back" size={14} />
                 <span>{t("changePhone")}</span>
               </button>
 

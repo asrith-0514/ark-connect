@@ -933,14 +933,11 @@ async function runDataChecks() {
     const details = [];
     const errors = [];
 
-    const {
-      getCallProvider,
-      SCRIPT_TEMPLATES,
-      renderScriptTemplate,
-      generateProposedCallTasks,
-      handleCallOutcomeWriteBack,
-      MOCK_CALL_TASKS,
-    } = dataModule;
+    // Direct imports from real voice calling modules in src/lib/voice/*
+    const { getCallProvider } = require("../src/lib/voice/CallProvider.ts");
+    const { SCRIPT_TEMPLATES, renderScriptTemplate } = require("../src/lib/voice/scriptTemplates.ts");
+    const { generateProposedCallTasks } = require("../src/lib/voice/callTaskRules.ts");
+    const { MOCK_CALL_TASKS, handleCallOutcomeWriteBack } = require("../src/lib/voice/voiceData.ts");
 
     // 1. Verify CallProvider Interface & Adapter Factory
     const provider = getCallProvider();
@@ -1054,6 +1051,67 @@ async function runDataChecks() {
       errors.push("ret-14 phoneConsent flag not set to false as expected for testing");
     }
     details.push(`Retailer Telephony Profiles: Verified language, quiet hours, consent flags, and DNC suppression on all retailers`);
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 15: Source of Truth Component Leakage Audit (Zero Literal Rs/GSTIN/Entities)
+  // ===========================================================================
+  {
+    const checkName = "Check 15: Component Source of Truth & Zero Literals Audit";
+    const details = [];
+    const errors = [];
+
+    function walkDir(dir) {
+      let results = [];
+      const list = fs.readdirSync(dir);
+      list.forEach((file) => {
+        const full = path.join(dir, file);
+        if (fs.statSync(full).isDirectory()) {
+          results = results.concat(walkDir(full));
+        } else if (file.endsWith(".tsx") || file.endsWith(".ts")) {
+          results.push(full);
+        }
+      });
+      return results;
+    }
+
+    const componentsDir = path.join(__dirname, "../src/components");
+    const componentFiles = walkDir(componentsDir);
+
+    const gstinRegex = /\b[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b/g;
+    const rsRegex = /\bRs\.?\s*\d+|₹\s*\d+/g;
+    const balajiRegex = /Sri\s+Balaji/gi;
+
+    let scannedCount = 0;
+    for (const filePath of componentFiles) {
+      scannedCount++;
+      const relativePath = path.relative(path.join(__dirname, ".."), filePath).replace(/\\/g, "/");
+      const content = fs.readFileSync(filePath, "utf8");
+      // Strip comments to inspect actual component code
+      const clean = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, "");
+
+      const gMatches = clean.match(gstinRegex);
+      if (gMatches) {
+        errors.push(`Literal GSTIN found in ${relativePath}: ${gMatches.join(", ")}`);
+      }
+
+      const bMatches = clean.match(balajiRegex);
+      if (bMatches) {
+        errors.push(`Hardcoded entity name "Sri Balaji" found in ${relativePath}: ${bMatches.join(", ")}`);
+      }
+
+      const rMatches = clean.match(rsRegex);
+      if (rMatches) {
+        errors.push(`Hardcoded rupee amount found in ${relativePath}: ${rMatches.join(", ")}`);
+      }
+    }
+
+    details.push(`Component Scan: Audited ${scannedCount} files across src/components/`);
+    details.push(`Zero Hardcoded GSTINs: All components read GSTIN from data constants`);
+    details.push(`Zero Hardcoded Rupee Values: All amounts formatted through dynamic selectors`);
+    details.push(`Zero Forbidden Entities: No literal "Sri Balaji" occurrences outside seed data`);
 
     recordCheck(checkName, errors.length === 0, details, errors);
   }

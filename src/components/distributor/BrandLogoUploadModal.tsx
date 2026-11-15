@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { Brand } from "@/data/mockData";
 import { imageStore, useEntityImages, validateImageFile } from "@/lib/storage/imageStore";
 
@@ -69,13 +70,13 @@ export const BrandLogoUploadModal: React.FC<BrandLogoUploadModalProps> = ({
     }
   };
 
-  const brandColor = brand.colorHex || brand.accentColor || "#3B3BF5";
+  const brandColor = brand.colorHex || brand.accentColor || "#2F6BFF";
   const displayImage = primaryUrl || brand.logo || brand.image;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
       <div
-        className="relative w-full max-w-md bg-surface rounded-2xl shadow-soft-xl border border-border text-ink overflow-hidden"
+        className="relative w-full max-w-md bg-surface rounded-lg shadow-soft-xl border border-border text-ink overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -102,7 +103,7 @@ export const BrandLogoUploadModal: React.FC<BrandLogoUploadModalProps> = ({
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer border border-border"
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <Icon name="close" size={18} />
           </button>
         </div>
 
@@ -137,7 +138,7 @@ export const BrandLogoUploadModal: React.FC<BrandLogoUploadModalProps> = ({
           {/* Error Message */}
           {errorMessage && (
             <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-danger text-xs flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+              <Icon name="error" size={18} className="shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -168,9 +169,7 @@ export const BrandLogoUploadModal: React.FC<BrandLogoUploadModalProps> = ({
               }}
               className="hidden"
             />
-            <span className="material-symbols-outlined text-[32px] text-primary mb-1">
-              cloud_upload
-            </span>
+            <Icon name="cloud_upload" size={32} className="text-primary mb-1" />
             <p className="text-xs font-bold text-ink">
               Drag &amp; drop logo or <span className="text-primary underline">browse</span>
             </p>
@@ -197,9 +196,7 @@ export const BrandLogoUploadModal: React.FC<BrandLogoUploadModalProps> = ({
 
           {/* Storage Disclaimer Banner */}
           <div className="p-3 bg-primary/5 border border-primary/15 rounded-xl text-xs text-ink-muted flex items-start gap-2">
-            <span className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">
-              info
-            </span>
+            <Icon name="info" size={18} className="text-primary shrink-0 mt-0.5" />
             <span className="leading-snug">
               Stored in local browser storage (IndexedDB). Logo appears across the retailer portal and brand row in this browser.
             </span>
@@ -214,7 +211,7 @@ export const BrandLogoUploadModal: React.FC<BrandLogoUploadModalProps> = ({
               onClick={handleDelete}
               className="px-3 min-h-[40px] rounded-xl text-danger hover:bg-danger/10 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">delete</span>
+              <Icon name="delete" size={16} />
               <span>Remove Logo</span>
             </button>
           ) : (

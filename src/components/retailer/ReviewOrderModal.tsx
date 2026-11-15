@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { RETAILER_PROFILE, formatINR, getRetailerFinancials } from "@/lib/mock/retailer";
@@ -61,10 +62,10 @@ export default function ReviewOrderModal() {
           <button
             type="button"
             onClick={() => setIsReviewOrderOpen(false)}
-            className="min-h-[44px] min-w-[44px] rounded-xl bg-background hover:bg-surface text-ink flex items-center justify-center transition-colors border border-border shadow-soft-sm cursor-pointer"
+            className="min-h-[44px] min-w-[44px] rounded-md bg-background hover:bg-surface text-ink flex items-center justify-center transition-colors border border-border shadow-soft-sm cursor-pointer"
             aria-label="Back to Shop"
           >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <Icon name="arrow_back" size={20} />
           </button>
           <div>
             <h2 className="text-sm sm:text-lg font-bold text-ink leading-tight">
@@ -79,9 +80,9 @@ export default function ReviewOrderModal() {
         <button
           type="button"
           onClick={() => setIsReviewOrderOpen(false)}
-          className="min-h-[44px] px-3 rounded-xl bg-background hover:bg-surface text-ink-muted hover:text-ink text-xs font-semibold flex items-center gap-1 transition-colors border border-border shadow-soft-sm cursor-pointer"
+          className="min-h-[44px] px-3 rounded-md bg-background hover:bg-surface text-ink-muted hover:text-ink text-xs font-semibold flex items-center gap-1 transition-colors border border-border shadow-soft-sm cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[18px]">close</span>
+          <Icon name="close" size={18} />
           <span className="hidden sm:inline">Close</span>
         </button>
       </div>
@@ -89,9 +90,9 @@ export default function ReviewOrderModal() {
       {/* Scrollable Content Body */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-4xl mx-auto w-full">
         {cartItems.length === 0 ? (
-          <div className="p-12 text-center bg-surface rounded-2xl border border-border shadow-soft-sm my-8">
+          <div className="p-12 text-center bg-surface rounded-lg border border-border shadow-soft-sm my-8">
             <div className="w-16 h-16 rounded-full bg-surface-raised flex items-center justify-center mx-auto mb-3 text-ink-muted">
-              <span className="material-symbols-outlined text-[32px]">production_quantity_limits</span>
+              <Icon name="production_quantity_limits" size={32} />
             </div>
             <h3 className="text-base font-bold text-ink">{getRetailerString(language, "cartEmpty")}</h3>
             <p className="text-xs text-ink-muted mt-1">
@@ -99,7 +100,7 @@ export default function ReviewOrderModal() {
             </p>
             <button
               onClick={() => setIsReviewOrderOpen(false)}
-              className="mt-4 px-5 min-h-[44px] rounded-xl bg-primary text-primary-foreground font-semibold text-xs shadow-soft-sm hover:bg-primary/90 cursor-pointer"
+              className="mt-4 px-5 min-h-[44px] rounded-md bg-primary text-primary-foreground font-semibold text-xs shadow-soft-sm hover:bg-primary/90 cursor-pointer"
             >
               {getRetailerString(language, "startShopping")}
             </button>
@@ -115,7 +116,7 @@ export default function ReviewOrderModal() {
                     <div className="p-3 sm:p-4 rounded-md bg-surface border border-border shadow-soft-sm flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20">
-                          <span className="material-symbols-outlined text-[22px]">inventory_2</span>
+                          <Icon name="inventory_2" size={22} />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -211,7 +212,7 @@ export default function ReviewOrderModal() {
                               className="w-8 h-8 rounded-sm text-ink-muted hover:text-danger hover:bg-danger/10 flex items-center justify-center transition-colors cursor-pointer"
                               title="Remove item"
                             >
-                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                              <Icon name="delete" size={18} />
                             </button>
                           </div>
                         </div>
@@ -224,9 +225,7 @@ export default function ReviewOrderModal() {
               {/* Logistics & Transporter selection */}
               <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm space-y-3">
                 <label className="text-xs font-bold text-ink uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-primary text-[18px]">
-                    local_shipping
-                  </span>
+                  <Icon name="local_shipping" size={18} className="text-primary" />
                   Transporter / Lorry Service Preference
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -247,9 +246,7 @@ export default function ReviewOrderModal() {
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-ink">{t.name}</span>
                         {transporter === t.name && (
-                          <span className="material-symbols-outlined text-primary text-[16px]">
-                            check_circle
-                          </span>
+                          <Icon name="check_circle" size={16} className="text-primary" />
                         )}
                       </div>
                       <span className="text-[11px] text-ink-muted mt-1">{t.tag}</span>
@@ -259,9 +256,7 @@ export default function ReviewOrderModal() {
 
                 <div className="pt-2">
                   <label className="text-xs font-semibold text-ink flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[16px] text-ink-muted">
-                      edit_note
-                    </span>
+                    <Icon name="edit_note" size={16} className="text-ink-muted" />
                     Delivery Instructions / Special Packaging Notes
                   </label>
                   <textarea
@@ -318,18 +313,14 @@ export default function ReviewOrderModal() {
                 {/* Wholesaler Reassurance & Credit terms status */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <div className="p-3 rounded-md bg-primary/10 border border-primary/20 flex items-start gap-2.5">
-                    <span className="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">
-                      info
-                    </span>
+                    <Icon name="info" size={20} className="text-primary shrink-0 mt-0.5" />
                     <p className="text-xs text-ink leading-snug">
                       <strong>Order request:</strong> Wholesaler reviews physical stock and confirms allocation before invoice generation.
                     </p>
                   </div>
 
                   <div className="p-3 rounded-md bg-success/10 border border-success/20 flex items-start gap-2.5">
-                    <span className="material-symbols-outlined text-success text-[20px] shrink-0 mt-0.5">
-                      verified
-                    </span>
+                    <Icon name="verified" size={20} className="text-success shrink-0 mt-0.5" />
                     <div>
                       <span className="text-xs font-bold text-success block">
                         Within wholesale credit terms
@@ -362,17 +353,17 @@ export default function ReviewOrderModal() {
               <button
                 type="button"
                 onClick={() => setIsReviewOrderOpen(false)}
-                className="hidden sm:flex px-4 min-h-[48px] rounded-xl bg-background hover:bg-surface text-ink text-xs sm:text-sm font-semibold transition-all border border-border cursor-pointer items-center justify-center"
+                className="hidden sm:flex px-4 min-h-[48px] rounded-md bg-background hover:bg-surface text-ink text-xs sm:text-sm font-semibold transition-all border border-border cursor-pointer items-center justify-center"
               >
                 Continue Shopping
               </button>
               <button
                 type="button"
                 onClick={() => setShowConfirmSheet(true)}
-                className="px-5 sm:px-6 min-h-[48px] rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-xs sm:text-sm shadow-soft-md transition-all flex items-center gap-2 cursor-pointer"
+                className="px-5 sm:px-6 min-h-[48px] rounded-md bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-xs sm:text-sm shadow-soft-md transition-all flex items-center gap-2 cursor-pointer"
               >
                 <span>Submit Purchase Order</span>
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <Icon name="arrow_forward" size={18} />
               </button>
             </div>
           </div>
@@ -387,8 +378,8 @@ export default function ReviewOrderModal() {
 
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
-                  <span className="material-symbols-outlined text-[26px]">assignment_turned_in</span>
+                <div className="w-12 h-12 rounded-md bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                  <Icon name="assignment_turned_in" size={26} />
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-bold text-ink">
@@ -405,11 +396,11 @@ export default function ReviewOrderModal() {
                 onClick={() => setShowConfirmSheet(false)}
                 className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center border border-border cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-background border border-border space-y-1.5 text-xs sm:text-sm">
+            <div className="p-3.5 rounded-md bg-background border border-border space-y-1.5 text-xs sm:text-sm">
               <div className="flex justify-between text-ink-muted">
                 <span>Order Items:</span>
                 <span className="font-bold text-ink font-mono num">
@@ -439,18 +430,16 @@ export default function ReviewOrderModal() {
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleConfirmSubmit}
-                className="w-full sm:flex-1 min-h-[48px] rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-bold text-xs sm:text-sm shadow-soft-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+                className="w-full sm:flex-1 min-h-[48px] rounded-md bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-bold text-xs sm:text-sm shadow-soft-md flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
-                    <span className="material-symbols-outlined animate-spin text-[20px]">
-                      progress_activity
-                    </span>
+                    <Icon name="progress_activity" size={20} className="animate-spin" />
                     <span>Submitting PO...</span>
                   </>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-[20px]">check</span>
+                    <Icon name="check" size={20} />
                     <span>Confirm & Submit PO</span>
                   </>
                 )}
@@ -460,7 +449,7 @@ export default function ReviewOrderModal() {
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => setShowConfirmSheet(false)}
-                className="w-full sm:w-auto px-5 min-h-[48px] rounded-xl bg-background hover:bg-surface text-ink text-xs sm:text-sm font-semibold transition-all border border-border cursor-pointer"
+                className="w-full sm:w-auto px-5 min-h-[48px] rounded-md bg-background hover:bg-surface text-ink text-xs sm:text-sm font-semibold transition-all border border-border cursor-pointer"
               >
                 Edit Order
               </button>

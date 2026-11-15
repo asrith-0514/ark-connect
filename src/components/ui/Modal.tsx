@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { Button } from "./Button";
+import { Icon } from "./Icon";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -57,26 +58,26 @@ export function Modal({
       aria-modal="true"
       role="dialog"
     >
-      {/* Backdrop */}
+      {/* Glass Backdrop (glass only on overlays per brand spec) */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-ink/40 backdrop-blur-xs transition-opacity duration-200 ease-out"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-180 ease-out"
       />
 
-      {/* Modal Dialog */}
+      {/* Modal Dialog: 180ms opacity/transform only */}
       <div
-        className={`relative w-full ${maxWidthStyles[maxWidth]} bg-surface text-ink border border-border rounded-xl shadow-soft-xl overflow-hidden transform transition-all duration-200 ease-out z-10 ${className}`}
+        className={`relative w-full ${maxWidthStyles[maxWidth]} bg-surface text-ink border border-border rounded-md shadow-soft-xl overflow-hidden transform transition-all duration-180 ease-out z-10 ${className}`}
       >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-border flex items-start justify-between gap-4">
+        <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-4">
           <div>
             {title && (
-              <h3 className="text-lg font-bold text-ink tracking-tight font-sans">
+              <h3 className="text-base font-bold text-ink tracking-tight font-sans">
                 {title}
               </h3>
             )}
             {description && (
-              <p className="text-xs text-ink-muted mt-1">{description}</p>
+              <p className="text-xs text-ink-muted mt-0.5">{description}</p>
             )}
           </div>
           <Button
@@ -84,18 +85,20 @@ export function Modal({
             size="icon"
             onClick={onClose}
             aria-label="Close modal"
-            className="rounded-full text-ink-muted hover:text-ink shrink-0 -mr-2 -mt-1"
+            className="rounded-sm text-ink-muted hover:text-ink shrink-0 -mr-1 -mt-1 h-8 w-8"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <Icon name="close" size={18} />
           </Button>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">{children}</div>
+        <div className="px-5 py-4 max-h-[75vh] overflow-y-auto">
+          {children}
+        </div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-border bg-surface-raised flex items-center justify-end gap-3">
+          <div className="px-5 py-3 border-t border-border bg-surface-raised flex items-center justify-end gap-2.5">
             {footer}
           </div>
         )}
@@ -103,3 +106,5 @@ export function Modal({
     </div>
   );
 }
+
+export default Modal;

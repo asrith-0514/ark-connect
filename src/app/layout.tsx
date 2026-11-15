@@ -14,30 +14,28 @@ const geistMono = localFont({
   display: "swap",
 });
 
-const instrumentSerif = localFont({
-  src: "./fonts/instrument-serif.ttf",
-  variable: "--font-instrument-serif",
-  display: "swap",
-});
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAF7F2" },
-    { media: "(prefers-color-scheme: dark)", color: "#0F1115" },
+    { media: "(prefers-color-scheme: light)", color: "#F5F7FA" },
+    { media: "(prefers-color-scheme: dark)", color: "#07090D" },
   ],
 };
 
 export const metadata: Metadata = {
-  title: "ARK Connect & Distributors | B2B Garment Wholesale",
-  description: "Next-gen B2B wholesale platform for garment distribution, matrix bulk ordering, invoicing and receivables.",
+  title: "ARK Connect & Backoffice | Wholesale, Connected.",
+  description: "Premium Industrial-Tech B2B Garment Distribution Platform: Matrix Bulk Ordering, Invoicing, Receivables and CRM.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/icon-192.png",
+  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "ARK Connect",
   },
 };
@@ -51,29 +49,19 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`h-full antialiased overflow-x-hidden ${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
+      className={`h-full antialiased overflow-x-hidden ${geistSans.variable} ${geistMono.variable}`}
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-          rel="stylesheet"
-        />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.setAttribute("data-theme","dark");}else{document.documentElement.setAttribute("data-theme","light");}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="light"){document.documentElement.setAttribute("data-theme","light");}else if(t==="system"){var m=window.matchMedia("(prefers-color-scheme: light)").matches;document.documentElement.setAttribute("data-theme",m?"light":"dark");}else{document.documentElement.setAttribute("data-theme","dark");}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();`,
           }}
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `if('serviceWorker' in navigator && window.location.protocol === 'https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}`,
+            __html: `if('serviceWorker' in navigator){if(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1'){navigator.serviceWorker.getRegistrations().then(function(regs){for(var r of regs){r.unregister();}});if('caches' in window){caches.keys().then(function(names){for(var n of names){caches.delete(n);}});}}else if(window.location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}}`,
           }}
         />
       </head>

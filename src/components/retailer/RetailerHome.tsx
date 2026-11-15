@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { MOCK_BRANDS, MOCK_PRODUCTS, Product, Brand } from "@/data/mockData";
@@ -29,6 +30,8 @@ function BrandStoryRing({
     .join("")
     .slice(0, 3);
   const displayImage = primaryUrl || brand.image;
+  // Brands with new items get a thin cyan ring
+  const hasNewItems = brand.id === "within" || brand.id === "flybirds" || brand.id === "aswati" || Boolean((brand as any).hasNewItems);
 
   return (
     <button
@@ -36,7 +39,13 @@ function BrandStoryRing({
       onClick={onClick}
       className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer focus:outline-none"
     >
-      <div className="w-16 h-16 rounded-full p-0.5 ring-2 ring-primary/30 group-hover:ring-primary group-hover:scale-105 transition-all duration-200 bg-surface shadow-soft-sm flex items-center justify-center overflow-hidden">
+      <div
+        className={`w-16 h-16 rounded-full p-0.5 transition-all duration-200 bg-surface shadow-soft-sm flex items-center justify-center overflow-hidden ${
+          hasNewItems
+            ? "ring-1 ring-accent ring-offset-2 ring-offset-background shadow-[0_0_8px_rgba(34,229,255,0.25)] group-hover:scale-105"
+            : "ring-1 ring-border group-hover:ring-primary/60 group-hover:scale-105"
+        }`}
+      >
         {displayImage ? (
           <img
             src={displayImage}
@@ -46,15 +55,17 @@ function BrandStoryRing({
           />
         ) : (
           <div
-            className={`w-full h-full rounded-full ${config.colorConfig.accentBadge} font-bold text-sm flex items-center justify-center font-mono`}
+            className={`w-full h-full rounded-full ${config.colorConfig.accentBadge} font-bold text-xs flex items-center justify-center font-mono`}
           >
             {initials}
           </div>
         )}
       </div>
-      <span className="text-[11px] font-semibold text-ink group-hover:text-primary transition-colors max-w-[70px] truncate text-center">
-        {brand.name}
-      </span>
+      <div className="flex items-center gap-1 max-w-[72px] truncate justify-center">
+        <span className="text-[11px] font-semibold text-ink group-hover:text-accent transition-colors truncate text-center">
+          {brand.name}
+        </span>
+      </div>
     </button>
   );
 }
@@ -122,10 +133,16 @@ export function RetailerHome() {
   return (
     <div className="w-full flex flex-col gap-5 pb-28 text-ink max-w-full overflow-x-hidden">
       {/* =========================================================================
-          SECTION 1: GREETING + CREDIT / DUES STRIP (Tap opens Dues)
+          SECTION 1: HERO (SUBTLE GRID TEXTURE + GRADIENT LINE + GREETING & DUES)
           ========================================================================= */}
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-center justify-between">
+      <div className="relative overflow-hidden rounded-lg bg-surface border border-border p-4 sm:p-5 shadow-soft-sm flex flex-col gap-3.5">
+        {/* Subtle Background Grid Texture (low opacity, no solid color block) */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-[size:24px_24px] opacity-35 pointer-events-none [mask-image:radial-gradient(ellipse_90%_70%_at_50%_0%,#000_70%,transparent_100%)]" />
+
+        {/* Electric Blue to Neon Cyan Gradient Accent Line */}
+        <div className="relative z-10 h-0.5 w-full bg-gradient-to-r from-primary via-accent to-transparent rounded-full" />
+
+        <div className="relative z-10 flex items-center justify-between">
           <div>
             <span className="text-xs text-ink-muted font-medium">
               {getRetailerString(language, "namasteGreeting")} {proprietorName}
@@ -134,7 +151,7 @@ export function RetailerHome() {
               {storeName}
             </h1>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-success/10 text-success text-[11px] font-bold font-mono">
+          <span className="px-2.5 py-1 rounded-full bg-accent/10 border border-accent/25 text-accent text-[11px] font-bold font-mono">
             {activeRetailer?.code || RETAILER_PROFILE.code}
           </span>
         </div>
@@ -142,18 +159,18 @@ export function RetailerHome() {
         {/* Credit & Dues Strip (Thumb-friendly clickable card) */}
         <div
           onClick={() => setRetailerNav("account")}
-          className="w-full bg-surface hover:bg-surface-raised rounded-2xl p-4 border border-border shadow-soft-sm transition-all duration-200 cursor-pointer active:scale-[0.99] flex flex-col gap-3 group"
+          className="relative z-10 w-full bg-surface-raised/80 hover:bg-surface-raised rounded-md p-3.5 border border-border/80 shadow-soft-xs transition-all duration-200 cursor-pointer active:scale-[0.99] flex flex-col gap-3 group"
           role="button"
           tabIndex={0}
           title="Open Dues & Ledger"
         >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+              <span className="w-8 h-8 rounded-lg bg-primary/15 text-primary border border-primary/25 flex items-center justify-center shrink-0">
+                <Icon name="account_balance_wallet" size={18} />
               </span>
               <div className="min-w-0">
-                <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
+                <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block font-mono">
                   {getRetailerString(language, "outstandingDues")}
                 </span>
                 <span className="font-mono text-base sm:text-lg font-bold text-ink num leading-none">
@@ -165,16 +182,16 @@ export function RetailerHome() {
             {/* Overdue Pill or Available Headroom */}
             {financials.overdueAmount > 0 ? (
               <div className="text-right">
-                <span className="px-2 py-0.5 rounded-full bg-danger/10 text-danger text-[10px] font-bold border border-danger/20 font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-danger/10 text-danger text-[10px] font-bold border border-danger/30 font-mono">
                   {formatINR(financials.overdueAmount)} Overdue
                 </span>
-                <span className="text-[10px] text-ink-muted block mt-0.5">
+                <span className="text-[10px] text-ink-muted block mt-0.5 font-mono">
                   Due {financials.nextDueDate}
                 </span>
               </div>
             ) : (
               <div className="text-right">
-                <span className="px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold font-mono">
+                <span className="px-2 py-0.5 rounded-full bg-success/10 text-success border border-success/30 text-[10px] font-bold font-mono">
                   Credit Available
                 </span>
                 <span className="text-[10px] font-mono text-ink-muted block mt-0.5 num">
@@ -184,12 +201,13 @@ export function RetailerHome() {
             )}
           </div>
 
-          <div className="pt-2.5 border-t border-border/70 flex items-center justify-between text-xs font-semibold text-primary">
-            <span className="text-[11px] text-ink-muted font-normal">
+          <div className="pt-2 border-t border-border/70 flex items-center justify-between text-xs font-semibold text-primary">
+            <span className="text-[11px] text-ink-muted font-normal font-mono">
               Credit Limit: {formatINR(activeRetailer?.creditLimit || RETAILER_PROFILE.creditLimit)}
             </span>
-            <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+            <span className="flex items-center gap-1 group-hover:translate-x-1 group-hover:text-accent transition-all">
               <span>{getRetailerString(language, "viewDuesDetails")}</span>
+              <Icon name="arrow_forward" size={13} />
             </span>
           </div>
         </div>
@@ -199,10 +217,10 @@ export function RetailerHome() {
           SECTION 2: REORDER LAST ORDER ONE-TAP CARD
           ========================================================================= */}
       {lastOrder && (
-        <div className="w-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-4 border border-primary/20 shadow-soft-sm flex items-center justify-between gap-3">
+        <div className="w-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-lg p-4 border border-primary/20 shadow-soft-sm flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="material-symbols-outlined text-primary text-[18px]">replay</span>
+              <Icon name="replay" size={18} className="text-primary" />
               <span className="text-xs font-bold text-ink">
                 {getRetailerString(language, "reorderTitle")}
               </span>
@@ -218,9 +236,9 @@ export function RetailerHome() {
           <button
             type="button"
             onClick={handleReorder}
-            className="min-h-[44px] px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-soft-sm hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+            className="min-h-[44px] px-4 py-2 rounded-md bg-primary text-primary-foreground font-bold text-xs shadow-soft-sm hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[16px]">add_shopping_cart</span>
+            <Icon name="add_shopping_cart" size={16} />
             <span>{reorderSuccess ? "Added!" : getRetailerString(language, "reorderBtn")}</span>
           </button>
         </div>
@@ -270,9 +288,7 @@ export function RetailerHome() {
               onClick={() => setRetailerNav("catalogue")}
               className="min-h-[40px] px-4 py-2 rounded-full bg-surface hover:bg-surface-raised border border-border text-xs font-bold text-ink whitespace-nowrap shadow-soft-xs hover:border-primary/40 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px] text-primary">
-                {cat === "Leggings" ? "straighten" : cat === "Petticoats" ? "styler" : cat === "Bras" ? "checkroom" : "dry_cleaning"}
-              </span>
+              <Icon name={cat === "Leggings" ? "straighten" : cat === "Petticoats" ? "styler" : cat === "Bras" ? "checkroom" : "dry_cleaning"} size={16} className="text-primary" />
               <span>{cat}</span>
             </button>
           ))}
@@ -283,7 +299,7 @@ export function RetailerHome() {
           SECTION 5: ORDER STATUS MINI-TRACKER WITH "TRACK LR"
           ========================================================================= */}
       {activeDispatchedOrder && (
-        <div className="w-full bg-surface rounded-2xl p-4 border border-border shadow-soft-sm flex flex-col gap-3">
+        <div className="w-full bg-surface rounded-lg p-4 border border-border shadow-soft-sm flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
@@ -297,11 +313,11 @@ export function RetailerHome() {
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>{getRetailerString(language, "trackLR")}</span>
-              <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+              <Icon name="open_in_new" size={14} />
             </button>
           </div>
 
-          <div className="bg-surface-raised rounded-xl p-3 flex flex-col gap-2.5">
+          <div className="bg-surface-raised rounded-md p-3 flex flex-col gap-2.5">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-ink">{activeDispatchedOrder.orderNumber}</span>
               <span className="font-mono text-ink-muted">{activeDispatchedOrder.lrNumber || "NRT-77492-SDP"}</span>
@@ -315,7 +331,9 @@ export function RetailerHome() {
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-ink-muted">
-              <span className="text-success font-semibold">Dispatched (24 Oct)</span>
+              <span className="text-success font-semibold">
+                Dispatched ({activeDispatchedOrder.dispatchDate || activeDispatchedOrder.date})
+              </span>
               <span className="text-primary font-bold">{getRetailerString(language, "inTransit")}</span>
               <span>Delivery (Tomorrow)</span>
             </div>
@@ -323,10 +341,12 @@ export function RetailerHome() {
 
           {/* Expanded LR Tracking Details */}
           {isTrackLrModalOpen && (
-            <div className="p-3 rounded-xl bg-background border border-border text-xs flex flex-col gap-1.5 animate-in fade-in duration-150">
+            <div className="p-3 rounded-md bg-background border border-border text-xs flex flex-col gap-1.5 animate-in fade-in duration-150">
               <p className="font-semibold text-ink">Transporter: {activeDispatchedOrder.transporter || "Navata Road Transport"}</p>
               <p className="text-ink-muted">LR Consignment: <strong className="text-ink font-mono">{activeDispatchedOrder.lrNumber || "NRT-77492-SDP"}</strong></p>
-              <p className="text-ink-muted">Origin Hub: Tiruppur Mill Hub → Destination: Siddipet Station</p>
+              <p className="text-ink-muted">
+                Origin Hub: Tiruppur Mill Hub → Destination: {activeDispatchedOrder.retailerTown ? `${activeDispatchedOrder.retailerTown} Station` : "Destination Hub"}
+              </p>
               <p className="text-[11px] text-primary font-semibold mt-1">Helpline: 1800-425-0000</p>
             </div>
           )}
@@ -340,7 +360,7 @@ export function RetailerHome() {
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-primary text-[18px]">fiber_new</span>
+            <Icon name="fiber_new" size={18} className="text-primary" />
             <h2 className="text-sm font-bold text-ink">
               {getRetailerString(language, "newArrivals")}
             </h2>
@@ -359,9 +379,9 @@ export function RetailerHome() {
             <div
               key={product.id}
               onClick={() => openMatrixModal(product)}
-              className="w-40 sm:w-44 shrink-0 bg-surface rounded-2xl p-2.5 border border-border shadow-soft-sm hover:shadow-soft-md transition-all flex flex-col justify-between cursor-pointer group active:scale-[0.98]"
+              className="w-40 sm:w-44 shrink-0 bg-surface rounded-lg p-2.5 border border-border shadow-soft-sm hover:shadow-soft-md transition-all flex flex-col justify-between cursor-pointer group active:scale-[0.98]"
             >
-              <div className="relative aspect-square rounded-xl overflow-hidden bg-surface-raised mb-2">
+              <div className="relative aspect-square rounded-md overflow-hidden bg-surface-raised mb-2">
                 <ProductRailImage product={product} />
                 <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-ink/75 text-surface text-[9px] font-bold uppercase font-mono">
                   {product.brand}
@@ -411,7 +431,7 @@ export function RetailerHome() {
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-accent text-[18px]">local_fire_department</span>
+            <Icon name="local_fire_department" size={18} className="text-accent" />
             <h2 className="text-sm font-bold text-ink">
               {getRetailerString(language, "fastMoving")}
             </h2>
@@ -430,9 +450,9 @@ export function RetailerHome() {
             <div
               key={product.id}
               onClick={() => openMatrixModal(product)}
-              className="w-40 sm:w-44 shrink-0 bg-surface rounded-2xl p-2.5 border border-border shadow-soft-sm hover:shadow-soft-md transition-all flex flex-col justify-between cursor-pointer group active:scale-[0.98]"
+              className="w-40 sm:w-44 shrink-0 bg-surface rounded-lg p-2.5 border border-border shadow-soft-sm hover:shadow-soft-md transition-all flex flex-col justify-between cursor-pointer group active:scale-[0.98]"
             >
-              <div className="relative aspect-square rounded-xl overflow-hidden bg-surface-raised mb-2">
+              <div className="relative aspect-square rounded-md overflow-hidden bg-surface-raised mb-2">
                 <ProductRailImage product={product} />
                 <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-accent text-white text-[9px] font-bold uppercase font-mono">
                   Bestseller

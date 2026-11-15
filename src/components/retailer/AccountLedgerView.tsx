@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "@/components/ui/Icon";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
@@ -11,6 +12,7 @@ import {
   formatINR,
   isDemoModeEnabled,
   downloadInvoicePDF,
+  getDaysUntil,
 } from "@/lib/mock";
 import CreditMeter from "@/components/retailer/CreditMeter";
 
@@ -110,10 +112,11 @@ export default function AccountLedgerView() {
   const totalPaymentsAmount = retailerPayments.reduce((sum, p) => sum + p.amount, 0);
 
   // Primary overdue invoice for alert
-  const primaryOverdue = financials.overdueInvoices[0] || {
-    invoiceNumber: "INV-0079",
-    balanceDue: 31000,
-  };
+  const primaryOverdue: { invoiceNumber: string; balanceDue: number } =
+    financials.overdueInvoices[0] || sortedInvoices[0] || {
+      invoiceNumber: "INV-0001",
+      balanceDue: 0,
+    };
 
   // Requirement 1 & 2: WhatsApp deep link builder
   const buildWhatsAppLink = (invoiceNo?: string, amount?: number) => {
@@ -177,7 +180,7 @@ export default function AccountLedgerView() {
     const fullInv = invoices.find(i => i.invoiceNumber === invoiceNo) || {
       id: `inv-${invoiceNo}`,
       invoiceNumber: invoiceNo,
-      orderNumber: "ARK-8812",
+      orderNumber: orders[0]?.orderNumber || "PO-0001",
       retailerId: RETAILER_PROFILE.code,
       retailerName: RETAILER_PROFILE.name,
       retailerTown: RETAILER_PROFILE.town,
@@ -221,8 +224,8 @@ export default function AccountLedgerView() {
     <div className="w-full max-w-4xl mx-auto space-y-6 pb-24">
       {/* Toast Notification for Real Downloads */}
       {downloadSuccess && (
-        <div className="fixed bottom-6 right-6 z-50 bg-ink text-surface text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-border animate-in fade-in slide-in-from-bottom-2">
-          <span className="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span>
+        <div className="fixed bottom-6 right-6 z-50 bg-ink text-surface text-xs font-semibold px-4 py-3 rounded-md shadow-2xl flex items-center gap-2 border border-border animate-in fade-in slide-in-from-bottom-2">
+          <Icon name="check_circle" size={18} className="text-success" />
           <span>{downloadSuccess}</span>
         </div>
       )}
@@ -231,11 +234,11 @@ export default function AccountLedgerView() {
       {isCreditHeld && (
         <section
           role="alert"
-          className="bg-danger/10 border-2 border-danger/40 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-soft-sm animate-in fade-in"
+          className="bg-danger/10 border-2 border-danger/40 rounded-lg p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-soft-sm animate-in fade-in"
         >
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-lg bg-danger/15 text-danger flex items-center justify-center shrink-0 border border-danger/30">
-              <span className="material-symbols-outlined text-[24px]">lock</span>
+              <Icon name="lock" size={24} />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -272,7 +275,7 @@ export default function AccountLedgerView() {
         >
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-lg bg-danger/15 text-danger flex items-center justify-center shrink-0 border border-danger/30">
-              <span className="material-symbols-outlined text-[24px]">warning</span>
+              <Icon name="warning" size={24} />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -312,7 +315,7 @@ export default function AccountLedgerView() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
             <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-lg border border-primary/20 shrink-0">
-              <span className="material-symbols-outlined text-[26px]">storefront</span>
+              <Icon name="storefront" size={26} />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -323,7 +326,7 @@ export default function AccountLedgerView() {
                   {RETAILER_PROFILE.code}
                 </span>
                 <span className="inline-flex items-center gap-1 bg-success/10 text-success border border-success/20 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                  <span className="material-symbols-outlined text-[14px]">verified</span>
+                  <Icon name="verified" size={14} />
                   <span>GSTIN Verified</span>
                 </span>
               </div>
@@ -346,9 +349,7 @@ export default function AccountLedgerView() {
               className="min-h-[44px] px-4 py-2 rounded-md bg-surface hover:bg-background text-ink font-semibold text-xs flex items-center gap-1.5 transition-colors border border-border shadow-soft-sm cursor-pointer"
               title="Download real CSV statement"
             >
-              <span className="material-symbols-outlined text-[16px] text-primary">
-                download
-              </span>
+              <Icon name="download" size={16} className="text-primary" />
               <span>Download Ledger (CSV)</span>
             </button>
           </div>
@@ -446,25 +447,23 @@ export default function AccountLedgerView() {
             <button
               type="button"
               onClick={() => setActiveTab("invoices")}
-              className={`min-h-[44px] px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTab === "invoices"
+              className={`min-h-[44px] px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${activeTab === "invoices"
                   ? "bg-primary text-primary-foreground shadow-soft-sm"
                   : "text-ink-muted hover:text-ink"
-              }`}
+                }`}
             >
-              <span className="material-symbols-outlined text-[16px]">receipt</span>
+              <Icon name="receipt" size={16} />
               <span>Invoices ({retailerInvoices.length})</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("payments")}
-              className={`min-h-[44px] px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTab === "payments"
+              className={`min-h-[44px] px-4 py-2 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${activeTab === "payments"
                   ? "bg-primary text-primary-foreground shadow-soft-sm"
                   : "text-ink-muted hover:text-ink"
-              }`}
+                }`}
             >
-              <span className="material-symbols-outlined text-[16px]">payments</span>
+              <Icon name="payments" size={16} />
               <span>Payments ({retailerPayments.length})</span>
             </button>
           </div>
@@ -484,7 +483,7 @@ export default function AccountLedgerView() {
         {showEmptyState ? (
           <div className="bg-surface rounded-xl p-8 sm:p-12 shadow-soft-sm border border-border text-center flex flex-col items-center gap-3 text-ink">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[36px]">inventory_2</span>
+              <Icon name="inventory_2" size={36} />
             </div>
             <h3 className="text-base font-bold text-ink font-sans">No invoices generated yet</h3>
             <p className="text-xs text-ink-muted max-w-xs">
@@ -504,14 +503,14 @@ export default function AccountLedgerView() {
             {sortedInvoices.map(inv => {
               const isOverdue = inv.status === "Overdue";
               const isPaid = inv.status === "Paid";
-              const isInv0094 = inv.invoiceNumber === "INV-0094";
+              const daysUntilDue = getDaysUntil(inv.dueDate, currentDate);
+              const isDueSoon = !isPaid && !isOverdue && daysUntilDue >= 0 && daysUntilDue <= 2;
 
               return (
                 <div
                   key={inv.id}
-                  className={`bg-surface rounded-2xl p-4 sm:p-5 shadow-soft-sm border ${
-                    isOverdue ? "border-rose-300 ring-1 ring-rose-200" : "border-border"
-                  } space-y-3`}
+                  className={`bg-surface rounded-lg p-4 sm:p-5 shadow-soft-sm border ${isOverdue ? "border-danger/40 ring-1 ring-danger/20" : "border-border"
+                    } space-y-3`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -529,21 +528,19 @@ export default function AccountLedgerView() {
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                      {/* Requirement 3: Due in 1 day in amber for INV-0094 */}
-                      {isInv0094 && (
-                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                          Due in 1 day • 13 Nov 2026
+                      {isDueSoon && (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-warning/15 text-warning border border-warning/30">
+                          Due in {daysUntilDue} {daysUntilDue === 1 ? "day" : "days"} • {inv.dueDate}
                         </span>
                       )}
 
                       <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
-                          isPaid
-                            ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                        className={`px-2.5 py-1 rounded-full text-xs font-bold border ${isPaid
+                            ? "bg-success/15 text-success border border-success/30"
                             : isOverdue
-                            ? "bg-rose-100 text-rose-800 border-rose-200"
-                            : "bg-amber-100 text-amber-900 border-amber-200"
-                        }`}
+                              ? "bg-danger/15 text-danger border border-danger/30"
+                              : "bg-warning/15 text-warning border border-warning/30"
+                          }`}
                       >
                         {inv.statusBadge}
                       </span>
@@ -552,11 +549,10 @@ export default function AccountLedgerView() {
 
                   {/* Financial Breakdown Box */}
                   <div
-                    className={`rounded-xl p-3.5 border space-y-1.5 text-xs sm:text-sm ${
-                      isOverdue
-                        ? "bg-rose-50/50 border-rose-200"
+                    className={`rounded-md p-3.5 border space-y-1.5 text-xs sm:text-sm ${isOverdue
+                        ? "bg-danger/10 border-danger/30"
                         : "bg-surface-raised border-border"
-                    }`}
+                      }`}
                   >
                     <div className="flex justify-between text-ink-muted">
                       <span>Total Invoiced (incl. 5% GST):</span>
@@ -567,36 +563,32 @@ export default function AccountLedgerView() {
                     <div className="flex justify-between text-ink-muted">
                       <span>Paid to date:</span>
                       <span
-                        className={`font-mono font-bold ${
-                          inv.paid > 0 ? "text-emerald-700" : "text-ink-muted"
-                        }`}
+                        className={`font-mono font-bold ${inv.paid > 0 ? "text-success" : "text-ink-muted"
+                          }`}
                       >
                         {formatINR(inv.paid)}
                       </span>
                     </div>
-                    <div className={`h-px my-1 ${isOverdue ? "bg-rose-200" : "bg-surface-raised"}`} />
+                    <div className={`h-px my-1 ${isOverdue ? "bg-danger/20" : "bg-surface-raised"}`} />
                     <div
-                      className={`flex justify-between font-bold ${
-                        isOverdue ? "text-rose-700" : "text-ink"
-                      }`}
+                      className={`flex justify-between font-bold ${isOverdue ? "text-danger" : "text-ink"
+                        }`}
                     >
                       <span>Balance due:</span>
                       <span
-                        className={`font-mono text-base ${
-                          isOverdue
-                            ? "text-rose-700"
+                        className={`font-mono text-base ${isOverdue
+                            ? "text-danger"
                             : inv.balanceDue > 0
-                            ? "text-primary"
-                            : "text-emerald-700"
-                        }`}
+                              ? "text-primary"
+                              : "text-success"
+                          }`}
                       >
                         {formatINR(inv.balanceDue)}
                       </span>
                     </div>
                     <div
-                      className={`flex justify-between text-[11px] pt-1 ${
-                        isOverdue ? "text-rose-600" : "text-ink-muted"
-                      }`}
+                      className={`flex justify-between text-[11px] pt-1 ${isOverdue ? "text-danger" : "text-ink-muted"
+                        }`}
                     >
                       <span>
                         {inv.receiptRef
@@ -604,19 +596,18 @@ export default function AccountLedgerView() {
                           : `Credit Terms: ${inv.creditDays} Days`}
                       </span>
                       <span
-                        className={`font-semibold ${
-                          isOverdue
-                            ? "text-rose-700 font-bold"
+                        className={`font-semibold ${isOverdue
+                            ? "text-danger font-bold"
                             : isPaid
-                            ? "text-emerald-700"
-                            : "text-ink"
-                        }`}
+                              ? "text-success"
+                              : "text-ink"
+                          }`}
                       >
                         {isOverdue
                           ? `Due: ${inv.dueDate} (Overdue)`
                           : isPaid
-                          ? "Settled & Verified"
-                          : `Due: ${inv.dueDate}`}
+                            ? "Settled & Verified"
+                            : `Due: ${inv.dueDate}`}
                       </span>
                     </div>
                   </div>
@@ -628,7 +619,7 @@ export default function AccountLedgerView() {
                         href={buildWhatsAppLink(inv.invoiceNumber, inv.balanceDue)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full sm:flex-1 h-10 px-4 rounded-xl bg-[#25D366] hover:bg-[#1ebd59] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-soft-sm transition-all cursor-pointer"
+                        className="w-full sm:flex-1 h-10 px-4 rounded-md bg-[#25D366] hover:bg-[#1ebd59] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-soft-sm transition-all cursor-pointer"
                         title={`Send payment proof for ${inv.invoiceNumber}`}
                       >
                         <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
@@ -641,13 +632,10 @@ export default function AccountLedgerView() {
                     <button
                       type="button"
                       onClick={() => handleDownloadInvoice(inv.invoiceNumber)}
-                      className={`h-10 px-4 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-border cursor-pointer ${
-                        isPaid ? "w-full" : "w-full sm:w-auto"
-                      }`}
+                      className={`h-10 px-4 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-border cursor-pointer ${isPaid ? "w-full" : "w-full sm:w-auto"
+                        }`}
                     >
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        download
-                      </span>
+                      <Icon name="download" size={16} className="text-primary" />
                       <span>Download Invoice {inv.invoiceNumber}</span>
                     </button>
                   </div>
@@ -664,15 +652,15 @@ export default function AccountLedgerView() {
                 <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider block">
                   Total Reconciled Receipts
                 </span>
-                <span className="text-2xl font-bold text-emerald-400 font-mono mt-0.5 block">
+                <span className="text-2xl font-bold text-success font-mono mt-0.5 block">
                   {formatINR(totalPaymentsAmount)}
                 </span>
                 <span className="text-xs text-ink-muted mt-0.5">
-                  Reconciled into Sri Laxmi Narasimha Textiles ledger
+                  Reconciled into {RETAILER_PROFILE.name} ledger
                 </span>
               </div>
               <div className="text-right">
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-xs border border-emerald-500/30">
+                <span className="px-3 py-1 rounded-full bg-success/15 text-success font-bold text-xs border border-success/30">
                   {retailerPayments.length} Verified Payments
                 </span>
               </div>
@@ -683,18 +671,16 @@ export default function AccountLedgerView() {
               {retailerPayments.map(pay => (
                 <div
                   key={pay.id}
-                  className="bg-surface rounded-2xl p-4 sm:p-5 shadow-soft-sm border border-border space-y-3 hover:shadow-md transition-shadow"
+                  className="bg-surface rounded-lg p-4 sm:p-5 shadow-soft-sm border border-border space-y-3 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100 shrink-0">
-                        <span className="material-symbols-outlined text-[20px]">
-                          {pay.mode === "UPI"
-                            ? "qr_code_2"
-                            : pay.mode === "NEFT"
+                      <div className="w-10 h-10 rounded-md bg-success/10 text-success flex items-center justify-center border border-success/30 shrink-0">
+                        <Icon name={pay.mode === "UPI"
+                          ? "qr_code_2"
+                          : pay.mode === "NEFT"
                             ? "account_balance"
-                            : "payments"}
-                        </span>
+                            : "payments"} size={20} />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -715,15 +701,15 @@ export default function AccountLedgerView() {
 
                     {/* Amount (Requirement 5) */}
                     <div className="text-right">
-                      <span className="text-lg font-bold text-emerald-700 font-mono block">
+                      <span className="text-lg font-bold text-success font-mono block">
                         +{formatINR(pay.amount)}
                       </span>
-                      <span className="text-[11px] text-emerald-600 font-medium">Reconciled</span>
+                      <span className="text-[11px] text-success font-medium">Reconciled</span>
                     </div>
                   </div>
 
                   {/* Payment Details Box (Requirement 5: Receipt ref, Applied invoice) */}
-                  <div className="bg-surface-raised p-3.5 rounded-xl border border-border text-xs space-y-1.5">
+                  <div className="bg-surface-raised p-3.5 rounded-md border border-border text-xs space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-ink-muted">Receipt Ref:</span>
                       <span className="font-mono text-primary font-bold">
@@ -746,9 +732,9 @@ export default function AccountLedgerView() {
             </div>
 
             {/* Total Summary Footer (Requirement 5) */}
-            <div className="p-4 bg-surface-raised rounded-xl border border-border flex items-center justify-between text-xs sm:text-sm font-semibold text-ink">
+            <div className="p-4 bg-surface-raised rounded-md border border-border flex items-center justify-between text-xs sm:text-sm font-semibold text-ink">
               <span>Total Payments Recorded:</span>
-              <span className="font-mono font-bold text-emerald-800 text-base">
+              <span className="font-mono font-bold text-success text-base">
                 {formatINR(totalPaymentsAmount)}
               </span>
             </div>
@@ -760,7 +746,7 @@ export default function AccountLedgerView() {
       <div className="bg-surface rounded-2xl p-5 shadow-soft-sm border border-border space-y-3">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-[20px]">verified</span>
+            <Icon name="verified" size={20} />
           </div>
           <div>
             <h4 className="text-sm font-bold text-ink">Official Wholesale Accounts Policy</h4>

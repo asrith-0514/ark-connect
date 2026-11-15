@@ -7,6 +7,7 @@ import {
   Card,
   Button,
   Badge,
+  StatusChip,
   Stat,
   Drawer,
   Modal,
@@ -15,6 +16,9 @@ import {
   Skeleton,
   EmptyState,
   ThemeToggle,
+  Icon,
+  ArkMonogram,
+  ArkWordmark,
 } from "@/components/ui";
 
 function DesignShowcase() {
@@ -32,13 +36,13 @@ function DesignShowcase() {
   if (!isDemo) {
     return (
       <main className="min-h-screen bg-background text-ink flex items-center justify-center p-6">
-        <Card variant="hero" className="max-w-md w-full p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-            <span className="material-symbols-outlined text-[24px]">palette</span>
+        <Card variant="hero" className="max-w-md w-full p-8 text-center border-border">
+          <div className="w-12 h-12 rounded-sm bg-surface-raised border border-border text-primary flex items-center justify-center mx-auto mb-4">
+            <Icon name="palette" size={24} />
           </div>
-          <h1 className="text-xl font-bold font-sans text-ink">Design Token & Primitives Preview</h1>
-          <p className="text-sm text-ink-muted mt-2 leading-relaxed">
-            The design system preview is restricted. Append <code className="bg-surface px-1.5 py-0.5 rounded border border-border text-xs num">?demo=true</code> to your URL to explore the token palette and UI primitives.
+          <h1 className="text-xl font-bold font-sans text-ink tracking-tight">Design Token & Primitives Preview</h1>
+          <p className="text-xs text-ink-muted mt-2 leading-relaxed">
+            The design system preview is restricted. Append <code className="bg-surface px-1.5 py-0.5 rounded border border-border text-xs num">?demo=true</code> to your URL to explore the brand kit, palette, and UI primitives.
           </p>
           <div className="mt-6 flex justify-center">
             <Link href="/design?demo=true">
@@ -63,24 +67,17 @@ function DesignShowcase() {
     { id: "overview", label: "Overview" },
     { id: "tokens", label: "Design Tokens" },
     { id: "primitives", label: "UI Primitives" },
-    { id: "accessibility", label: "A11y & Motion" },
+    { id: "icons", label: "Lucide Icons" },
   ];
 
   return (
-    <div className="min-h-screen bg-background text-ink pb-24 transition-colors duration-200">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-border px-6 py-4 flex items-center justify-between gap-4 shadow-soft-sm">
+    <div className="min-h-screen bg-background text-ink pb-24 transition-colors duration-150">
+      {/* Top Command Bar */}
+      <header className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md border-b border-border px-4 sm:px-6 py-3 flex items-center justify-between gap-4 shadow-soft-xs">
         <div className="flex items-center gap-3">
-          <span className="w-8 h-8 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shadow-soft-sm">
-            ARK
-          </span>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-sans font-bold text-base text-ink">ARK Design System</h1>
-              <Badge variant="accent" size="sm">Tailwind v4</Badge>
-            </div>
-            <p className="text-xs text-ink-muted">Token Layer & Shared Primitives</p>
-          </div>
+          <ArkWordmark product="default" size="sm" />
+          <Badge variant="accent" size="sm">Premium Industrial-Tech</Badge>
+          <Badge variant="neutral" size="sm" className="hidden sm:inline-flex">Dark Default</Badge>
         </div>
 
         <div className="flex items-center gap-3">
@@ -94,43 +91,48 @@ function DesignShowcase() {
       </header>
 
       {/* Hero Header */}
-      <section className="max-w-6xl mx-auto px-6 pt-12 pb-8">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-border">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-primary font-mono">
-              Design Architecture & Semantic Tokens
-            </span>
-            <h2 className="font-page-title text-4xl sm:text-5xl text-ink mt-2">
-              Unified Design System
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-accent font-mono">
+                B2B SaaS Brand Architecture
+              </span>
+            </div>
+            <h2 className="font-page-title text-3xl sm:text-4xl text-ink">
+              ARK Brand Kit &amp; Design Primitives
             </h2>
-            <p className="text-sm sm:text-base text-ink-muted mt-3 max-w-2xl leading-relaxed">
-              Tailwind CSS v4 semantic tokens mapped via <code className="text-xs bg-surface border border-border px-1.5 py-0.5 rounded num">@theme</code>.
-              Supports Light (#FAF7F2), Dark (#0F1115), and System modes with zero hydration flash and WCAG AA contrast.
+            <p className="text-xs sm:text-sm text-ink-muted mt-2 max-w-2xl leading-relaxed">
+              Obsidian background (<code className="text-xs font-mono num bg-surface border border-border px-1 rounded">#07090D</code>),
+              Electric Blue primary (<code className="text-xs font-mono num bg-surface border border-border px-1 rounded">#2F6BFF</code>),
+              Neon Cyan accent (<code className="text-xs font-mono num bg-surface border border-border px-1 rounded">#22E5FF</code>),
+              hairline borders, compact density, Geist Sans, and Lucide icons.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
             <Button
               variant="secondary"
-              size="md"
+              size="sm"
               onClick={() => setCounterTrigger((prev) => prev + 1)}
-              leftIcon={<span className="material-symbols-outlined text-[18px]">replay</span>}
+              leftIcon={<Icon name="replay" size={15} />}
             >
               Replay Stat Count-Up
             </Button>
             <Button
               variant="primary"
-              size="md"
+              size="sm"
               onClick={() => setIsModalOpen(true)}
-              leftIcon={<span className="material-symbols-outlined text-[18px]">open_in_new</span>}
+              leftIcon={<Icon name="open_in_new" size={15} />}
             >
               Open Modal
             </Button>
             <Button
               variant="secondary"
-              size="md"
+              size="sm"
               onClick={() => setIsDrawerOpen(true)}
-              leftIcon={<span className="material-symbols-outlined text-[18px]">dock_to_right</span>}
+              leftIcon={<Icon name="dock_to_right" size={15} />}
             >
               Open Drawer
             </Button>
@@ -139,314 +141,376 @@ function DesignShowcase() {
       </section>
 
       {/* Main Content Layout */}
-      <main className="max-w-6xl mx-auto px-6 space-y-16">
-        {/* Section 1: Semantic Color Tokens */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
+        {/* Section 0: Brand Logo, Geometric Monogram & Wordmarks */}
         <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">1. Semantic Color Tokens</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Never hardcoded hex in components. All tokens dynamically adapt between Light (#FAF7F2) and Dark (#0F1115).
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-ink font-sans tracking-tight flex items-center gap-2">
+              <Icon name="award" size={18} className="text-primary" />
+              0. Geometric Monogram &amp; Wordmark Lockup
+            </h3>
+            <p className="text-xs text-ink-muted mt-0.5">
+              Refined geometric apex &amp; crossbar SVG vector with Electric Blue to Neon Cyan gradient. Works crisp at 24px and 64px, with mono variant and lockups.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Monogram Sizes & Gradient */}
+            <Card variant="default" className="p-4 flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted font-mono block mb-3">
+                  Geometric Monogram (Scale)
+                </span>
+                <div className="flex items-center gap-4 py-2">
+                  <div className="flex flex-col items-center gap-1">
+                    <ArkMonogram size={24} variant="gradient" />
+                    <span className="text-[10px] font-mono text-ink-muted num">24px</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <ArkMonogram size={32} variant="gradient" />
+                    <span className="text-[10px] font-mono text-ink-muted num">32px</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <ArkMonogram size={48} variant="gradient" />
+                    <span className="text-[10px] font-mono text-ink-muted num">48px</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <ArkMonogram size={64} variant="gradient" />
+                    <span className="text-[10px] font-mono text-ink-muted num">64px</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[11px] text-ink-muted mt-2 border-t border-border pt-2">
+                Electric Blue (#2F6BFF) to Neon Cyan (#22E5FF) linear gradient.
+              </p>
+            </Card>
+
+            {/* Mono Variant */}
+            <Card variant="default" className="p-4 flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted font-mono block mb-3">
+                  Mono Variant (Single Color)
+                </span>
+                <div className="flex items-center gap-4 py-2">
+                  <div className="text-ink flex flex-col items-center gap-1">
+                    <ArkMonogram size={32} variant="mono" />
+                    <span className="text-[10px] font-mono text-ink-muted">Text Color</span>
+                  </div>
+                  <div className="text-primary flex flex-col items-center gap-1">
+                    <ArkMonogram size={32} variant="mono" />
+                    <span className="text-[10px] font-mono text-ink-muted">Primary</span>
+                  </div>
+                  <div className="text-accent flex flex-col items-center gap-1">
+                    <ArkMonogram size={32} variant="mono" />
+                    <span className="text-[10px] font-mono text-ink-muted">Cyan</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[11px] text-ink-muted mt-2 border-t border-border pt-2">
+                Adapts to <code className="font-mono text-xs num">currentColor</code> in single-color contexts.
+              </p>
+            </Card>
+
+            {/* Wordmark Lockups with Tagline */}
+            <Card variant="default" className="p-4 flex flex-col justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted font-mono block mb-3">
+                  Product Lockups &amp; Tagline
+                </span>
+                <div className="space-y-3 py-1">
+                  <ArkWordmark product="Connect" size="md" />
+                  <ArkWordmark product="Backoffice" size="md" />
+                  <ArkWordmark product="Connect" size="sm" withTagline />
+                </div>
+              </div>
+              <p className="text-[11px] text-ink-muted mt-2 border-t border-border pt-2">
+                Tagline <em>"Wholesale, Connected."</em> appears on login and splash only.
+              </p>
+            </Card>
+          </div>
+        </section>
+
+        {/* Section 1: Semantic Color Tokens */}
+        <section>
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-ink font-sans tracking-tight flex items-center gap-2">
+              <Icon name="palette" size={18} className="text-primary" />
+              1. Semantic Color Tokens (Dark Default + Light Toggle)
+            </h3>
+            <p className="text-xs text-ink-muted mt-0.5">
+              1px hairline borders, dark elevation, WCAG AA contrast.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
             {[
-              { name: "Background", token: "bg-background", border: "border-border", text: "text-ink", hex: "var(--background)" },
-              { name: "Surface", token: "bg-surface", border: "border-border", text: "text-ink", hex: "var(--surface)" },
-              { name: "Surface Raised", token: "bg-surface-raised", border: "border-border", text: "text-ink", hex: "var(--surface-raised)" },
-              { name: "Border", token: "bg-border", border: "border-border", text: "text-ink", hex: "var(--border)" },
-              { name: "Ink (Text)", token: "bg-ink", border: "border-transparent", text: "text-surface", hex: "var(--ink)" },
-              { name: "Ink Muted", token: "bg-ink-muted", border: "border-transparent", text: "text-surface", hex: "var(--ink-muted)" },
-              { name: "Primary", token: "bg-primary", border: "border-transparent", text: "text-primary-foreground", hex: "#3B3BF5 / #7C7CFF" },
-              { name: "Accent (Coral)", token: "bg-accent", border: "border-transparent", text: "text-white", hex: "#FF6A3D / #FF8A63" },
-              { name: "Success", token: "bg-success", border: "border-transparent", text: "text-white", hex: "#12805C / #22C55E" },
-              { name: "Warning", token: "bg-warning", border: "border-transparent", text: "text-white", hex: "#B7791F / #F59E0B" },
-              { name: "Danger", token: "bg-danger", border: "border-transparent", text: "text-white", hex: "#D92D20 / #EF4444" },
-              { name: "Muted", token: "bg-muted/20", border: "border-border", text: "text-ink", hex: "var(--muted)" },
+              { name: "Background (Obsidian)", token: "bg-background", border: "border-border", text: "text-ink", hex: "#07090D" },
+              { name: "Surface", token: "bg-surface", border: "border-border", text: "text-ink", hex: "#0D1117" },
+              { name: "Surface Raised", token: "bg-surface-raised", border: "border-border-strong", text: "text-ink", hex: "#121823" },
+              { name: "Hairline Border", token: "bg-border", border: "border-border-strong", text: "text-ink", hex: "#1E2633" },
+              { name: "Border Strong", token: "bg-border-strong", border: "border-border-strong", text: "text-ink", hex: "#2A3547" },
+              { name: "Ink (Text)", token: "bg-ink", border: "border-transparent", text: "text-background", hex: "#E8ECF3" },
+              { name: "Ink Muted", token: "bg-ink-muted", border: "border-transparent", text: "text-background", hex: "#8B97AB" },
+              { name: "Ink Faint", token: "bg-ink-faint", border: "border-transparent", text: "text-background", hex: "#5B677A" },
+              { name: "Primary (Electric Blue)", token: "bg-primary", border: "border-transparent", text: "text-white", hex: "#2F6BFF" },
+              { name: "Accent (Neon Cyan)", token: "bg-accent", border: "border-transparent", text: "text-background", hex: "#22E5FF" },
+              { name: "Success", token: "bg-success", border: "border-transparent", text: "text-background", hex: "#2FD08A" },
+              { name: "Warning", token: "bg-warning", border: "border-transparent", text: "text-background", hex: "#F5B73B" },
+              { name: "Danger", token: "bg-danger", border: "border-transparent", text: "text-white", hex: "#FF5C6C" },
+              { name: "Light Theme BG", token: "bg-[#F5F7FA]", border: "border-border", text: "text-[#0B1220]", hex: "#F5F7FA" },
             ].map((c) => (
               <div
                 key={c.name}
-                className="bg-surface border border-border rounded-md p-3 shadow-soft-sm flex flex-col justify-between"
+                className="bg-surface border border-border rounded-sm p-2.5 shadow-soft-xs flex flex-col justify-between"
               >
                 <div
-                  className={`h-14 w-full rounded-sm ${c.token} border ${c.border} flex items-center justify-center font-bold text-xs ${c.text}`}
+                  className={`h-10 w-full rounded-xs ${c.token} border ${c.border} flex items-center justify-center font-bold text-xs ${c.text}`}
                 >
                   Aa
                 </div>
-                <div className="mt-2.5">
-                  <p className="text-xs font-bold text-ink">{c.name}</p>
-                  <p className="text-[11px] text-ink-muted num truncate">{c.hex}</p>
+                <div className="mt-2">
+                  <p className="text-xs font-semibold text-ink truncate">{c.name}</p>
+                  <p className="text-[10px] text-ink-muted font-mono num">{c.hex}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Section 2: Radii & Soft Layered Shadows */}
+        {/* Section 2: Radii (6/10/14) & Cyan Focus Ring */}
         <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">2. Radii & Soft Layered Shadows</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Elevated surfaces with multi-stop diffuse shadows and exact radius tokens (sm: 10px, md: 16px, lg: 24px, xl: 32px).
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-ink font-sans tracking-tight flex items-center gap-2">
+              <Icon name="sliders" size={18} className="text-primary" />
+              2. Radii (6/10/14) &amp; Neon Cyan Focus Ring
+            </h3>
+            <p className="text-xs text-ink-muted mt-0.5">
+              Precise 8px spacing scale, compact geometry, and 2px Neon Cyan focus ring with 2px offset.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-surface border border-border rounded-sm p-6 shadow-soft-sm">
-              <span className="text-xs font-bold text-primary num">sm (10px)</span>
-              <h4 className="text-sm font-bold text-ink mt-1">Soft Shadow SM</h4>
-              <p className="text-xs text-ink-muted mt-1 num">0 1px 2px rgba(20,18,12,.04)</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="bg-surface border border-border rounded-sm p-4 shadow-soft-xs">
+              <span className="text-[10px] font-bold text-primary font-mono uppercase tracking-wider">sm (6px)</span>
+              <h4 className="text-xs font-bold text-ink mt-1">Compact Buttons &amp; Inputs</h4>
+              <p className="text-[11px] text-ink-muted mt-0.5 font-mono num">border-radius: 6px</p>
             </div>
 
-            <div className="bg-surface border border-border rounded-md p-6 shadow-soft-md">
-              <span className="text-xs font-bold text-primary num">md (16px)</span>
-              <h4 className="text-sm font-bold text-ink mt-1">Soft Shadow MD</h4>
-              <p className="text-xs text-ink-muted mt-1 num">0 4px 12px -2px (layered)</p>
+            <div className="bg-surface border border-border rounded-md p-4 shadow-soft-sm">
+              <span className="text-[10px] font-bold text-primary font-mono uppercase tracking-wider">md (10px)</span>
+              <h4 className="text-xs font-bold text-ink mt-1">Cards &amp; Dialog Panels</h4>
+              <p className="text-[11px] text-ink-muted mt-0.5 font-mono num">border-radius: 10px</p>
             </div>
 
-            <div className="bg-surface border border-border rounded-lg p-6 shadow-soft-lg">
-              <span className="text-xs font-bold text-primary num">lg (24px)</span>
-              <h4 className="text-sm font-bold text-ink mt-1">Soft Shadow LG</h4>
-              <p className="text-xs text-ink-muted mt-1 num">0 8px 24px -8px (layered)</p>
+            <div className="bg-surface border border-border rounded-lg p-4 shadow-soft-md">
+              <span className="text-[10px] font-bold text-primary font-mono uppercase tracking-wider">lg (14px)</span>
+              <h4 className="text-xs font-bold text-ink mt-1">Hero Banners &amp; Modals</h4>
+              <p className="text-[11px] text-ink-muted mt-0.5 font-mono num">border-radius: 14px</p>
             </div>
 
-            <div className="bg-surface border border-border rounded-xl p-6 shadow-soft-xl">
-              <span className="text-xs font-bold text-primary num">xl (32px)</span>
-              <h4 className="text-sm font-bold text-ink mt-1">Soft Shadow XL</h4>
-              <p className="text-xs text-ink-muted mt-1 num">0 16px 36px -12px (layered)</p>
+            <div className="bg-surface border border-border rounded-sm p-4 shadow-soft-xs">
+              <span className="text-[10px] font-bold text-accent font-mono uppercase tracking-wider">Focus State</span>
+              <h4 className="text-xs font-bold text-ink mt-1">Neon Cyan Focus Ring</h4>
+              <button
+                type="button"
+                className="mt-2 w-full py-1.5 px-3 rounded-sm bg-surface-raised border border-border text-xs font-medium text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background cursor-pointer"
+              >
+                Click or Tab to Test Focus
+              </button>
             </div>
           </div>
         </section>
 
-        {/* Section 3: Typography & The .num Utility */}
+        {/* Section 3: Typography */}
         <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">3. Typography Hierarchy</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Instrument Serif for page titles; Geist for UI body; Geist Mono for IDs, numbers, and currency via <code className="bg-surface border border-border px-1.5 py-0.5 rounded text-xs num">.num</code>.
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-ink font-sans tracking-tight flex items-center gap-2">
+              <Icon name="type" size={18} className="text-primary" />
+              3. Typography Hierarchy (Geist Sans &amp; Geist Mono)
+            </h3>
+            <p className="text-xs text-ink-muted mt-0.5">
+              Instrument Serif removed. Page titles rendered in Geist Sans (28-32px, semibold, tight tracking). Numbers and IDs in Geist Mono.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card variant="default" className="p-6">
-              <span className="text-xs font-bold text-primary uppercase tracking-wider font-mono">
-                Instrument Serif
-              </span>
-              <h4 className="font-page-title text-3xl text-ink mt-2">
-                Garment Wholesale Portal
-              </h4>
-              <p className="text-xs text-ink-muted mt-2">
-                Page titles and high-level section hero headlines only.
-              </p>
-            </Card>
-
-            <Card variant="default" className="p-6">
-              <span className="text-xs font-bold text-primary uppercase tracking-wider font-mono">
-                Geist Sans (UI)
-              </span>
-              <h4 className="text-lg font-bold text-ink font-sans mt-2">
-                Orders, Invoices & Retailers
-              </h4>
-              <p className="text-xs text-ink-muted mt-2 leading-relaxed">
-                Clear, legible interface typography optimized for tables, forms, and dense B2B operational views.
-              </p>
-            </Card>
-
-            <Card variant="default" className="p-6">
-              <span className="text-xs font-bold text-primary uppercase tracking-wider font-mono">
-                Geist Mono (.num)
-              </span>
-              <div className="mt-2 space-y-1">
-                <div className="num text-2xl font-bold text-ink">₹ 18,64,700</div>
-                <div className="num text-xs text-ink-muted">INV-0094 • 24 boxes • 480 pcs</div>
-              </div>
-              <p className="text-xs text-ink-muted mt-2">
-                Tabular figures guarantee zero visual jitter on animated count-ups and numeric tables.
-              </p>
-            </Card>
-          </div>
-        </section>
-
-        {/* Section 4: Stat Cards with Count-Up Animation */}
-        <section>
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div>
-              <h3 className="text-xl font-bold text-ink font-sans">4. Stat Cards (Animated Count-Up)</h3>
-              <p className="text-xs text-ink-muted mt-1">
-                Smooth 800ms ease-out count-up animation, tabular figures, and delta indicators.
-              </p>
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCounterTrigger((prev) => prev + 1)}
-            >
-              Re-trigger
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" key={counterTrigger}>
-            <Stat
-              label="Total Receivables"
-              prefix="₹"
-              value={1864700}
-              delta={{ value: "14.2%", isPositive: true, label: "MoM" }}
-              caption="28 retailer ledgers reconciled"
-            />
-            <Stat
-              label="Overdue Invoices"
-              prefix="₹"
-              value={31000}
-              delta={{ value: "₹23,200 next", isPositive: false }}
-              caption="RET-0001 requires settlement"
-            />
-            <Stat
-              label="Active Retailers"
-              value={28}
-              suffix=" shops"
-              delta={{ value: "+3 new", isPositive: true }}
-              caption="1 pending review"
-            />
-            <Stat
-              label="Purchase Payables"
-              prefix="₹"
-              value={3860000}
-              delta={{ value: "4 open bills", isPositive: false }}
-              caption="Tiruppur mill suppliers"
-            />
-          </div>
-        </section>
-
-        {/* Section 5: Card Variants */}
-        <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">5. Card Variants</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Semantic card containers: default, hero, and tinted variants.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card variant="default" interactive className="p-6">
-              <Badge variant="neutral" size="sm">Variant: default</Badge>
-              <h4 className="text-base font-bold text-ink mt-3 font-sans">Standard Surface Card</h4>
-              <p className="text-xs text-ink-muted mt-1 leading-relaxed">
-                Clean white/dark surface with border and subtle soft-sm shadow. Interactive hover state enabled.
-              </p>
-            </Card>
-
-            <Card variant="hero" interactive className="p-6">
-              <Badge variant="primary" size="sm">Variant: hero</Badge>
-              <h4 className="text-base font-bold text-ink mt-3 font-sans">Raised Hero Card</h4>
-              <p className="text-xs text-ink-muted mt-1 leading-relaxed">
-                Elevated surface-raised background with rounded-xl border and layered soft-md shadow.
-              </p>
-            </Card>
-
-            <Card variant="tinted" interactive className="p-6">
-              <Badge variant="accent" size="sm">Variant: tinted</Badge>
-              <h4 className="text-base font-bold text-ink mt-3 font-sans">Primary Tinted Card</h4>
-              <p className="text-xs text-ink-muted mt-1 leading-relaxed">
-                Subtle primary brand background (5% opacity) with matching border. Ideal for callouts.
-              </p>
-            </Card>
-          </div>
-        </section>
-
-        {/* Section 6: Buttons & Tap Targets */}
-        <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">6. Buttons & Accessible Tap Targets</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              44px minimum tap targets, visible primary focus rings (2px offset), and smooth 200ms ease-out transitions.
-            </p>
-          </div>
-
-          <Card variant="default" className="p-6 space-y-6">
-            <div>
-              <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-3">Variants</p>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button variant="primary">Primary Button</Button>
-                <Button variant="secondary">Secondary Button</Button>
-                <Button variant="ghost">Ghost Button</Button>
-                <Button variant="danger">Danger Button</Button>
-                <Button variant="primary" isLoading>Loading State</Button>
-                <Button variant="primary" disabled>Disabled</Button>
-              </div>
+          <Card variant="default" className="p-5 divide-y divide-border">
+            <div className="py-2.5">
+              <span className="text-[10px] font-mono uppercase text-ink-muted">Page Title (Geist Sans 28-32px, Semibold, -0.025em tracking)</span>
+              <h2 className="font-page-title text-ink mt-1">Wholesale Garment Distribution &amp; Mill Logistics</h2>
             </div>
 
-            <div className="border-t border-border pt-6">
-              <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-3">Sizes</p>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button size="sm" variant="secondary">Small (sm)</Button>
-                <Button size="md" variant="secondary">Medium (md)</Button>
-                <Button size="lg" variant="primary">Large (lg)</Button>
-                <Button size="icon" variant="secondary" aria-label="Settings">
-                  <span className="material-symbols-outlined text-[20px]">tune</span>
-                </Button>
-                <Button
-                  size="md"
-                  variant="primary"
-                  leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-                >
-                  Create Invoice
-                </Button>
+            <div className="py-2.5">
+              <span className="text-[10px] font-mono uppercase text-ink-muted">UI Body (Geist Sans 14px, Regular)</span>
+              <p className="text-xs sm:text-sm text-ink-muted mt-0.5 leading-relaxed">
+                ARK Connect provides multi-tier wholesale ordering with instant credit checks, Tally ERP sync, and deterministic ledger reconciliation.
+              </p>
+            </div>
+
+            <div className="py-2.5">
+              <span className="text-[10px] font-mono uppercase text-ink-muted">Numbers &amp; IDs (Geist Mono, Tabular Figures)</span>
+              <div className="flex items-center gap-4 mt-1 font-mono text-sm text-ink">
+                <span>PO #ARK-8841</span>
+                <span>INV-0095</span>
+                <span className="num font-bold text-primary">₹18,64,700</span>
+                <span className="num text-success">₹54,200</span>
               </div>
             </div>
           </Card>
         </section>
 
-        {/* Section 7: Badges & Status Chips */}
+        {/* Section 4: Lucide Icons (Stroke 1.75, Sizes 16/20/24) */}
         <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">7. Badges & Status Chips</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Token-mapped badges for order statuses, credit checks, and inventory indicators.
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-ink font-sans tracking-tight flex items-center gap-2">
+              <Icon name="sparkles" size={18} className="text-accent" />
+              4. Lucide Icons (Universal &lt;Icon name=&quot;...&quot; /&gt;, Stroke 1.75)
+            </h3>
+            <p className="text-xs text-ink-muted mt-0.5">
+              All 109 Material Symbols mapped to Lucide equivalents. Configured with stroke 1.75 and standard sizes 16, 20, 24px.
             </p>
           </div>
 
-          <Card variant="default" className="p-6 space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant="default">Default</Badge>
-              <Badge variant="neutral">Neutral</Badge>
-              <Badge variant="primary">Primary</Badge>
-              <Badge variant="accent">Accent (Coral)</Badge>
-              <Badge variant="success" dot pulse>Active / Approved</Badge>
-              <Badge variant="warning" dot>Needs Review</Badge>
-              <Badge variant="danger" dot>Credit Hold / Overdue</Badge>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Badge variant="success" size="sm">Paid (sm)</Badge>
-              <Badge variant="warning" size="sm">Overdue 31–60d</Badge>
-              <Badge variant="danger" size="sm">Overdue 60+d</Badge>
-              <Badge variant="primary" size="sm">Diamond Tier</Badge>
-            </div>
-          </Card>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+            {[
+              { name: "close", label: "close -> X" },
+              { name: "check_circle", label: "check_circle -> CheckCircle2" },
+              { name: "verified", label: "verified -> CheckCheck" },
+              { name: "warning", label: "warning -> AlertTriangle" },
+              { name: "search", label: "search -> Search" },
+              { name: "local_shipping", label: "local_shipping -> Truck" },
+              { name: "inventory_2", label: "inventory_2 -> Package" },
+              { name: "receipt_long", label: "receipt_long -> Receipt" },
+              { name: "payments", label: "payments -> CreditCard" },
+              { name: "storefront", label: "storefront -> Store" },
+              { name: "factory", label: "factory -> Factory" },
+              { name: "phone_in_talk", label: "phone_in_talk -> PhoneCall" },
+              { name: "auto_awesome", label: "auto_awesome -> Sparkles" },
+              { name: "today", label: "today -> CalendarDays" },
+              { name: "sync", label: "sync -> RefreshCw" },
+              { name: "logout", label: "logout -> LogOut" },
+              { name: "shopping_bag", label: "shopping_bag -> ShoppingBag" },
+              { name: "shield_check", label: "verified_user -> ShieldCheck" },
+            ].map((i) => (
+              <div
+                key={i.name}
+                className="bg-surface border border-border rounded-sm p-2.5 flex items-center gap-2.5 shadow-soft-xs"
+              >
+                <div className="w-8 h-8 rounded-xs bg-surface-raised border border-border text-primary flex items-center justify-center shrink-0">
+                  <Icon name={i.name} size={18} />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] font-bold text-ink block truncate">{i.name}</span>
+                  <span className="text-[9px] text-ink-muted font-mono truncate block">{i.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
-        {/* Section 8: Tabs & Segmented Pills */}
-        <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">8. Tabs & Segmented Pills</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Interactive segmented control and underline tab strips with full keyboard accessibility.
+        {/* Section 5: UI Primitives Gallery */}
+        <section className="space-y-8">
+          <div>
+            <h3 className="text-base font-bold text-ink font-sans tracking-tight flex items-center gap-2">
+              <Icon name="boxes" size={18} className="text-primary" />
+              5. Core UI Primitives Gallery
+            </h3>
+            <p className="text-xs text-ink-muted mt-0.5">
+              Compact density, hairline borders, status chips with dots and text labels.
             </p>
           </div>
 
-          <div className="space-y-6">
-            <div>
-              <p className="text-xs font-semibold text-ink-muted mb-2">Segmented Pills</p>
+          {/* 5A. Buttons */}
+          <div>
+            <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold block mb-2">Buttons</span>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Button variant="primary" size="sm">Primary SM</Button>
+              <Button variant="primary" size="md">Primary MD</Button>
+              <Button variant="primary" size="lg">Primary LG</Button>
+              <Button variant="secondary" size="md">Secondary</Button>
+              <Button variant="ghost" size="md">Ghost</Button>
+              <Button variant="danger" size="md">Danger</Button>
+              <Button variant="primary" size="md" isLoading>Loading</Button>
+              <Button variant="primary" size="icon" aria-label="Icon only">
+                <Icon name="check" size={16} />
+              </Button>
+            </div>
+          </div>
+
+          {/* 5B. Badges & StatusChips */}
+          <div>
+            <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold block mb-2">
+              Badges &amp; StatusChips (Dot + Text Label)
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusChip variant="success">Delivered</StatusChip>
+              <StatusChip variant="primary">Dispatched</StatusChip>
+              <StatusChip variant="warning">Submitted</StatusChip>
+              <StatusChip variant="danger">Overdue</StatusChip>
+              <StatusChip variant="accent">Under Review</StatusChip>
+              <StatusChip variant="neutral">Draft</StatusChip>
+              <Badge variant="default" dot={false}>Count: 28</Badge>
+            </div>
+          </div>
+
+          {/* 5C. Stat Cards (Count-Up) */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold">
+                Stat Cards (120-250ms Count-Up)
+              </span>
+              <button
+                type="button"
+                onClick={() => setCounterTrigger((prev) => prev + 1)}
+                className="text-[11px] text-primary hover:underline font-mono"
+              >
+                Replay Animation
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <Stat
+                key={`stat1-${counterTrigger}`}
+                label="Total Receivables"
+                value={1864700}
+                prefix="₹"
+                delta={{ value: "4.2%", isPositive: true, label: "vs last mo" }}
+                caption="28 verified retailer accounts"
+              />
+              <Stat
+                key={`stat2-${counterTrigger}`}
+                label="October Sales"
+                value={1367910}
+                prefix="₹"
+                delta={{ value: "12%", isPositive: true }}
+                caption="Exceeds target by ₹1.2L"
+              />
+              <Stat
+                key={`stat3-${counterTrigger}`}
+                label="Overdue Risk"
+                value={884700}
+                prefix="₹"
+                delta={{ value: "1.8%", isPositive: false, label: "risk" }}
+                caption="Past credit terms"
+              />
+              <Stat
+                key={`stat4-${counterTrigger}`}
+                label="Box Shipments"
+                value={2840}
+                suffix="boxes"
+                caption="All 7 flowchart brands active"
+              />
+            </div>
+          </div>
+
+          {/* 5D. Tabs */}
+          <div>
+            <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold block mb-2">Tabs (Pills &amp; Underline)</span>
+            <div className="space-y-3">
               <Tabs
                 tabs={sampleTabs}
                 activeTab={activeTab}
                 onChange={setActiveTab}
                 variant="pills"
               />
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold text-ink-muted mb-2">Underline Tabs</p>
               <Tabs
                 tabs={sampleUnderlineTabs}
                 activeTab={activeUnderlineTab}
@@ -455,218 +519,113 @@ function DesignShowcase() {
               />
             </div>
           </div>
-        </section>
 
-        {/* Section 9: Form Inputs */}
-        <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">9. Form Inputs</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              44px tap targets, visible focus rings, leading/trailing icon slots, and inline error validation.
-            </p>
+          {/* 5E. Inputs */}
+          <div>
+            <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold block mb-2">Input Fields</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Input
+                label="Retailer Phone Number"
+                placeholder="94401 23456"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                leftIcon={<Icon name="phone" size={15} />}
+              />
+              <Input
+                label="Search Products"
+                placeholder="FB-104 Ankle Leggings"
+                leftIcon={<Icon name="search" size={15} />}
+                helperText="Geist Sans compact density"
+              />
+              <Input
+                label="Overdue Balance Check"
+                placeholder="₹31,000"
+                error="Account past 30-day terms"
+                leftIcon={<Icon name="alert-triangle" size={15} />}
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Input
-              label="Standard Text Input"
-              placeholder="e.g. Sri Laxmi Textiles"
-              helperText="Enter registered trading name"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-
-            <Input
-              label="Search SKU or Retailer"
-              placeholder="Search PO, retailer, LR..."
-              leftIcon={<span className="material-symbols-outlined text-[18px]">search</span>}
-              helperText="Press ⌘K to open global palette"
-            />
-
-            <Input
-              label="GSTIN Check"
-              value="36AABCS1429B1Z"
-              error="Invalid checksum for Telangana state code (36)"
-            />
-          </div>
-        </section>
-
-        {/* Section 10: Skeleton Shimmer */}
-        <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">10. Skeleton Shimmer Loading</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Smooth gradient shimmer animation that respects <code className="bg-surface px-1.5 py-0.5 rounded text-xs num">prefers-reduced-motion</code>.
-            </p>
-          </div>
-
-          <Card variant="default" className="p-6">
-            <div className="flex items-center gap-4">
-              <Skeleton variant="circular" width={48} height={48} />
-              <div className="flex-1 space-y-2">
-                <Skeleton variant="text" width="40%" height={16} />
-                <Skeleton variant="text" width="70%" height={12} />
+          {/* 5F. Skeleton & EmptyState */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card variant="default" className="p-4">
+              <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold block mb-2">
+                Skeleton Shimmer (Obsidian Gradient)
+              </span>
+              <div className="space-y-2">
+                <Skeleton variant="text" width="60%" />
+                <Skeleton variant="text" width="90%" />
+                <Skeleton variant="rounded" height={60} />
               </div>
-            </div>
-            <div className="mt-6 space-y-2.5">
-              <Skeleton variant="text" height={14} />
-              <Skeleton variant="text" height={14} />
-              <Skeleton variant="text" width="60%" height={14} />
-            </div>
-          </Card>
-        </section>
+            </Card>
 
-        {/* Section 11: Empty State */}
-        <section>
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-ink font-sans">11. Empty State Primitive</h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Friendly, token-styled fallback for empty lists, search misses, and zero-data states.
-            </p>
+            <Card variant="default" className="p-4">
+              <span className="text-[11px] font-mono uppercase text-ink-muted font-semibold block mb-2">
+                EmptyState (Compact Density)
+              </span>
+              <EmptyState
+                title="No Pending Dispatches"
+                description="All purchase orders have been allocated and invoiced."
+                actionLabel="Create Invoice"
+                onAction={() => alert("Action clicked")}
+              />
+            </Card>
           </div>
-
-          <EmptyState
-            title="No Deactivated Retailers"
-            description="All registered partners are currently active and in good standing with active credit lines."
-            actionLabel="View Active Retailers"
-            onAction={() => alert("Navigating to active tab")}
-            secondaryActionLabel="Register New Partner"
-            onSecondaryAction={() => alert("Opening registration modal")}
-          />
         </section>
       </main>
 
-      {/* Interactive Modal Component */}
+      {/* Interactive Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Credit Check Approval Modal"
-        description="Verify retailer financial standing before confirming Purchase Order."
+        title="Industrial-Tech Modal"
+        description="Glass overlay backdrop with 180ms opacity/transform animation."
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setIsModalOpen(false)}>
+            <Button variant="secondary" size="sm" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => {
-                alert("Order Approved!");
-                setIsModalOpen(false);
-              }}
-            >
-              Approve PO
+            <Button variant="primary" size="sm" onClick={() => setIsModalOpen(false)}>
+              Confirm Action
             </Button>
           </>
         }
       >
-        <div className="space-y-4">
-          <div className="p-4 rounded-md bg-warning/10 border border-warning/20 flex items-start gap-3">
-            <span className="material-symbols-outlined text-warning text-[20px] shrink-0 mt-0.5">
-              warning
-            </span>
-            <div>
-              <p className="text-xs font-bold text-warning">Overdue Balance Warning</p>
-              <p className="text-xs text-ink-muted mt-0.5">
-                RET-0001 has ₹31,000 in invoices overdue past 30 days. Approval will utilize remaining available credit.
-              </p>
-            </div>
+        <div className="space-y-3 text-xs text-ink-muted leading-relaxed">
+          <p>
+            Hairline borders (<code className="font-mono num bg-surface-raised border border-border px-1 py-0.5 rounded">1px solid var(--border)</code>), compact density, and backdrop blur limited to overlays only.
+          </p>
+          <div className="p-3 rounded-sm bg-surface-raised border border-border text-ink">
+            <span className="text-[10px] font-mono uppercase text-accent font-bold block">Status Verified</span>
+            <span className="font-mono text-sm font-bold text-ink num mt-0.5 block">RET-0001 · Outstanding ₹54,200</span>
           </div>
-
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 bg-background border border-border rounded-md">
-              <span className="text-ink-muted">Credit Limit</span>
-              <p className="font-bold text-ink text-sm num mt-0.5">₹ 1,50,000</p>
-            </div>
-            <div className="p-3 bg-background border border-border rounded-md">
-              <span className="text-ink-muted">Available Credit</span>
-              <p className="font-bold text-success text-sm num mt-0.5">₹ 95,800</p>
-            </div>
-          </div>
-
-          <Input
-            label="Override Justification (Optional)"
-            placeholder="e.g. Cheque clearance confirmed by accounts"
-          />
         </div>
       </Modal>
 
-      {/* Interactive Drawer Component */}
+      {/* Interactive Drawer */}
       <Drawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title="Order Details: ARK-8903"
-        description="Purchase Order breakdown & Hub inventory confirmation."
-        width="lg"
+        title="Slide-Over Drawer"
+        description="200ms slide-in motion respecting prefers-reduced-motion."
         footer={
-          <>
-            <Button variant="secondary" size="md" onClick={() => setIsDrawerOpen(false)}>
-              Close
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => {
-                alert("Dispatch triggered");
-                setIsDrawerOpen(false);
-              }}
-            >
-              Dispatch Order
-            </Button>
-          </>
+          <Button variant="primary" size="sm" onClick={() => setIsDrawerOpen(false)}>
+            Close Drawer
+          </Button>
         }
       >
-        <div className="space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-border">
-            <div>
-              <span className="text-xs text-ink-muted">Retailer</span>
-              <p className="font-bold text-ink">Sri Laxmi Narasimha Textiles</p>
-              <p className="text-xs text-ink-muted num">RET-0001 • Siddipet</p>
+        <div className="space-y-3 text-xs text-ink-muted leading-relaxed">
+          <p>
+            Drawers use right-aligned hairline borders with a blurred glass backdrop.
+          </p>
+          <div className="space-y-2">
+            <div className="p-2.5 rounded-sm bg-surface-raised border border-border">
+              <span className="text-[10px] font-bold text-ink uppercase block">PO #ARK-8841</span>
+              <span className="text-xs text-primary font-mono font-bold num">₹48,510</span>
             </div>
-            <Badge variant="warning" dot>Needs Review</Badge>
-          </div>
-
-          <div>
-            <h5 className="text-xs font-bold uppercase tracking-wider text-ink-muted mb-3">Line Items</h5>
-            <div className="border border-border rounded-md overflow-hidden bg-background">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-surface border-b border-border text-ink-muted font-semibold">
-                  <tr>
-                    <th className="p-3">Article</th>
-                    <th className="p-3 text-right">Boxes</th>
-                    <th className="p-3 text-right">Hub Stock</th>
-                    <th className="p-3 text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  <tr>
-                    <td className="p-3 font-medium text-ink">Classic Polo Crew (L)</td>
-                    <td className="p-3 text-right num">12</td>
-                    <td className="p-3 text-right text-success font-semibold num">45 OK</td>
-                    <td className="p-3 text-right num">₹ 14,400</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-medium text-ink">Lux Cozy Vest (XL)</td>
-                    <td className="p-3 text-right num">8</td>
-                    <td className="p-3 text-right text-success font-semibold num">28 OK</td>
-                    <td className="p-3 text-right num">₹ 8,800</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="p-4 bg-background border border-border rounded-md space-y-1.5 text-xs">
-            <div className="flex justify-between text-ink-muted">
-              <span>Subtotal</span>
-              <span className="num">₹ 23,200</span>
-            </div>
-            <div className="flex justify-between text-ink-muted">
-              <span>GST (5%)</span>
-              <span className="num">₹ 1,160</span>
-            </div>
-            <div className="flex justify-between text-ink font-bold text-sm border-t border-border pt-2 mt-2">
-              <span>Total PO Value</span>
-              <span className="num text-primary">₹ 24,360</span>
+            <div className="p-2.5 rounded-sm bg-surface-raised border border-border">
+              <span className="text-[10px] font-bold text-ink uppercase block">INV-0095</span>
+              <span className="text-xs text-success font-mono font-bold num">Paid (₹48,510)</span>
             </div>
           </div>
         </div>
@@ -677,7 +636,13 @@ function DesignShowcase() {
 
 export default function DesignPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background p-8" />}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center text-ink text-xs font-mono">
+          Loading Design System Preview...
+        </div>
+      }
+    >
       <DesignShowcase />
     </Suspense>
   );

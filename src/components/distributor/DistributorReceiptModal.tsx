@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { isDemoModeEnabled, formatINR, getDaysUntil } from "@/lib/mock";
 
@@ -247,7 +248,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
             >
               Finance
             </button>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <Icon name="chevron_right" size={14} />
             <span className="text-ink font-bold">Record Receipt</span>
           </div>
           <h1 className="text-2xl font-bold text-ink tracking-tight font-page-title">Record Receipt</h1>
@@ -264,10 +265,10 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                 onClick={handleLoadDemoValues}
                 className="h-10 px-3.5 rounded-md bg-accent/10 hover:bg-accent/20 text-accent border border-accent/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 type="button"
-                title="Populate demo values for Sri Laxmi Narasimha Textiles (RET-0001, ₹40k)"
+                title={`Populate demo values for ${activeRetailer?.name || "retailer"}`}
               >
-                <span className="material-symbols-outlined text-[16px]">science</span>
-                <span>Load Demo (RET-0001 · ₹40,000)</span>
+                <Icon name="science" size={16} />
+                <span>Load Demo ({activeRetailer?.code || "RET-0001"})</span>
               </button>
 
               <button
@@ -275,9 +276,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                 className="h-10 px-3 rounded-md bg-surface-raised hover:bg-surface text-ink text-xs font-semibold flex items-center gap-1 transition-colors border border-border cursor-pointer"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[16px]">
-                  {simulateError ? "toggle_on" : "toggle_off"}
-                </span>
+                <Icon name={simulateError ? "toggle_on" : "toggle_off"} size={16} />
                 <span>Simulate Error</span>
               </button>
             </div>
@@ -305,7 +304,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
             }`}
             type="button"
           >
-            <span className="material-symbols-outlined text-[18px]">save</span>
+            <Icon name="save" size={18} />
             <span>Save Receipt</span>
           </button>
         </div>
@@ -314,7 +313,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
       {/* Validation Alert Banners (Requirement 7) */}
       {isFutureDate && (
         <div className="flex items-center gap-2 p-3.5 rounded-md bg-danger/10 border border-danger/20 text-danger text-xs font-semibold">
-          <span className="material-symbols-outlined text-danger text-[18px]">error</span>
+          <Icon name="error" size={18} className="text-danger" />
           <span>
             Receipt date cannot be in the future. (Current application clock:{" "}
             {currentDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })})
@@ -324,7 +323,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
       {isOverApplied && (
         <div className="flex items-center gap-2 p-3.5 rounded-md bg-danger/10 border border-danger/20 text-danger text-xs font-semibold">
-          <span className="material-symbols-outlined text-danger text-[18px]">error</span>
+          <Icon name="error" size={18} className="text-danger" />
           <span>
             Total allocated amount ({formatINR(effectiveApplied)}) exceeds amount received ({formatINR(amountReceived)}). Reduce allocated amounts.
           </span>
@@ -333,7 +332,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
       {hasInvoiceOverAllocation && (
         <div className="flex items-center gap-2 p-3.5 rounded-md bg-warning/10 border border-warning/20 text-warning text-xs font-semibold">
-          <span className="material-symbols-outlined text-warning text-[18px]">warning</span>
+          <Icon name="warning" size={18} className="text-warning" />
           <span>
             One or more invoices have applied amounts exceeding their balance due. Cap allocation to the invoice balance.
           </span>
@@ -344,7 +343,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
       {amountReceived > 0 && advanceAmount > 0 && !isOverApplied && !hasInvoiceOverAllocation && (
         <div className="flex items-center justify-between p-3.5 rounded-md bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[18px]">account_balance_wallet</span>
+            <Icon name="account_balance_wallet" size={18} className="text-primary" />
             <span>
               Unapplied Advance: {formatINR(advanceAmount)} will remain as advance credit on {activeRetailer.name}&apos;s ledger.
             </span>
@@ -364,7 +363,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                  <span className="material-symbols-outlined text-[18px]">receipt</span>
+                  <Icon name="receipt" size={18} />
                 </span>
                 <h2 className="text-sm font-bold text-ink">Receipt Details</h2>
               </div>
@@ -423,9 +422,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
               <div>
                 <label className="text-xs font-semibold text-ink block mb-1">Received On *</label>
                 <div className="relative flex items-center">
-                  <span className="material-symbols-outlined absolute left-3 text-ink-muted text-[18px]">
-                    calendar_today
-                  </span>
+                  <Icon name="calendar_today" size={18} className="absolute left-3 text-ink-muted" />
                   <input
                     className="w-full h-10 pl-9 pr-3 rounded-md bg-surface-raised border border-border font-mono num text-xs text-ink focus:outline-none focus:bg-surface focus:ring-2 focus:ring-primary/20"
                     type="text"
@@ -511,7 +508,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                   }`}
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[15px]">auto_fix_high</span>
+                  <Icon name="auto_fix_high" size={15} />
                   <span>Apply Oldest First</span>
                 </button>
                 <button
@@ -555,7 +552,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                         <td className="py-3 px-3 font-mono num whitespace-nowrap">
                           {isOverdue ? (
                             <span className="text-danger font-bold flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[14px]">warning</span>
+                              <Icon name="warning" size={14} />
                               <span>{inv.dueDate}</span>
                             </span>
                           ) : (
@@ -658,15 +655,13 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                   <span className="font-mono num text-ink-muted line-through">
                     {formatINR(currentOutstanding)}
                   </span>
-                  <span className="material-symbols-outlined text-ink-muted text-[16px]">
-                    arrow_forward
-                  </span>
+                  <Icon name="arrow_forward" size={16} className="text-ink-muted" />
                   <span className="font-mono num font-bold text-sm text-ink">
                     {formatINR(projectedOutstanding)}
                   </span>
                 </div>
                 <span className="text-[11px] text-success font-semibold flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">trending_down</span>
+                  <Icon name="trending_down" size={14} />
                   <span>Reduced by {formatINR(effectiveApplied)}</span>
                 </span>
               </div>
@@ -680,9 +675,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                   <span className="font-mono num text-danger line-through">
                     {formatINR(currentOverdue)}
                   </span>
-                  <span className="material-symbols-outlined text-ink-muted text-[16px]">
-                    arrow_forward
-                  </span>
+                  <Icon name="arrow_forward" size={16} className="text-ink-muted" />
                   <span className="font-mono num font-bold text-sm text-success">
                     {formatINR(projectedOverdue)}
                   </span>
@@ -708,9 +701,7 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
                   <span className="font-mono num text-ink-muted">
                     {formatINR(currentAvailable)}
                   </span>
-                  <span className="material-symbols-outlined text-ink-muted text-[16px]">
-                    arrow_forward
-                  </span>
+                  <Icon name="arrow_forward" size={16} className="text-ink-muted" />
                   <span className="font-mono num font-bold text-sm text-primary">
                     {formatINR(projectedAvailable)}
                   </span>
@@ -732,11 +723,11 @@ export const DistributorReceiptModal: React.FC<DistributorReceiptModalProps> = (
 
       {/* CONFIRMATION DIALOG MODAL */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-surface max-w-md w-full rounded-lg shadow-soft-xl p-6 flex flex-col gap-4 border border-border animate-in fade-in zoom-in-95 duration-150 text-ink">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-md bg-success/10 text-success border border-success/20 flex items-center justify-center flex-shrink-0">
-                <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                <Icon name="check_circle" size={20} />
               </div>
               <div className="flex flex-col">
                 <h3 className="text-base font-bold text-ink">

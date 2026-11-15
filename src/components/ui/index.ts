@@ -9,3 +9,5 @@ export * from "./Input";
 export * from "./Skeleton";
 export * from "./EmptyState";
 export * from "./ThemeToggle";
+export * from "./Icon";
+export * from "./ArkLogo";

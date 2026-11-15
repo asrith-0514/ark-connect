@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "@/components/ui/Icon";
 
 import React, { useState, useEffect } from "react";
 import { useApp } from "@/context/AppContext";
@@ -11,6 +12,7 @@ import {
 } from "@/lib/mock/retailer";
 import { useAuth } from "@/context/AuthContext";
 import { RetailerRequestType, ComplaintType } from "@/lib/mock";
+import CreditMeter from "@/components/retailer/CreditMeter";
 
 export default function MyAccountView() {
   const {
@@ -142,7 +144,7 @@ export default function MyAccountView() {
     if (!cleanGst) {
       errors.gstin = "GSTIN is required";
     } else if (cleanGst.length !== 15) {
-      errors.gstin = "GSTIN must be exactly 15 characters (e.g. 36AAACF1234F1Z5)";
+      errors.gstin = `GSTIN must be exactly 15 characters (e.g. ${profile.gstin})`;
     }
 
     if (!cleanPhone) {
@@ -285,15 +287,15 @@ export default function MyAccountView() {
     <div className="w-full max-w-4xl mx-auto space-y-6 pb-20">
       {/* Toast Notification */}
       {saveSuccessMsg && (
-        <div className="fixed top-20 right-4 z-50 bg-emerald-600 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+        <div className="fixed top-20 right-4 z-50 bg-success text-white text-xs font-bold px-4 py-3 rounded-md shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <Icon name="check_circle" size={18} />
           <span>{saveSuccessMsg}</span>
         </div>
       )}
 
       {/* Demo Controls Bar (only visible when demo mode is active) */}
       {isDemo && (
-        <div className="bg-surface-raised p-2 rounded-xl flex items-center justify-between text-xs text-ink-muted border border-border">
+        <div className="bg-surface-raised p-2 rounded-md flex items-center justify-between text-xs text-ink-muted border border-border">
           <span className="font-semibold text-ink">Account Demo State Simulator:</span>
           <div className="flex gap-1.5">
             <button
@@ -326,13 +328,11 @@ export default function MyAccountView() {
 
       {/* State: Loading View */}
       {viewState === "loading" && (
-        <div className="bg-surface rounded-2xl p-8 border border-border h-48 flex items-center justify-center animate-pulse">
+        <div className="bg-surface rounded-lg p-8 border border-border h-48 flex items-center justify-center animate-pulse">
           <div className="flex flex-col items-center gap-3">
-            <span className="material-symbols-outlined text-[36px] animate-spin text-primary">
-              progress_activity
-            </span>
+            <Icon name="progress_activity" size={36} className="animate-spin text-primary" />
             <span className="text-sm font-semibold text-ink-muted">
-              Loading Sri Laxmi Narasimha Textiles Account details...
+              Loading {profile.name} Account details...
             </span>
           </div>
         </div>
@@ -340,9 +340,9 @@ export default function MyAccountView() {
 
       {/* State: Error View */}
       {viewState === "error" && (
-        <div className="bg-surface rounded-2xl p-8 sm:p-12 border border-rose-200 text-center flex flex-col items-center gap-4 shadow-sm">
-          <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[36px]">error_outline</span>
+        <div className="bg-surface rounded-lg p-8 sm:p-12 border border-danger/30 text-center flex flex-col items-center gap-4 shadow-sm">
+          <div className="w-16 h-16 rounded-full bg-danger/10 text-danger border border-danger/30 flex items-center justify-center">
+            <Icon name="error_outline" size={36} />
           </div>
           <h2 className="text-lg font-bold text-ink">Failed to load account profile</h2>
           <p className="text-sm text-ink-muted max-w-md">
@@ -350,7 +350,7 @@ export default function MyAccountView() {
           </p>
           <button
             onClick={() => setViewState("ready")}
-            className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-sm"
+            className="px-5 py-2.5 rounded-md bg-primary text-white text-xs font-bold shadow-sm"
           >
             Retry Loading
           </button>
@@ -359,9 +359,9 @@ export default function MyAccountView() {
 
       {/* State: Empty View */}
       {viewState === "empty" && (
-        <div className="bg-surface rounded-2xl p-8 sm:p-12 border border-border text-center flex flex-col items-center gap-4 shadow-sm">
+        <div className="bg-surface rounded-lg p-8 sm:p-12 border border-border text-center flex flex-col items-center gap-4 shadow-sm">
           <div className="w-16 h-16 rounded-full bg-surface-raised text-ink-muted flex items-center justify-center">
-            <span className="material-symbols-outlined text-[36px]">account_box</span>
+            <Icon name="account_box" size={36} />
           </div>
           <h2 className="text-lg font-bold text-ink">No Retailer Profile Registered</h2>
           <p className="text-sm text-ink-muted max-w-md">
@@ -369,7 +369,7 @@ export default function MyAccountView() {
           </p>
           <button
             onClick={() => setViewState("ready")}
-            className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-sm"
+            className="px-5 py-2.5 rounded-md bg-primary text-white text-xs font-bold shadow-sm"
           >
             Load Active Profile
           </button>
@@ -380,22 +380,22 @@ export default function MyAccountView() {
         <>
 
       {/* 1. Business Profile Header Card */}
-      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
+      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg border border-primary/20 shrink-0">
-              <span className="material-symbols-outlined text-[26px]">storefront</span>
+            <div className="w-12 h-12 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-lg border border-primary/20 shrink-0">
+              <Icon name="storefront" size={26} />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-lg sm:text-xl font-bold text-ink">
                   {profile.name}
                 </h1>
-                <span className="bg-blue-100 text-primary text-xs font-bold px-2.5 py-0.5 rounded-full font-mono">
+                <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-0.5 rounded-full font-mono">
                   {RETAILER_PROFILE.code}
                 </span>
-                <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                <span className="bg-success/10 text-success text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-success/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                   Verified Wholesaler Client
                 </span>
               </div>
@@ -420,9 +420,9 @@ export default function MyAccountView() {
                 setFormErrors({});
                 setIsEditProfileOpen(true);
               }}
-              className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-all active:scale-98"
+              className="px-4 py-2 rounded-md bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-all active:scale-98"
             >
-              <span className="material-symbols-outlined text-[18px]">edit</span>
+              <Icon name="edit" size={18} />
               <span>Edit Details</span>
             </button>
           </div>
@@ -430,7 +430,7 @@ export default function MyAccountView() {
 
         {/* Business details grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-3 border-t border-border">
-          <div className="p-3 bg-surface-raised rounded-xl border border-border/60">
+          <div className="p-3 bg-surface-raised rounded-md border border-border/60">
             <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
               GSTIN
             </span>
@@ -438,13 +438,13 @@ export default function MyAccountView() {
               <span className="text-xs font-bold text-ink font-mono">
                 {profile.gstin}
               </span>
-              <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 font-bold text-[9px] rounded uppercase">
+              <span className="px-1.5 py-0.2 bg-success/10 text-success font-mono font-bold text-[9px] rounded uppercase">
                 Verified
               </span>
             </div>
           </div>
 
-          <div className="p-3 bg-surface-raised rounded-xl border border-border/60">
+          <div className="p-3 bg-surface-raised rounded-md border border-border/60">
             <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
               Registered Phone
             </span>
@@ -453,7 +453,7 @@ export default function MyAccountView() {
             </span>
           </div>
 
-          <div className="p-3 bg-surface-raised rounded-xl border border-border/60">
+          <div className="p-3 bg-surface-raised rounded-md border border-border/60">
             <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
               Billing Email
             </span>
@@ -462,7 +462,7 @@ export default function MyAccountView() {
             </span>
           </div>
 
-          <div className="sm:col-span-2 md:col-span-3 p-3 bg-surface-raised rounded-xl border border-border/60">
+          <div className="sm:col-span-2 md:col-span-3 p-3 bg-surface-raised rounded-md border border-border/60">
             <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
               Registered Trade Address
             </span>
@@ -474,20 +474,20 @@ export default function MyAccountView() {
       </div>
 
       {/* 2. Credit & Terms & Credit Meter Card */}
-      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
+      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-emerald-600">verified_user</span>
+            <Icon name="verified_user" size={20} className="text-success" />
             <h2 className="text-base font-bold text-ink">Credit & Terms</h2>
           </div>
-          <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+          <span className="px-2.5 py-0.5 rounded-full bg-success/10 text-success border border-success/30 text-xs font-bold">
             {financials.availableCreditPercent}% Available
           </span>
         </div>
 
         {/* Financial Highlights (Stacked on mobile to 1 col) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-3 rounded-xl bg-surface-raised border border-border/60">
+          <div className="p-3 rounded-md bg-surface-raised border border-border/60">
             <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
               Credit Limit
             </span>
@@ -499,7 +499,7 @@ export default function MyAccountView() {
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-surface-raised border border-border/60">
+          <div className="p-3 rounded-md bg-surface-raised border border-border/60">
             <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
               Credit Terms
             </span>
@@ -511,7 +511,7 @@ export default function MyAccountView() {
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-surface-raised border border-border/60">
+          <div className="p-3 rounded-md bg-surface-raised border border-border/60">
             <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
               Used Credit
             </span>
@@ -523,7 +523,7 @@ export default function MyAccountView() {
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-primary/10/50 border border-primary/20">
+          <div className="p-3 rounded-md bg-primary/10/50 border border-primary/20">
             <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">
               Available Credit
             </span>
@@ -537,7 +537,7 @@ export default function MyAccountView() {
         </div>
 
         {/* Dual-color Credit Meter (matches Invoices & Balance exactly) */}
-        <div className="p-4 rounded-xl bg-surface-raised border border-border space-y-2">
+        <div className="p-4 rounded-md bg-surface-raised border border-border space-y-2">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-primary" />
@@ -545,9 +545,9 @@ export default function MyAccountView() {
               <strong className="text-ink font-mono">{formatINR(financials.totalOutstanding)}</strong>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <span className="w-2.5 h-2.5 rounded-full bg-success" />
               <span className="text-ink-muted font-medium">Available:</span>
-              <strong className="text-emerald-700 font-mono">{formatINR(financials.availableCredit)}</strong>
+              <strong className="text-success font-mono">{formatINR(financials.availableCredit)}</strong>
             </div>
           </div>
 
@@ -558,14 +558,14 @@ export default function MyAccountView() {
               title={`Used: ${financials.usedCreditPercent}%`}
             />
             <div
-              className="h-full bg-emerald-500 transition-all duration-500"
+              className="h-full bg-success transition-all duration-500"
               style={{ width: `${financials.availableCreditPercent}%` }}
               title={`Available: ${financials.availableCreditPercent}%`}
             />
           </div>
 
           <div className="flex items-center justify-between text-[11px] text-ink-muted pt-1">
-            <span>Overdue balance: <strong className="text-rose-600">{formatINR(financials.overdueAmount)}</strong></span>
+            <span>Overdue balance: <strong className="text-danger">{formatINR(financials.overdueAmount)}</strong></span>
             <button
               onClick={() => setRetailerNav("account")}
               className="text-primary hover:underline font-semibold"
@@ -577,23 +577,23 @@ export default function MyAccountView() {
       </div>
 
       {/* 3. Delivery and Transport Card */}
-      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
+      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-primary">local_shipping</span>
+            <Icon name="local_shipping" size={20} className="text-primary" />
             <h2 className="text-base font-bold text-ink">Delivery &amp; Transport Routing</h2>
           </div>
           <span className="text-xs text-ink-muted">Secunderabad Hub Route</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-4 rounded-xl bg-surface-raised border border-border flex flex-col justify-between">
+          <div className="p-4 rounded-md bg-surface-raised border border-border flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider">
                   Default Delivery Destination
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-blue-100 text-primary font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
                   Primary
                 </span>
               </div>
@@ -606,13 +606,13 @@ export default function MyAccountView() {
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-surface-raised border border-border flex flex-col justify-between">
+          <div className="p-4 rounded-md bg-surface-raised border border-border flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider">
                   Preferred Transport Carrier
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-success/10 text-success font-mono font-bold">
                   Active
                 </span>
               </div>
@@ -631,11 +631,11 @@ export default function MyAccountView() {
       </div>
 
       {/* 3.5. Store Requests & Support Desk */}
-      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border space-y-5">
+      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-              <span className="material-symbols-outlined text-[22px]">contact_support</span>
+            <div className="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold">
+              <Icon name="contact_support" size={22} />
             </div>
             <div>
               <h2 className="text-base font-bold text-ink">Store Requests &amp; Support</h2>
@@ -647,17 +647,17 @@ export default function MyAccountView() {
             <button
               type="button"
               onClick={() => setIsRaiseRequestOpen(true)}
-              className="h-9 px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs transition-all cursor-pointer"
+              className="h-9 px-3.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs transition-all cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">add_circle</span>
+              <Icon name="add_circle" size={16} />
               Raise a Request
             </button>
             <button
               type="button"
               onClick={() => setIsReportIssueOpen(true)}
-              className="h-9 px-3.5 rounded-xl bg-surface border border-danger/30 hover:bg-danger/10 text-danger text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+              className="h-9 px-3.5 rounded-md bg-surface border border-danger/30 hover:bg-danger/10 text-danger text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">report_problem</span>
+              <Icon name="report_problem" size={16} />
               Report an Issue
             </button>
           </div>
@@ -670,11 +670,11 @@ export default function MyAccountView() {
               <span>Submitted Store Requests ({myRequests.length})</span>
             </h3>
             {myRequests.length === 0 ? (
-              <p className="text-xs text-ink-muted p-3 rounded-xl bg-surface-raised border border-border">
+              <p className="text-xs text-ink-muted p-3 rounded-md bg-surface-raised border border-border">
                 No active store requests submitted.
               </p>
             ) : (
-              <div className="divide-y divide-border border border-border rounded-xl overflow-hidden bg-background">
+              <div className="divide-y divide-border border border-border rounded-md overflow-hidden bg-background">
                 {myRequests.map((req) => (
                   <div key={req.id} className="p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                     <div>
@@ -723,11 +723,11 @@ export default function MyAccountView() {
               <span>Reported Issues &amp; Tickets ({myComplaints.length})</span>
             </h3>
             {myComplaints.length === 0 ? (
-              <p className="text-xs text-ink-muted p-3 rounded-xl bg-surface-raised border border-border">
+              <p className="text-xs text-ink-muted p-3 rounded-md bg-surface-raised border border-border">
                 Zero issues reported. All shipments and bills are in good standing.
               </p>
             ) : (
-              <div className="divide-y divide-border border border-border rounded-xl overflow-hidden bg-background">
+              <div className="divide-y divide-border border border-border rounded-md overflow-hidden bg-background">
                 {myComplaints.map((c) => (
                   <div key={c.id} className="p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                     <div>
@@ -762,10 +762,10 @@ export default function MyAccountView() {
       </div>
 
       {/* 4. Contacts & Authorized Users */}
-      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
+      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-ink">group</span>
+            <Icon name="group" size={20} className="text-ink" />
             <div>
               <h2 className="text-base font-bold text-ink">Authorized Purchasing Contacts</h2>
               <p className="text-xs text-ink-muted">Personnel approved to build, review, and confirm purchase orders</p>
@@ -778,25 +778,25 @@ export default function MyAccountView() {
               setContactError("");
               setIsAddContactOpen(true);
             }}
-            className="px-3.5 py-1.5 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink text-xs font-semibold flex items-center gap-1.5 transition-colors border border-border"
+            className="px-3.5 py-1.5 rounded-md bg-surface-raised hover:bg-surface-raised text-ink text-xs font-semibold flex items-center gap-1.5 transition-colors border border-border"
           >
-            <span className="material-symbols-outlined text-[16px]">person_add</span>
+            <Icon name="person_add" size={16} />
             <span>Add User</span>
           </button>
         </div>
 
-        <div className="divide-y divide-border border border-border rounded-xl overflow-hidden">
+        <div className="divide-y divide-border border border-border rounded-md overflow-hidden">
           {contacts.map(contact => (
             <div key={contact.id} className="p-3.5 bg-surface flex items-center justify-between gap-3 hover:bg-surface-raised/60 transition-colors">
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs ${contact.isPrimary ? "bg-blue-100 text-primary" : "bg-surface-raised text-ink"}`}>
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs ${contact.isPrimary ? "bg-primary/10 text-primary" : "bg-surface-raised text-ink"}`}>
                   {contact.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs sm:text-sm font-bold text-ink">{contact.name}</span>
                     {contact.isPrimary && (
-                      <span className="px-2 py-0.2 rounded-full bg-blue-100 text-primary text-[10px] font-bold">
+                      <span className="px-2 py-0.2 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
                         Primary Proprietor
                       </span>
                     )}
@@ -813,10 +813,10 @@ export default function MyAccountView() {
                 <button
                   type="button"
                   onClick={() => handleRemoveContact(contact.id)}
-                  className="p-1.5 rounded-lg text-ink-muted hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                  className="p-1.5 rounded-sm text-ink-muted hover:text-danger hover:bg-danger/10 transition-colors"
                   title="Remove user"
                 >
-                  <span className="material-symbols-outlined text-[18px]">delete</span>
+                  <Icon name="delete" size={18} />
                 </button>
               )}
             </div>
@@ -825,14 +825,14 @@ export default function MyAccountView() {
       </div>
 
       {/* 5. Notification Preferences */}
-      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
+      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[20px] text-amber-600">notifications_active</span>
+          <Icon name="notifications_active" size={20} className="text-warning" />
           <h2 className="text-base font-bold text-ink">Wholesale Notifications & Alerts</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3.5 rounded-xl bg-surface-raised border border-border flex items-center justify-between">
+          <div className="p-3.5 rounded-md bg-surface-raised border border-border flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-ink block">Order Status Updates</span>
               <span className="text-[11px] text-ink-muted">Submission, approval & packaging</span>
@@ -845,7 +845,7 @@ export default function MyAccountView() {
             />
           </div>
 
-          <div className="p-3.5 rounded-xl bg-surface-raised border border-border flex items-center justify-between">
+          <div className="p-3.5 rounded-md bg-surface-raised border border-border flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-ink block">Dispatch & LR Alerts</span>
               <span className="text-[11px] text-ink-muted">Navata LR # and arrival alerts</span>
@@ -858,7 +858,7 @@ export default function MyAccountView() {
             />
           </div>
 
-          <div className="p-3.5 rounded-xl bg-surface-raised border border-border flex items-center justify-between">
+          <div className="p-3.5 rounded-md bg-surface-raised border border-border flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-ink block">Payment Reminders</span>
               <span className="text-[11px] text-ink-muted">Due date & overdue notices</span>
@@ -888,7 +888,7 @@ export default function MyAccountView() {
                 key={opt.id}
                 type="button"
                 onClick={() => setNotifications(prev => ({ ...prev, channel: opt.id as any }))}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${notifications.channel === opt.id ? "bg-primary text-white shadow-soft-sm" : "bg-surface-raised text-ink hover:bg-surface-raised"}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${notifications.channel === opt.id ? "bg-primary text-white shadow-soft-sm" : "bg-surface-raised text-ink hover:bg-surface-raised"}`}
               >
                 {opt.label}
               </button>
@@ -898,10 +898,10 @@ export default function MyAccountView() {
       </div>
 
       {/* 6. Documents & Certificates */}
-      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
+      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px] text-ink">description</span>
+            <Icon name="description" size={20} className="text-ink" />
             <h2 className="text-base font-bold text-ink">Verified Legal Documents</h2>
           </div>
           <span className="text-xs text-ink-muted">KYC Compliant</span>
@@ -909,15 +909,15 @@ export default function MyAccountView() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {RETAILER_PROFILE.documents.map(doc => (
-            <div key={doc.id} className="p-4 rounded-xl bg-surface-raised border border-border flex items-start justify-between gap-3">
+            <div key={doc.id} className="p-4 rounded-md bg-surface-raised border border-border flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-surface text-ink flex items-center justify-center border border-border shrink-0">
-                  <span className="material-symbols-outlined text-[20px]">verified</span>
+                <div className="w-10 h-10 rounded-md bg-surface text-ink flex items-center justify-center border border-border shrink-0">
+                  <Icon name="verified" size={20} />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-bold text-ink">{doc.name}</span>
-                    <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold uppercase">
+                    <span className="px-1.5 py-0.2 rounded bg-success/10 text-success font-mono text-[9px] font-bold uppercase">
                       {doc.status}
                     </span>
                   </div>
@@ -933,9 +933,7 @@ export default function MyAccountView() {
                   disabled={downloadingDoc === doc.name}
                   className="px-2.5 py-1 rounded-lg bg-surface hover:bg-surface-raised text-ink text-[11px] font-semibold border border-border transition-colors flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-[14px]">
-                    {downloadingDoc === doc.name ? "sync" : "download"}
-                  </span>
+                  <Icon name={downloadingDoc === doc.name ? "sync" : "download"} size={14} />
                   <span>{downloadingDoc === doc.name ? "Fetching..." : "Download"}</span>
                 </button>
               </div>
@@ -945,14 +943,14 @@ export default function MyAccountView() {
       </div>
 
       {/* 7. Preferences & Session */}
-      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-bold text-ink block">Portal Language / భాష / மொழி</span>
           <p className="text-[11px] text-ink-muted mt-0.5">Select preferred regional language for invoices and catalogues</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center bg-surface-raised p-1 rounded-xl border border-border">
+          <div className="flex items-center bg-surface-raised p-1 rounded-md border border-border">
             <button
               type="button"
               onClick={() => setSelectedLanguage("en")}
@@ -979,9 +977,9 @@ export default function MyAccountView() {
           <button
             type="button"
             onClick={() => setIsSignOutModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition-colors flex items-center gap-1.5 border border-rose-200"
+            className="px-4 py-2 rounded-md bg-danger/10 hover:bg-danger/20 text-danger font-bold text-xs transition-colors flex items-center gap-1.5 border border-danger/30"
           >
-            <span className="material-symbols-outlined text-[16px]">logout</span>
+            <Icon name="logout" size={16} />
             <span>Sign Out</span>
           </button>
         </div>
@@ -992,7 +990,7 @@ export default function MyAccountView() {
       {/* MODAL: Edit Business Profile */}
       {isEditProfileOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95">
+          <div className="bg-surface rounded-lg max-w-lg w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <h3 className="text-base font-bold text-ink">Edit Business Details</h3>
               <button
@@ -1000,68 +998,68 @@ export default function MyAccountView() {
                 onClick={() => setIsEditProfileOpen(false)}
                 className="w-8 h-8 rounded-full bg-surface-raised text-ink-muted hover:bg-surface-raised flex items-center justify-center"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
             <form onSubmit={handleSaveProfile} className="space-y-4 pt-4">
               <div>
                 <label className="text-xs font-bold text-ink block mb-1">
-                  Shop / Trade Name <span className="text-rose-500">*</span>
+                  Shop / Trade Name <span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
                   value={editForm.name}
                   onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
-                  placeholder="e.g. Sri Laxmi Narasimha Textiles"
+                  className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
+                  placeholder={`e.g. ${profile.name}`}
                 />
-                {formErrors.name && <p className="text-[11px] text-rose-600 mt-1">{formErrors.name}</p>}
+                {formErrors.name && <p className="text-[11px] text-danger mt-1">{formErrors.name}</p>}
               </div>
 
               <div>
                 <label className="text-xs font-bold text-ink block mb-1">
-                  Proprietor Name <span className="text-rose-500">*</span>
+                  Proprietor Name <span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
                   value={editForm.proprietor}
                   onChange={e => setEditForm(prev => ({ ...prev, proprietor: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
                   placeholder="e.g. T. Narasimha Rao"
                 />
-                {formErrors.proprietor && <p className="text-[11px] text-rose-600 mt-1">{formErrors.proprietor}</p>}
+                {formErrors.proprietor && <p className="text-[11px] text-danger mt-1">{formErrors.proprietor}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-ink block mb-1">
-                    GSTIN (15 chars) <span className="text-rose-500">*</span>
+                    GSTIN (15 chars) <span className="text-danger">*</span>
                   </label>
                   <input
                     type="text"
                     maxLength={15}
                     value={editForm.gstin}
                     onChange={e => setEditForm(prev => ({ ...prev, gstin: e.target.value.toUpperCase() }))}
-                    className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm font-mono uppercase focus:outline-none focus:border-primary"
-                    placeholder="36AAACF1234F1Z5"
+                    className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm font-mono uppercase focus:outline-none focus:border-primary"
+                    placeholder={profile.gstin}
                   />
-                  {formErrors.gstin && <p className="text-[11px] text-rose-600 mt-1">{formErrors.gstin}</p>}
+                  {formErrors.gstin && <p className="text-[11px] text-danger mt-1">{formErrors.gstin}</p>}
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-ink block mb-1">
-                    Phone (10 digits) <span className="text-rose-500">*</span>
+                    Phone (10 digits) <span className="text-danger">*</span>
                   </label>
                   <input
                     type="tel"
                     maxLength={10}
                     value={editForm.phone}
                     onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value.replace(/[^0-9]/g, "") }))}
-                    className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm font-mono focus:outline-none focus:border-primary"
+                    className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm font-mono focus:outline-none focus:border-primary"
                     placeholder="9440123456"
                   />
-                  {formErrors.phone && <p className="text-[11px] text-rose-600 mt-1">{formErrors.phone}</p>}
+                  {formErrors.phone && <p className="text-[11px] text-danger mt-1">{formErrors.phone}</p>}
                 </div>
               </div>
 
@@ -1071,10 +1069,10 @@ export default function MyAccountView() {
                   type="email"
                   value={editForm.email}
                   onChange={e => setEditForm(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
                   placeholder="name@store.com"
                 />
-                {formErrors.email && <p className="text-[11px] text-rose-600 mt-1">{formErrors.email}</p>}
+                {formErrors.email && <p className="text-[11px] text-danger mt-1">{formErrors.email}</p>}
               </div>
 
               <div>
@@ -1083,7 +1081,7 @@ export default function MyAccountView() {
                   rows={2}
                   value={editForm.address}
                   onChange={e => setEditForm(prev => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
                   placeholder="Door No, Street, Town, District, State Pincode"
                 />
               </div>
@@ -1092,13 +1090,13 @@ export default function MyAccountView() {
                 <button
                   type="button"
                   onClick={() => setIsEditProfileOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-surface-raised text-ink text-xs font-semibold hover:bg-surface-raised"
+                  className="px-4 py-2 rounded-md bg-surface-raised text-ink text-xs font-semibold hover:bg-surface-raised"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-sm"
+                  className="px-5 py-2 rounded-md bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-sm"
                 >
                   Save Changes
                 </button>
@@ -1111,7 +1109,7 @@ export default function MyAccountView() {
       {/* MODAL: Add User / Authorized Contact */}
       {isAddContactOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95">
+          <div className="bg-surface rounded-lg max-w-md w-full p-6 shadow-2xl border border-border animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <h3 className="text-base font-bold text-ink">Add Authorized User</h3>
               <button
@@ -1119,7 +1117,7 @@ export default function MyAccountView() {
                 onClick={() => setIsAddContactOpen(false)}
                 className="w-8 h-8 rounded-full bg-surface-raised text-ink-muted hover:bg-surface-raised flex items-center justify-center"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
@@ -1130,7 +1128,7 @@ export default function MyAccountView() {
                   type="text"
                   value={newContact.name}
                   onChange={e => setNewContact(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
                   placeholder="e.g. S. Srinivas"
                 />
               </div>
@@ -1141,7 +1139,7 @@ export default function MyAccountView() {
                   type="text"
                   value={newContact.role}
                   onChange={e => setNewContact(prev => ({ ...prev, role: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm focus:outline-none focus:border-primary"
                   placeholder="e.g. Purchase Assistant / Accountant"
                 />
               </div>
@@ -1153,24 +1151,24 @@ export default function MyAccountView() {
                   maxLength={10}
                   value={newContact.phone}
                   onChange={e => setNewContact(prev => ({ ...prev, phone: e.target.value.replace(/[^0-9]/g, "") }))}
-                  className="w-full px-3 py-2 rounded-xl border border-border text-xs sm:text-sm font-mono focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 rounded-md border border-border text-xs sm:text-sm font-mono focus:outline-none focus:border-primary"
                   placeholder="9876543210"
                 />
               </div>
 
-              {contactError && <p className="text-[11px] text-rose-600 font-semibold">{contactError}</p>}
+              {contactError && <p className="text-[11px] text-danger font-semibold">{contactError}</p>}
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setIsAddContactOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-surface-raised text-ink text-xs font-semibold hover:bg-surface-raised"
+                  className="px-4 py-2 rounded-md bg-surface-raised text-ink text-xs font-semibold hover:bg-surface-raised"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-sm"
+                  className="px-5 py-2 rounded-md bg-primary hover:bg-primary/90 text-white text-xs font-bold shadow-sm"
                 >
                   Add Contact
                 </button>
@@ -1183,21 +1181,21 @@ export default function MyAccountView() {
       {/* MODAL: Sign Out Confirmation */}
       {isSignOutModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-border text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
-              <span className="material-symbols-outlined text-[24px]">logout</span>
+          <div className="bg-surface rounded-lg max-w-sm w-full p-6 shadow-2xl border border-border text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-danger/10 text-danger border border-danger/30 flex items-center justify-center mx-auto">
+              <Icon name="logout" size={24} />
             </div>
             <div>
               <h3 className="text-base font-bold text-ink">Sign Out of ARK Connect?</h3>
               <p className="text-xs text-ink-muted mt-1">
-                You will be signed out of Sri Laxmi Narasimha Textiles wholesale session.
+                You will be signed out of {profile.name} wholesale session.
               </p>
             </div>
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setIsSignOutModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink text-xs font-semibold"
+                className="px-4 py-2 rounded-md bg-surface-raised hover:bg-surface-raised text-ink text-xs font-semibold"
               >
                 Stay Logged In
               </button>
@@ -1208,7 +1206,7 @@ export default function MyAccountView() {
                   setRetailerNav("home");
                   alert("Signed out. Session returned to Home.");
                 }}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm"
+                className="px-4 py-2 rounded-md bg-danger hover:opacity-90 text-white text-xs font-bold shadow-sm"
               >
                 Confirm Sign Out
               </button>
@@ -1221,13 +1219,13 @@ export default function MyAccountView() {
       {isRaiseRequestOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
           <div
-            className="relative w-full max-w-lg bg-surface rounded-2xl shadow-soft-xl border border-border text-ink overflow-hidden"
+            className="relative w-full max-w-lg bg-surface rounded-lg shadow-soft-xl border border-border text-ink overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 sm:p-5 bg-surface border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
-                  <span className="material-symbols-outlined text-[22px]">contact_support</span>
+                <div className="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold">
+                  <Icon name="contact_support" size={22} />
                 </div>
                 <div>
                   <h3 className="font-bold text-base text-ink">Raise a Store Request</h3>
@@ -1239,7 +1237,7 @@ export default function MyAccountView() {
                 onClick={() => setIsRaiseRequestOpen(false)}
                 className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer border border-border"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
@@ -1251,7 +1249,7 @@ export default function MyAccountView() {
                 <select
                   value={requestType}
                   onChange={(e) => setRequestType(e.target.value as RetailerRequestType)}
-                  className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs font-semibold text-ink focus:outline-hidden focus:border-primary"
+                  className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs font-semibold text-ink focus:outline-hidden focus:border-primary"
                 >
                   <option value="credit_limit">Credit Limit Increase Request</option>
                   <option value="address_change">Store Delivery Address Update</option>
@@ -1272,7 +1270,7 @@ export default function MyAccountView() {
                       onChange={(e) => setReqLimit(e.target.value)}
                       placeholder="e.g. 250000"
                       required
-                      className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs font-mono font-semibold text-ink focus:outline-hidden focus:border-primary"
+                      className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs font-mono font-semibold text-ink focus:outline-hidden focus:border-primary"
                     />
                     <span className="text-[11px] text-ink-muted mt-1 block">
                       Current Credit Limit: {formatINR(financials.creditLimit)}
@@ -1288,7 +1286,7 @@ export default function MyAccountView() {
                       placeholder="Explain your seasonal expansion, festival orders, or counter capacity..."
                       rows={3}
                       required
-                      className="w-full p-3 bg-background border border-border rounded-xl text-xs text-ink placeholder:text-ink-muted/50 focus:outline-hidden focus:border-primary resize-none"
+                      className="w-full p-3 bg-background border border-border rounded-md text-xs text-ink placeholder:text-ink-muted/50 focus:outline-hidden focus:border-primary resize-none"
                     />
                   </div>
                 </>
@@ -1306,7 +1304,7 @@ export default function MyAccountView() {
                       onChange={(e) => setReqAddress(e.target.value)}
                       placeholder="Shop No, Complex, Street Name"
                       required
-                      className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs text-ink focus:outline-hidden focus:border-primary"
+                      className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs text-ink focus:outline-hidden focus:border-primary"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -1320,7 +1318,7 @@ export default function MyAccountView() {
                         onChange={(e) => setReqTown(e.target.value)}
                         placeholder="e.g. Siddipet"
                         required
-                        className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs text-ink focus:outline-hidden focus:border-primary"
+                        className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs text-ink focus:outline-hidden focus:border-primary"
                       />
                     </div>
                     <div>
@@ -1334,7 +1332,7 @@ export default function MyAccountView() {
                         onChange={(e) => setReqPincode(e.target.value)}
                         placeholder="502103"
                         required
-                        className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs font-mono text-ink focus:outline-hidden focus:border-primary"
+                        className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs font-mono text-ink focus:outline-hidden focus:border-primary"
                       />
                     </div>
                   </div>
@@ -1351,7 +1349,7 @@ export default function MyAccountView() {
                       <select
                         value={reqBrand}
                         onChange={(e) => setReqBrand(e.target.value)}
-                        className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs font-semibold text-ink focus:outline-hidden focus:border-primary"
+                        className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs font-semibold text-ink focus:outline-hidden focus:border-primary"
                       >
                         <option value="Within">Within</option>
                         <option value="Flybirds">Flybirds</option>
@@ -1372,7 +1370,7 @@ export default function MyAccountView() {
                         onChange={(e) => setReqProductName(e.target.value)}
                         placeholder="e.g. Sports Bra / Shimmer Leggings"
                         required
-                        className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs text-ink focus:outline-hidden focus:border-primary"
+                        className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs text-ink focus:outline-hidden focus:border-primary"
                       />
                     </div>
                   </div>
@@ -1385,7 +1383,7 @@ export default function MyAccountView() {
                       onChange={(e) => setReqNotes(e.target.value)}
                       placeholder="Retail customer feedback, desired sizes, or colors..."
                       rows={3}
-                      className="w-full p-3 bg-background border border-border rounded-xl text-xs text-ink placeholder:text-ink-muted/50 focus:outline-hidden focus:border-primary resize-none"
+                      className="w-full p-3 bg-background border border-border rounded-md text-xs text-ink placeholder:text-ink-muted/50 focus:outline-hidden focus:border-primary resize-none"
                     />
                   </div>
                 </>
@@ -1395,13 +1393,13 @@ export default function MyAccountView() {
                 <button
                   type="button"
                   onClick={() => setIsRaiseRequestOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-border bg-surface hover:bg-surface-raised text-xs font-semibold text-ink transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-md border border-border bg-surface hover:bg-surface-raised text-xs font-semibold text-ink transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer"
+                  className="px-5 py-2.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer"
                 >
                   Submit Request
                 </button>
@@ -1415,13 +1413,13 @@ export default function MyAccountView() {
       {isReportIssueOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-xs p-4 animate-in fade-in duration-150">
           <div
-            className="relative w-full max-w-lg bg-surface rounded-2xl shadow-soft-xl border border-border text-ink overflow-hidden"
+            className="relative w-full max-w-lg bg-surface rounded-lg shadow-soft-xl border border-border text-ink overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 sm:p-5 bg-surface border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-danger/10 text-danger flex items-center justify-center font-bold">
-                  <span className="material-symbols-outlined text-[22px]">report_problem</span>
+                <div className="w-10 h-10 rounded-md bg-danger/10 text-danger flex items-center justify-center font-bold">
+                  <Icon name="report_problem" size={22} />
                 </div>
                 <div>
                   <h3 className="font-bold text-base text-ink">Report Shipment or Billing Issue</h3>
@@ -1433,7 +1431,7 @@ export default function MyAccountView() {
                 onClick={() => setIsReportIssueOpen(false)}
                 className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer border border-border"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
@@ -1446,7 +1444,7 @@ export default function MyAccountView() {
                   <select
                     value={complaintType}
                     onChange={(e) => setComplaintType(e.target.value as ComplaintType)}
-                    className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs font-semibold text-ink focus:outline-hidden focus:border-primary"
+                    className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs font-semibold text-ink focus:outline-hidden focus:border-primary"
                   >
                     <option value="shortage">Missing Boxes / Shortage</option>
                     <option value="defect">Damaged / Defective Pieces</option>
@@ -1463,8 +1461,8 @@ export default function MyAccountView() {
                     type="text"
                     value={complaintOrder}
                     onChange={(e) => setComplaintOrder(e.target.value)}
-                    placeholder="e.g. ARK-8839"
-                    className="w-full h-10 px-3 bg-background border border-border rounded-xl text-xs font-mono text-ink focus:outline-hidden focus:border-primary uppercase"
+                    placeholder="e.g. PO Number (optional)"
+                    className="w-full h-10 px-3 bg-background border border-border rounded-md text-xs font-mono text-ink focus:outline-hidden focus:border-primary uppercase"
                   />
                 </div>
               </div>
@@ -1479,7 +1477,7 @@ export default function MyAccountView() {
                   placeholder="Provide article number, missing quantities, carton numbers, or transporter remarks..."
                   rows={4}
                   required
-                  className="w-full p-3 bg-background border border-border rounded-xl text-xs text-ink placeholder:text-ink-muted/50 focus:outline-hidden focus:border-primary resize-none leading-relaxed"
+                  className="w-full p-3 bg-background border border-border rounded-md text-xs text-ink placeholder:text-ink-muted/50 focus:outline-hidden focus:border-primary resize-none leading-relaxed"
                 />
               </div>
 
@@ -1487,13 +1485,13 @@ export default function MyAccountView() {
                 <button
                   type="button"
                   onClick={() => setIsReportIssueOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-border bg-surface hover:bg-surface-raised text-xs font-semibold text-ink transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-md border border-border bg-surface hover:bg-surface-raised text-xs font-semibold text-ink transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-danger hover:bg-danger/90 text-white text-xs font-bold shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer"
+                  className="px-5 py-2.5 rounded-md bg-danger hover:bg-danger/90 text-white text-xs font-bold shadow-soft-sm transition-all active:scale-[0.98] cursor-pointer"
                 >
                   Report Ticket
                 </button>

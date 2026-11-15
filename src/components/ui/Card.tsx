@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 export type CardVariant = "default" | "hero" | "tinted";
@@ -16,15 +18,15 @@ export function Card({
 }: CardProps) {
   const variantStyles: Record<CardVariant, string> = {
     default:
-      "bg-surface text-ink border border-border rounded-lg shadow-soft-sm transition-all duration-200 ease-out",
+      "bg-surface text-ink border border-border rounded-md shadow-soft-sm transition-all duration-150 ease-out",
     hero:
-      "bg-surface-raised text-ink border border-border/80 rounded-xl shadow-soft-md transition-all duration-200 ease-out relative overflow-hidden",
+      "bg-surface-raised text-ink border border-border-strong rounded-lg shadow-soft-md transition-all duration-150 ease-out relative overflow-hidden",
     tinted:
-      "bg-primary/5 text-ink border border-primary/20 rounded-lg shadow-soft-sm transition-all duration-200 ease-out",
+      "bg-surface text-ink border border-primary/25 rounded-md shadow-soft-sm transition-all duration-150 ease-out",
   };
 
   const interactiveStyles = interactive
-    ? "hover:border-primary/40 hover:shadow-soft-md cursor-pointer active:scale-[0.99]"
+    ? "hover:border-primary/50 hover:shadow-soft-md cursor-pointer active:scale-[0.99]"
     : "";
 
   return (
@@ -36,3 +38,5 @@ export function Card({
     </div>
   );
 }
+
+export default Card;

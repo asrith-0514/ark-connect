@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "@/components/ui/Icon";
 
 import React, { Component, ErrorInfo, ReactNode } from "react";
 
@@ -37,9 +38,9 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="w-full p-6 sm:p-10 my-4 bg-surface rounded-2xl border border-rose-200 shadow-sm flex flex-col items-center text-center">
-          <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
-            <span className="material-symbols-outlined text-[28px]">warning</span>
+        <div className="w-full p-6 sm:p-10 my-4 bg-surface rounded-lg border border-danger/30 shadow-sm flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-lg bg-danger/10 text-danger border border-danger/30 flex items-center justify-center mb-4">
+            <Icon name="warning" size={28} />
           </div>
           <h2 className="text-xl font-bold text-ink mb-1">
             Unable to load {this.props.name || "this view"}
@@ -48,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
             An unexpected error occurred while rendering this section. The rest of your workspace is still running.
           </p>
           {this.state.error && (
-            <div className="mb-6 p-3 rounded-xl bg-surface-raised border border-border text-xs font-mono text-ink max-w-xl text-left overflow-x-auto">
+            <div className="mb-6 p-3 rounded-md bg-surface-raised border border-border text-xs font-mono text-ink max-w-xl text-left overflow-x-auto">
               {this.state.error.message || String(this.state.error)}
             </div>
           )}

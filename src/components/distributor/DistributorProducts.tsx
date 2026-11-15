@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Icon } from "@/components/ui/Icon";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { TierPricingArticle, MOCK_BRANDS, Brand } from "@/data/mockData";
@@ -31,7 +33,7 @@ function StyleThumbnailCell({
           <img src={primaryUrl} alt={article.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-surface-raised text-ink-muted">
-            <span className="material-symbols-outlined text-[16px] text-ink-muted">add_a_photo</span>
+            <Icon name="add_a_photo" size={16} className="text-ink-muted" />
           </div>
         )}
       </button>
@@ -43,7 +45,7 @@ function StyleThumbnailCell({
             onClick={onClick}
             className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[13px]">image</span>
+            <Icon name="image" size={13} />
             <span>
               {count} {count === 1 ? "photo" : "photos"}
             </span>
@@ -54,7 +56,7 @@ function StyleThumbnailCell({
             onClick={onClick}
             className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-warning/15 text-warning border border-warning/25 hover:bg-warning/25 flex items-center gap-1 cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[11px]">warning</span>
+            <Icon name="warning" size={11} />
             <span>No Photos</span>
           </button>
         )}
@@ -78,7 +80,7 @@ function BrandLogoChip({ brand, onClick }: { brand: Brand; onClick: () => void }
         className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-white font-bold text-[10px] shadow-soft-xs shrink-0"
         style={{
           backgroundColor: !displayImage
-            ? brand.colorHex || brand.accentColor || "#3B3BF5"
+            ? brand.colorHex || brand.accentColor || "#2F6BFF"
             : undefined,
         }}
       >
@@ -89,9 +91,7 @@ function BrandLogoChip({ brand, onClick }: { brand: Brand; onClick: () => void }
         )}
       </div>
       <span className="text-xs font-bold text-ink">{brand.name}</span>
-      <span className="material-symbols-outlined text-[14px] text-ink-muted group-hover:text-primary">
-        camera_alt
-      </span>
+      <Icon name="camera_alt" size={14} className="text-ink-muted group-hover:text-primary" />
     </button>
   );
 }
@@ -299,7 +299,7 @@ export const DistributorProducts: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
             <span>Catalogue</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <Icon name="chevron_right" size={14} />
             <span className="text-ink font-bold">Products &amp; Pricing</span>
           </div>
           <h1 className="text-2xl font-bold text-ink tracking-tight mt-1">
@@ -316,7 +316,7 @@ export const DistributorProducts: React.FC = () => {
             onClick={exportCSV}
             className="px-3.5 py-2 rounded-md bg-surface hover:bg-surface-raised text-ink font-semibold text-xs transition-colors flex items-center gap-1.5 border border-border shadow-soft-sm cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[16px]">download</span>
+            <Icon name="download" size={16} />
             <span>Export CSV</span>
           </button>
         </div>
@@ -368,7 +368,7 @@ export const DistributorProducts: React.FC = () => {
       {/* Brand Logos Management Strip */}
       <div className="p-3 bg-surface rounded-xl border border-border shadow-soft-sm flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-1.5 shrink-0 pl-1">
-          <span className="material-symbols-outlined text-[17px] text-primary">verified</span>
+          <Icon name="verified" size={17} className="text-primary" />
           <span className="text-xs font-bold text-ink uppercase tracking-wider">
             Brand Logos:
           </span>
@@ -422,9 +422,7 @@ export const DistributorProducts: React.FC = () => {
         <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
-            <span className="material-symbols-outlined absolute left-3 top-2.5 text-ink-muted text-[18px]">
-              search
-            </span>
+            <Icon name="search" size={18} className="absolute left-3 top-2.5 text-ink-muted" />
             <input
               type="text"
               value={searchQuery}
@@ -473,7 +471,7 @@ export const DistributorProducts: React.FC = () => {
       {/* Notifications / Toast */}
       {saveSuccessMsg && (
         <div className="p-3 rounded-md bg-success/10 border border-success/20 text-success text-xs font-semibold flex items-center gap-2 animate-in fade-in">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          <Icon name="check_circle" size={18} />
           <span>{saveSuccessMsg}</span>
         </div>
       )}
@@ -482,44 +480,45 @@ export const DistributorProducts: React.FC = () => {
       <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1100px]">
-            <thead>
-              <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
-                <th className="py-3 px-3">Photo</th>
-                <th className="py-3 px-4">Article # &amp; Title</th>
-                <th className="py-3 px-3">Brand</th>
-                <th className="py-3 px-3">Category</th>
-                <th className="py-3 px-3">Packing</th>
+            <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
+              <tr className="text-ink-muted text-[11px] uppercase tracking-wider font-bold font-mono">
+                <th className="py-2.5 px-3">Photo</th>
+                <th className="py-2.5 px-4">Article # &amp; Title</th>
+                <th className="py-2.5 px-3">Brand</th>
+                <th className="py-2.5 px-3">Category</th>
+                <th className="py-2.5 px-3">Packing</th>
                 {canViewTierPricing ? (
                   <>
-                    <th className="py-3 px-3 text-right bg-primary/5 text-primary">
+                    <th className="py-2.5 px-3 text-right bg-primary/5 text-primary">
                       Tier A++ (Net)
                     </th>
-                    <th className="py-3 px-3 text-right bg-surface-raised">
+                    <th className="py-2.5 px-3 text-right bg-surface-raised">
                       Tier A+ (Net)
                     </th>
-                    <th className="py-3 px-3 text-right bg-surface-raised">
+                    <th className="py-2.5 px-3 text-right bg-surface-raised">
                       Tier A (Net)
                     </th>
                   </>
                 ) : (
-                  <th className="py-3 px-3 text-right bg-primary/5 text-primary">
+                  <th className="py-2.5 px-3 text-right bg-primary/5 text-primary">
                     Wholesale MRP (List Rate)
                   </th>
                 )}
-                <th className="py-3 px-3 text-right">Hub Stock</th>
-                <th className="py-3 px-3 text-center">Variants</th>
-                <th className="py-3 px-3 text-center">Active</th>
-                <th className="py-3 px-4 text-right">Action</th>
+                <th className="py-2.5 px-3 text-right">Hub Stock</th>
+                <th className="py-2.5 px-3 text-center">Variants</th>
+                <th className="py-2.5 px-3 text-center">Active</th>
+                <th className="py-2.5 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-xs">
               {filteredArticles.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="py-12 text-center text-ink-muted">
-                    <span className="material-symbols-outlined text-[36px] mb-2 block text-ink-muted/50">
-                      inventory_2
-                    </span>
-                    No articles match the selected filters.
+                  <td colSpan={12} className="py-12">
+                    <EmptyState
+                      icon={<Icon name="inventory_2" size={24} />}
+                      title="No articles match the selected filters"
+                      description="Try clearing your search query or brand filter."
+                    />
                   </td>
                 </tr>
               ) : (
@@ -537,7 +536,7 @@ export const DistributorProducts: React.FC = () => {
                         }`}
                       >
                         {/* Photo Column */}
-                        <td className="py-3.5 px-3">
+                        <td className="py-2.5 sm:py-3 px-3">
                           <StyleThumbnailCell
                             article={art}
                             onClick={() => setSelectedArticleForImages(art)}
@@ -545,7 +544,7 @@ export const DistributorProducts: React.FC = () => {
                         </td>
 
                         {/* Article # & Title */}
-                        <td className="py-3.5 px-4 font-semibold text-ink">
+                        <td className="py-2.5 sm:py-3 px-4 font-semibold text-ink">
                           <div className="flex items-center gap-2">
                             <span className="font-mono num text-xs px-2 py-0.5 rounded-sm bg-surface-raised border border-border text-ink font-bold">
                               {art.artNumber}
@@ -557,28 +556,28 @@ export const DistributorProducts: React.FC = () => {
                         </td>
 
                         {/* Brand */}
-                        <td className="py-3.5 px-3">
+                        <td className="py-2.5 sm:py-3 px-3">
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-raised border border-border text-ink whitespace-nowrap">
                             {art.brand}
                           </span>
                         </td>
 
                         {/* Category */}
-                        <td className="py-3.5 px-3 text-ink-muted whitespace-nowrap">
+                        <td className="py-2.5 sm:py-3 px-3 text-ink-muted whitespace-nowrap">
                           {art.category}
                         </td>
 
                         {/* Packing */}
-                        <td className="py-3.5 px-3 text-ink-muted whitespace-nowrap">
+                        <td className="py-2.5 sm:py-3 px-3 text-ink-muted whitespace-nowrap">
                           <span className="font-medium text-ink">Box of {art.piecesPerPack || (art as any).pcsPerBox || 10}</span>
-                          <span className="text-[10px] text-ink-muted block">({(art as any).boxesPerCase || 60} bx/case)</span>
+                          <span className="text-[10px] text-ink-muted block font-mono">({(art as any).boxesPerCase || 60} bx/case)</span>
                         </td>
 
                         {/* Price Cells */}
                         {canViewTierPricing ? (
                           <>
                             {/* Tier A++ */}
-                            <td className="py-3.5 px-3 text-right bg-primary/5 font-semibold font-mono num text-primary">
+                            <td className="py-2.5 sm:py-3 px-3 text-right bg-primary/5 font-semibold font-mono num text-primary">
                               {isEditing ? (
                                 <div className="flex items-center justify-end">
                                   <span className="text-ink-muted mr-1">₹</span>
@@ -599,7 +598,7 @@ export const DistributorProducts: React.FC = () => {
                             </td>
 
                             {/* Tier A+ */}
-                            <td className="py-3.5 px-3 text-right font-semibold font-mono num text-ink">
+                            <td className="py-2.5 sm:py-3 px-3 text-right font-semibold font-mono num text-ink">
                               {isEditing ? (
                                 <div className="flex items-center justify-end">
                                   <span className="text-ink-muted mr-1">₹</span>
@@ -618,7 +617,7 @@ export const DistributorProducts: React.FC = () => {
                             </td>
 
                             {/* Tier A */}
-                            <td className="py-3.5 px-3 text-right font-semibold font-mono num text-ink">
+                            <td className="py-2.5 sm:py-3 px-3 text-right font-semibold font-mono num text-ink">
                               {isEditing ? (
                                 <div className="flex items-center justify-end">
                                   <span className="text-ink-muted mr-1">₹</span>
@@ -638,7 +637,7 @@ export const DistributorProducts: React.FC = () => {
                           </>
                         ) : (
                           /* Non-tier viewing (Salesman / Warehouse staff): Standard List Price */
-                          <td className="py-3.5 px-3 text-right font-semibold font-mono num text-ink bg-primary/5">
+                          <td className="py-2.5 sm:py-3 px-3 text-right font-semibold font-mono num text-ink bg-primary/5">
                             {isPending ? (
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-warning/10 text-warning border border-warning/20">
                                 Price Pending
@@ -650,13 +649,13 @@ export const DistributorProducts: React.FC = () => {
                         )}
 
                         {/* Hub Stock */}
-                        <td className="py-3.5 px-3 text-right font-mono num text-ink">
+                        <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-ink">
                           <span className="font-semibold">{art.hubStock.toLocaleString("en-IN")} pcs</span>
-                          <span className="text-[10px] text-ink-muted block">({art.hubStockBoxes} bx)</span>
+                          <span className="text-[10px] text-ink-muted block font-mono">({art.hubStockBoxes} bx)</span>
                         </td>
 
                         {/* Variants Breakdown Trigger */}
-                        <td className="py-3.5 px-3 text-center">
+                        <td className="py-2.5 sm:py-3 px-3 text-center">
                           <button
                             type="button"
                             onClick={() => setExpandedArticleId(isExpanded ? null : art.id)}
@@ -667,14 +666,12 @@ export const DistributorProducts: React.FC = () => {
                             }`}
                           >
                             <span>{variants.length || "View"}</span>
-                            <span className="material-symbols-outlined text-[14px]">
-                              {isExpanded ? "expand_less" : "expand_more"}
-                            </span>
+                            <Icon name={isExpanded ? "expand_less" : "expand_more"} size={14} />
                           </button>
                         </td>
 
                         {/* Active Toggle */}
-                        <td className="py-3.5 px-3 text-center">
+                        <td className="py-2.5 sm:py-3 px-3 text-center">
                           <button
                             type="button"
                             onClick={() => toggleArticleActive(art)}
@@ -692,7 +689,7 @@ export const DistributorProducts: React.FC = () => {
                         </td>
 
                         {/* Action */}
-                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <td className="py-2.5 sm:py-3 px-4 text-right whitespace-nowrap">
                           {isEditing ? (
                             <div className="flex items-center justify-end gap-1.5">
                               <button
@@ -732,7 +729,7 @@ export const DistributorProducts: React.FC = () => {
                             <div className="bg-surface p-4 rounded-md border border-border shadow-soft-xs space-y-3">
                               <div className="flex items-center justify-between">
                                 <span className="font-bold text-xs text-ink uppercase tracking-wider flex items-center gap-1.5">
-                                  <span className="material-symbols-outlined text-[16px] text-primary">grid_view</span>
+                                  <Icon name="grid_view" size={16} className="text-primary" />
                                   Stock Breakdown per Variant for {art.title}
                                 </span>
                                 <span className="text-xs text-ink-muted">
@@ -749,7 +746,7 @@ export const DistributorProducts: React.FC = () => {
                                     <div className="flex items-center gap-1.5 mb-1">
                                       <span
                                         className="w-2.5 h-2.5 rounded-full shrink-0 border border-border"
-                                        style={{ backgroundColor: v.shade?.hex || "#475569" }}
+                                        style={{ backgroundColor: v.shade?.hex || "#5B677A" }}
                                       />
                                       <span className="font-semibold text-ink truncate text-[11px]">
                                         {v.shade?.name}
@@ -784,7 +781,7 @@ export const DistributorProducts: React.FC = () => {
         {editError && (
           <div className="p-3 bg-danger/10 border-t border-danger/20 text-danger text-xs flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[16px]">error</span>
+              <Icon name="error" size={16} />
               <span className="font-medium">{editError}</span>
             </div>
             <span className="text-[11px] text-danger/80 font-semibold uppercase">Rule: A++ &le; A+ &le; A</span>

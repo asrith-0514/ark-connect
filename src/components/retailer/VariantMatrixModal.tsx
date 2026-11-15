@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { OrderItem } from "@/data/mockData";
 import { formatINR } from "@/lib/mock/retailer";
@@ -50,7 +51,7 @@ export default function VariantMatrixModal() {
     if (matrixProduct.shades && matrixProduct.shades.length > 0) {
       return matrixProduct.shades;
     }
-    return [{ name: "Assorted", hex: "#475569", code: "AST" }];
+    return [{ name: "Assorted", hex: "#5B677A", code: "AST" }];
   }, [matrixProduct]);
 
   // Matrix quantities: { [fit_shadeIdx_sizeIdx]: number }
@@ -158,7 +159,7 @@ export default function VariantMatrixModal() {
               artNumber: matrixProduct.artNumber,
               image: matrixProduct.image,
               color: shade.name,
-              colorHex: shade.hex || "#475569",
+              colorHex: shade.hex || "#5B677A",
               size: `${size}${fitLabel}`,
               units: qty,
               rate: ratePerBox,
@@ -177,15 +178,15 @@ export default function VariantMatrixModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/50 backdrop-blur-sm transition-opacity duration-300 p-0 sm:p-4 animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-200 p-0 sm:p-4 animate-in fade-in"
       onClick={e => {
         if (e.target === e.currentTarget) closeMatrixModal();
       }}
     >
-      <div className="relative w-full max-w-4xl bg-surface rounded-t-2xl sm:rounded-2xl h-[94vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-soft-xl overflow-hidden border border-border text-ink">
+      <div className="relative w-full max-w-4xl bg-surface rounded-t-lg sm:rounded-lg h-[94vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-border text-ink">
         {/* Mobile Drag Handle */}
         <div className="w-full flex justify-center pt-3 pb-1 sm:hidden bg-surface-raised/40">
-          <div className="w-12 h-1.5 bg-border rounded-full" />
+          <div className="w-12 h-1 bg-border-strong rounded-full" />
         </div>
 
         {/* Modal Header */}
@@ -246,7 +247,7 @@ export default function VariantMatrixModal() {
             className="w-9 h-9 rounded-full bg-surface hover:bg-surface-raised text-ink-muted hover:text-ink flex items-center justify-center transition-colors border border-border shadow-soft-sm cursor-pointer"
             aria-label="Close dialog"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <Icon name="close" size={20} />
           </button>
         </div>
 
@@ -288,7 +289,7 @@ export default function VariantMatrixModal() {
               >
                 <span
                   className="w-3 h-3 rounded-full shrink-0 border border-border"
-                  style={{ backgroundColor: s.hex || "#475569" }}
+                  style={{ backgroundColor: s.hex || "#5B677A" }}
                 />
                 <span>{s.name}</span>
                 {s.code && <span className="text-[10px] text-ink-muted font-mono">({s.code})</span>}
@@ -300,7 +301,7 @@ export default function VariantMatrixModal() {
         {/* Price Pending Alert Banner if not priced */}
         {isPending && (
           <div className="px-4 sm:px-6 py-3 bg-warning/10 border-b border-warning/20 flex items-center gap-2.5 text-xs text-warning">
-            <span className="material-symbols-outlined text-[18px]">info</span>
+            <Icon name="info" size={18} />
             <span>
               <strong>Price Pending:</strong> Mill rate card confirmation in progress. You can preview sizes and shade assortments, but orders cannot be placed until distributor sets the wholesale price.
             </span>
@@ -366,7 +367,7 @@ export default function VariantMatrixModal() {
                         <div className="flex items-center gap-2.5">
                           <span
                             className="w-4 h-4 rounded-full shrink-0 border border-border"
-                            style={{ backgroundColor: shade.hex || "#475569" }}
+                            style={{ backgroundColor: shade.hex || "#5B677A" }}
                           />
                           <div className="flex flex-col">
                             <span className="font-semibold text-ink text-xs sm:text-sm">
@@ -431,16 +432,14 @@ export default function VariantMatrixModal() {
           {/* Packing & Logistics Note */}
           <div className="mt-4 p-3.5 bg-surface-raised border border-border rounded-md flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-ink-muted">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[20px]">
-                inventory_2
-              </span>
+              <Icon name="inventory_2" size={20} className="text-primary" />
               <span>
                 Standard Master Carton contains <strong className="text-ink">60 boxes ({60 * piecesPerBox} pcs)</strong>.
                 You currently have <strong className="text-ink">{masterCartons} Master Cartons</strong> selected.
               </span>
             </div>
             <span className="font-semibold text-success flex items-center gap-1 shrink-0">
-              <span className="material-symbols-outlined text-[16px]">verified</span>
+              <Icon name="verified" size={16} />
               Box Packed • Wholesale Hub Dispatch
             </span>
           </div>
@@ -512,7 +511,7 @@ export default function VariantMatrixModal() {
             <button
               type="button"
               onClick={closeMatrixModal}
-              className="flex-1 md:flex-initial px-4 min-h-[48px] rounded-xl bg-background hover:bg-surface text-ink font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 border border-border cursor-pointer"
+              className="flex-1 md:flex-initial px-4 min-h-[48px] rounded-md bg-background hover:bg-surface text-ink font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 border border-border cursor-pointer"
             >
               Cancel
             </button>
@@ -521,10 +520,10 @@ export default function VariantMatrixModal() {
               type="button"
               disabled={isPending || grandTotalBoxes === 0}
               onClick={handleCommit}
-              className="flex-2 md:flex-initial px-6 min-h-[48px] rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground font-bold text-xs sm:text-sm shadow-soft-md transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
+              className="flex-2 md:flex-initial px-6 min-h-[48px] rounded-md bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground font-bold text-xs sm:text-sm shadow-soft-md transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
               title={isPending ? "Price is pending from distributor" : undefined}
             >
-              <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
+              <Icon name="add_shopping_cart" size={18} />
               <span>
                 {isPending
                   ? "Price Pending"

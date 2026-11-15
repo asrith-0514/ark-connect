@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { TierPricingArticle } from "@/data/mockData";
 import {
   imageStore,
@@ -137,7 +138,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 backdrop-blur-xs p-3 sm:p-4 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-150">
       <div
         className="relative w-full max-w-2xl bg-surface rounded-2xl shadow-soft-xl border border-border text-ink overflow-hidden max-h-[92vh] flex flex-col"
         onClick={e => e.stopPropagation()}
@@ -146,7 +147,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
         <div className="p-4 sm:p-5 bg-surface border-b border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold border border-primary/20 shrink-0">
-              <span className="material-symbols-outlined text-[22px]">add_photo_alternate</span>
+              <Icon name="add_photo_alternate" size={22} />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -166,7 +167,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer border border-border"
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <Icon name="close" size={18} />
           </button>
         </div>
 
@@ -222,7 +223,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
           {errorMessage && (
             <div className="p-3 bg-danger/10 border border-danger/20 rounded-xl text-danger text-xs flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+                <Icon name="error" size={18} className="shrink-0" />
                 <span>{errorMessage}</span>
               </div>
               <button
@@ -230,7 +231,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
                 onClick={() => setErrorMessage(null)}
                 className="text-danger hover:text-ink cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[16px]">close</span>
+                <Icon name="close" size={16} />
               </button>
             </div>
           )}
@@ -262,9 +263,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
               }}
               className="hidden"
             />
-            <span className="material-symbols-outlined text-[36px] text-primary mb-1">
-              add_photo_alternate
-            </span>
+            <Icon name="add_photo_alternate" size={36} className="text-primary mb-1" />
             <p className="text-xs sm:text-sm font-bold text-ink">
               Drag &amp; drop images or <span className="text-primary underline">browse multiple files</span>
             </p>
@@ -277,9 +276,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
           {isUploading && (
             <div className="p-3 bg-background rounded-xl border border-border space-y-2">
               <span className="text-xs font-bold text-ink flex items-center gap-2">
-                <span className="material-symbols-outlined animate-spin text-[16px] text-primary">
-                  progress_activity
-                </span>
+                <Icon name="progress_activity" size={16} className="animate-spin text-primary" />
                 Optimizing &amp; Compressing Photos...
               </span>
               {Object.entries(uploadProgress).map(([name, pct]) => (
@@ -309,9 +306,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
 
             {images.length === 0 ? (
               <div className="p-8 text-center bg-background rounded-xl border border-border">
-                <span className="material-symbols-outlined text-[32px] text-ink-muted mb-1">
-                  hide_image
-                </span>
+                <Icon name="hide_image" size={32} className="text-ink-muted mb-1" />
                 <p className="text-xs font-semibold text-ink">No photos uploaded for this style</p>
                 <p className="text-[11px] text-ink-muted mt-0.5">
                   Drop images above to add high-resolution catalog photos.
@@ -376,7 +371,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
                                   className="p-1 rounded bg-primary text-white hover:bg-primary/90 cursor-pointer"
                                   title="Save Alt Text"
                                 >
-                                  <span className="material-symbols-outlined text-[14px]">check</span>
+                                  <Icon name="check" size={14} />
                                 </button>
                               </div>
                             ) : (
@@ -390,7 +385,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
                                   className="text-ink-muted hover:text-primary cursor-pointer p-0.5"
                                   title="Edit alt text"
                                 >
-                                  <span className="material-symbols-outlined text-[14px]">edit</span>
+                                  <Icon name="edit" size={14} />
                                 </button>
                               </div>
                             )}
@@ -407,7 +402,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
                                 className="w-6 h-6 rounded bg-background hover:bg-surface-raised disabled:opacity-30 flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer border border-border"
                                 title="Move Earlier"
                               >
-                                <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+                                <Icon name="arrow_back" size={14} />
                               </button>
                               <button
                                 type="button"
@@ -416,7 +411,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
                                 className="w-6 h-6 rounded bg-background hover:bg-surface-raised disabled:opacity-30 flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer border border-border"
                                 title="Move Later"
                               >
-                                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                <Icon name="arrow_forward" size={14} />
                               </button>
                             </div>
 
@@ -438,7 +433,7 @@ export const ProductImageUploadModal: React.FC<ProductImageUploadModalProps> = (
                               className="w-6 h-6 rounded bg-background hover:bg-danger/10 hover:text-danger text-ink-muted flex items-center justify-center cursor-pointer border border-border"
                               title="Delete photo"
                             >
-                              <span className="material-symbols-outlined text-[14px]">delete</span>
+                              <Icon name="delete" size={14} />
                             </button>
                           </div>
                         </div>

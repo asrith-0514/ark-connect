@@ -7,6 +7,8 @@ import { DISTRIBUTOR_ROLES_METADATA } from "@/lib/auth/permissions";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Icon } from "@/components/ui/Icon";
+import { ArkWordmark } from "@/components/ui/ArkLogo";
 
 export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: () => void }) {
   const {
@@ -100,21 +102,9 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
 
   return (
     <div className="w-full max-w-xl mx-auto p-4 sm:p-6 flex flex-col gap-6">
-      {/* Brand Header */}
+      {/* Brand Header with Geometric Monogram & Tagline */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-ink text-surface font-bold flex items-center justify-center text-sm shadow-soft-sm">
-            ARK
-          </div>
-          <div>
-            <h1 className="text-base font-bold text-ink leading-tight">
-              ARK Backoffice ERP
-            </h1>
-            <p className="text-[11px] text-ink-muted">
-              Distributor Management & Mill Supply Operations
-            </p>
-          </div>
-        </div>
+        <ArkWordmark product="Backoffice" size="md" withTagline />
 
         <Badge variant="neutral" size="sm">
           Staff Portal
@@ -193,14 +183,14 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
 
             {errorMsg && (
               <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+                <Icon name="error" size={18} className="shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {rateLimitSeconds > 0 && (
               <div className="p-3 rounded-lg bg-warning/15 border border-warning/30 text-ink text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] text-warning shrink-0">timer</span>
+                <Icon name="timer" size={18} className="text-warning shrink-0" />
                 <span>Rate limit active: please wait {rateLimitSeconds}s.</span>
               </div>
             )}
@@ -262,7 +252,7 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
 
             {errorMsg && (
               <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-xs flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
+                <Icon name="error" size={18} className="shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}

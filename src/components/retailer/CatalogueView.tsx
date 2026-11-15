@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { MOCK_BRANDS, MOCK_PRODUCTS } from "@/data/mockData";
@@ -11,6 +12,7 @@ import {
 } from "@/lib/mock/retailer";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { getRetailerString } from "@/lib/i18n/retailer";
 import { useEntityImages } from "@/lib/storage/imageStore";
 
@@ -153,9 +155,7 @@ export default function CatalogueView() {
 
           {/* Search Input */}
           <div className="relative w-full sm:w-80">
-            <span className="material-symbols-outlined absolute left-3.5 top-2.5 sm:top-3 text-ink-muted text-[18px]">
-              search
-            </span>
+            <Icon name="search" size={18} className="absolute left-3.5 top-2.5 sm:top-3 text-ink-muted" />
             <input
               type="text"
               value={searchQuery}
@@ -170,7 +170,7 @@ export default function CatalogueView() {
                 className="absolute right-3 top-2.5 sm:top-3 text-ink-muted hover:text-ink cursor-pointer p-1"
                 aria-label="Clear search query"
               >
-                <span className="material-symbols-outlined text-[16px]">close</span>
+                <Icon name="close" size={16} />
               </button>
             )}
           </div>
@@ -193,7 +193,7 @@ export default function CatalogueView() {
                 : "bg-background border-border text-ink hover:bg-surface"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">tune</span>
+            <Icon name="tune" size={16} />
             <span>{getRetailerString(language, "filterBtn")}</span>
             {activeFiltersCount > 0 && (
               <span className="w-5 h-5 rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center">
@@ -213,7 +213,7 @@ export default function CatalogueView() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   selectedCategory === cat
-                    ? "bg-ink text-surface shadow-soft-sm font-bold"
+                    ? "bg-accent/15 text-accent border border-accent/40 shadow-[0_0_8px_rgba(34,229,255,0.2)] font-bold"
                     : "bg-surface border border-border text-ink-muted hover:text-ink hover:bg-background"
                 }`}
               >
@@ -262,31 +262,19 @@ export default function CatalogueView() {
         </div>
 
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-16 bg-surface rounded-2xl border border-border shadow-soft-sm px-4">
-            <span className="material-symbols-outlined text-[48px] text-ink-muted">
-              filter_alt_off
-            </span>
-            <h3 className="text-base font-bold text-ink mt-2">
-              No articles match your filters
-            </h3>
-            <p className="text-xs text-ink-muted mt-1">
-              Try resetting the category or search criteria.
-            </p>
-            <div className="mt-4">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  setSelectedCategory("All");
-                  setSelectedBrand("All");
-                  setSearchQuery("");
-                  setInStockOnly(false);
-                }}
-              >
-                {getRetailerString(language, "resetFilters")}
-              </Button>
-            </div>
-          </div>
+          <EmptyState
+            icon={<Icon name="search_off" size={28} />}
+            title="No articles match your filters"
+            description="Try resetting the category or search criteria."
+            className="bg-surface rounded-lg border border-border shadow-soft-sm"
+            actionLabel={getRetailerString(language, "resetFilters")}
+            onAction={() => {
+              setSelectedCategory("All");
+              setSelectedBrand("All");
+              setSearchQuery("");
+              setInStockOnly(false);
+            }}
+          />
         ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {filteredProducts.map(product => {
@@ -309,20 +297,23 @@ export default function CatalogueView() {
                       <CatalogueProductImage product={product} />
                       {/* Top Badges */}
                       <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 flex flex-col gap-1">
-                        <span className="bg-surface/90 backdrop-blur-md text-ink text-[10px] font-bold px-1.5 py-0.5 rounded shadow-soft-sm border border-border">
+                        <span className="bg-surface/90 backdrop-blur-md text-ink text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-soft-sm border border-border">
                           {product.brand}
                         </span>
                         {product.pricePending && (
-                          <span className="bg-warning text-ink text-[9px] px-1.5 py-0.5 rounded font-bold uppercase shadow-soft-sm">
+                          <span className="bg-warning/20 border border-warning/40 text-warning text-[9px] px-1.5 py-0.5 rounded font-bold font-mono uppercase shadow-soft-sm">
                             {getRetailerString(language, "pricePending")}
                           </span>
                         )}
                       </div>
 
-                      {/* Stock Badge */}
-                      <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-surface/95 backdrop-blur-md px-1.5 py-0.5 rounded flex items-center gap-1 shadow-soft-sm border border-border">
-                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                        <span className="text-[10px] text-success font-bold num">
+                      {/* Stock LED Badge */}
+                      <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-surface/90 backdrop-blur-md px-1.5 py-0.5 rounded flex items-center gap-1.5 shadow-soft-sm border border-border">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-success shadow-[0_0_6px_rgba(47,208,138,0.9)]" />
+                        </span>
+                        <span className="text-[10px] text-success font-bold font-mono num">
                           {product.stockUnits.toLocaleString("en-IN")} pcs
                         </span>
                       </div>
@@ -330,11 +321,11 @@ export default function CatalogueView() {
 
                     {/* Article Info */}
                     <div>
-                      <div className="flex items-center justify-between gap-1 text-[10px] text-ink-muted font-mono num">
-                        <span>Art #{product.artNumber}</span>
+                      <div className="flex items-center justify-between gap-1 text-[9px] text-ink-muted font-mono uppercase tracking-wider num">
+                        <span>ART #{product.artNumber}</span>
                         <span>{product.category}</span>
                       </div>
-                      <h3 className="font-bold text-ink text-xs sm:text-sm mt-0.5 leading-snug line-clamp-1">
+                      <h3 className="font-bold text-ink text-xs sm:text-sm mt-0.5 leading-snug line-clamp-1 group-hover:text-accent transition-colors">
                         {product.title}
                       </h3>
                       <p className="text-[10px] sm:text-xs text-ink-muted mt-0.5 line-clamp-1">
@@ -344,16 +335,17 @@ export default function CatalogueView() {
                       {/* Pricing in Mono + Pack Info */}
                       <div className="mt-2 p-2 sm:p-2.5 bg-background rounded-lg border border-border">
                         {product.pricePending ? (
-                          <div className="text-[11px] sm:text-xs font-bold text-warning font-mono">
-                            {getRetailerString(language, "pricePending")}
+                          <div className="text-[11px] sm:text-xs font-bold text-warning font-mono flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
+                            <span>{getRetailerString(language, "pricePending")}</span>
                           </div>
                         ) : (
                           <div className="flex items-baseline justify-between gap-1 flex-wrap">
                             <div className="flex items-baseline gap-1">
-                              <span className="text-xs sm:text-base font-bold text-primary font-mono num">
+                              <span className="text-xs sm:text-base font-bold text-ink font-mono num">
                                 {formatINR(product.pricePerUnit)}
                               </span>
-                              <span className="text-[10px] text-ink-muted">/{unitShort}</span>
+                              <span className="text-[10px] text-ink-muted font-mono">/{unitShort}</span>
                             </div>
                             <span className="text-[10px] sm:text-[11px] font-semibold text-ink-muted font-mono num">
                               {formatINR(pricePerPiece)}/{getRetailerString(language, "perPiece")}
@@ -361,7 +353,7 @@ export default function CatalogueView() {
                           </div>
                         )}
 
-                        <div className="mt-1 pt-1 border-t border-border flex items-center justify-between text-[10px] text-ink-muted">
+                        <div className="mt-1 pt-1 border-t border-border flex items-center justify-between text-[10px] text-ink-muted font-mono">
                           <span>{getRetailerString(language, "boxOf")} {pieces} {getRetailerString(language, "pcs")}</span>
                           <span className="font-medium">Min: {product.minOrderUnits || 5}</span>
                         </div>
@@ -379,7 +371,7 @@ export default function CatalogueView() {
                           className="w-11 min-h-[44px] flex items-center justify-center text-success hover:bg-success/20 active:bg-success/30 transition-colors cursor-pointer"
                           aria-label={`Decrease ${product.title} by 1 box`}
                         >
-                          <span className="material-symbols-outlined text-[18px]">remove</span>
+                          <Icon name="remove" size={18} />
                         </button>
 
                         <button
@@ -396,7 +388,7 @@ export default function CatalogueView() {
                           className="w-11 min-h-[44px] flex items-center justify-center text-success hover:bg-success/20 active:bg-success/30 transition-colors cursor-pointer"
                           aria-label={`Increase ${product.title} by 1 box`}
                         >
-                          <span className="material-symbols-outlined text-[18px]">add</span>
+                          <Icon name="add" size={18} />
                         </button>
                       </div>
                     ) : product.pricePending ? (
@@ -405,7 +397,7 @@ export default function CatalogueView() {
                         onClick={() => openMatrixModal(product)}
                         className="w-full min-h-[44px] px-2 rounded-xl bg-surface border border-warning/30 text-warning text-xs font-bold hover:bg-warning/10 flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-sm"
                       >
-                        <span className="material-symbols-outlined text-[16px]">visibility</span>
+                        <Icon name="visibility" size={16} />
                         <span>{getRetailerString(language, "previewVariants")}</span>
                       </button>
                     ) : (
@@ -414,7 +406,7 @@ export default function CatalogueView() {
                         onClick={() => openMatrixModal(product)}
                         className="w-full min-h-[44px] px-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 active:scale-98 transition-transform flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-sm"
                       >
-                        <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                        <Icon name="add_circle" size={16} />
                         <span>{getRetailerString(language, "selectSizes")}</span>
                       </button>
                     )}
@@ -436,7 +428,7 @@ export default function CatalogueView() {
           <div className="bg-surface/95 backdrop-blur-md text-ink rounded-full p-3 px-5 shadow-soft-xl flex items-center justify-between gap-4 border border-border">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-soft-sm shrink-0">
-                <span className="material-symbols-outlined text-[20px]">shopping_bag</span>
+                <Icon name="shopping_bag" size={20} />
               </div>
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5 truncate">
@@ -459,7 +451,7 @@ export default function CatalogueView() {
               size="md"
               className="rounded-full shrink-0"
               onClick={() => setIsReviewOrderOpen(true)}
-              rightIcon={<span className="material-symbols-outlined text-[18px]">arrow_forward</span>}
+              rightIcon={<Icon name="arrow_forward" size={18} />}
             >
               Review Order
             </Button>
@@ -477,7 +469,7 @@ export default function CatalogueView() {
             {/* Sheet Header */}
             <div className="p-4 bg-surface border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
+                <Icon name="tune" size={20} className="text-primary" />
                 <h3 className="font-bold text-base text-ink">
                   {getRetailerString(language, "filterTitle")}
                 </h3>
@@ -487,7 +479,7 @@ export default function CatalogueView() {
                 onClick={() => setIsFilterSheetOpen(false)}
                 className="w-8 h-8 rounded-full bg-background hover:bg-surface-raised flex items-center justify-center text-ink-muted hover:text-ink cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 

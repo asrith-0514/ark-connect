@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { PurchaseBill } from "@/data/mockData";
-import { EmptyState } from "@/components/ui";
+import { EmptyState , Icon } from "@/components/ui";
 
 export const DistributorPurchaseBills: React.FC = () => {
   const { purchaseBills, suppliers, addPurchaseBill, currentDate } = useApp();
@@ -137,7 +137,7 @@ export const DistributorPurchaseBills: React.FC = () => {
             onClick={exportBillsCSV}
             className="h-10 px-4 rounded-md bg-surface hover:bg-surface-raised text-ink font-semibold text-xs flex items-center gap-2 border border-border shadow-soft-sm transition-colors cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px] text-ink-muted">download</span>
+            <Icon name="download" size={18} className="text-ink-muted" />
             <span>Export CSV</span>
           </button>
           <button
@@ -145,7 +145,7 @@ export const DistributorPurchaseBills: React.FC = () => {
             onClick={() => setIsRecordModalOpen(true)}
             className="h-10 px-4 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center gap-2 shadow-soft-sm transition-all cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px]">add_circle</span>
+            <Icon name="add_circle" size={18} />
             <span>Record Purchase Bill</span>
           </button>
         </div>
@@ -196,7 +196,7 @@ export const DistributorPurchaseBills: React.FC = () => {
       {/* Success banner */}
       {formSuccess && (
         <div className="p-3.5 rounded-md bg-success/10 border border-success/20 text-success text-xs font-semibold flex items-center gap-2 animate-in fade-in">
-          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          <Icon name="check_circle" size={18} />
           <span>{formSuccess}</span>
         </div>
       )}
@@ -205,9 +205,7 @@ export const DistributorPurchaseBills: React.FC = () => {
       <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
           <div className="relative flex-1 max-w-md">
-            <span className="material-symbols-outlined text-[18px] text-ink-muted absolute left-3 top-2.5">
-              search
-            </span>
+            <Icon name="search" size={18} className="text-ink-muted absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchQuery}
@@ -274,7 +272,7 @@ export const DistributorPurchaseBills: React.FC = () => {
                 <tr>
                   <td colSpan={8} className="py-12 text-center">
                     <EmptyState
-                      icon={<span className="material-symbols-outlined text-[28px]">receipt_long</span>}
+                      icon={<Icon name="receipt_long" size={28} />}
                       title="No purchase bills found"
                       description="Try adjusting your status filter or search keyword."
                       actionLabel="Reset Filters"
@@ -332,12 +330,12 @@ export const DistributorPurchaseBills: React.FC = () => {
 
       {/* Record Purchase Bill Modal Form */}
       {isRecordModalOpen && (
-        <div className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-surface rounded-lg shadow-soft-xl max-w-xl w-full p-6 border border-border animate-in zoom-in-95 text-ink">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold">
-                  <span className="material-symbols-outlined text-[20px]">request_quote</span>
+                  <Icon name="request_quote" size={20} />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-ink">Record Inbound Purchase Bill</h3>
@@ -349,7 +347,7 @@ export const DistributorPurchaseBills: React.FC = () => {
                 onClick={() => setIsRecordModalOpen(false)}
                 className="w-8 h-8 rounded-sm text-ink-muted hover:text-ink hover:bg-surface-raised flex items-center justify-center border border-border cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <Icon name="close" size={20} />
               </button>
             </div>
 

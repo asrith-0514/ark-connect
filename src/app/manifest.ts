@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Wholesale garment and innerwear ordering platform for retail stores in AP and Telangana.",
     start_url: "/?mode=retailer",
     display: "standalone",
-    background_color: "#FAF7F2",
-    theme_color: "#3B3BF5",
+    background_color: "#07090D",
+    theme_color: "#2F6BFF",
     orientation: "portrait",
     icons: [
       {

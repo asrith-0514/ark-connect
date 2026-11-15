@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { RETAILER_PROFILE, formatINR, getCurrentDate } from "@/lib/mock/retailer";
 
@@ -54,7 +55,7 @@ export default function OrderSubmittedModal() {
             onClick={() => setIsOrderSuccessOpen(false)}
             className="w-8 h-8 rounded-full bg-surface-raised hover:bg-surface text-ink-muted hover:text-ink flex items-center justify-center transition-colors border border-border cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <Icon name="close" size={18} />
           </button>
         </div>
 
@@ -65,7 +66,7 @@ export default function OrderSubmittedModal() {
             <div className="relative flex items-center justify-center mb-4">
               <div className="absolute w-20 h-20 rounded-full bg-primary/20 animate-ping opacity-60" />
               <div className="relative w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-soft-md text-primary-foreground">
-                <span className="material-symbols-outlined text-[34px]">check</span>
+                <Icon name="check" size={34} />
               </div>
             </div>
 
@@ -75,7 +76,7 @@ export default function OrderSubmittedModal() {
             </p>
 
             <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-raised text-ink text-xs font-semibold border border-border">
-              <span className="material-symbols-outlined text-[16px] text-primary">store</span>
+              <Icon name="store" size={16} className="text-primary" />
               <span>{RETAILER_PROFILE.name} • {RETAILER_PROFILE.town}</span>
             </div>
           </div>
@@ -98,7 +99,7 @@ export default function OrderSubmittedModal() {
             </div>
 
             <div className="flex items-center gap-1.5 text-ink-muted text-xs pb-1">
-              <span className="material-symbols-outlined text-[16px]">schedule</span>
+              <Icon name="schedule" size={16} />
               <span>
                 {lastSubmittedOrder.date}, {getCurrentDate().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} IST
               </span>
@@ -134,7 +135,7 @@ export default function OrderSubmittedModal() {
                 </span>
               </div>
               <div className="flex items-center gap-1 text-[11px] text-ink-muted">
-                <span className="material-symbols-outlined text-[14px] text-warning">info</span>
+                <Icon name="info" size={14} className="text-warning" />
                 <span>GST extra (5%), charged on tax invoice upon physical dispatch.</span>
               </div>
             </div>
@@ -151,7 +152,7 @@ export default function OrderSubmittedModal() {
               {/* Step 1 */}
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-success/15 text-success flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="material-symbols-outlined text-[15px]">done</span>
+                  <Icon name="done" size={15} />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -235,23 +236,17 @@ export default function OrderSubmittedModal() {
             >
               {pdfGenerating ? (
                 <>
-                  <span className="material-symbols-outlined text-[18px] animate-spin text-primary">
-                    sync
-                  </span>
+                  <Icon name="sync" size={18} className="animate-spin text-primary" />
                   <span>Generating Proforma PDF...</span>
                 </>
               ) : pdfDownloaded ? (
                 <>
-                  <span className="material-symbols-outlined text-[18px] text-success">
-                    check_circle
-                  </span>
+                  <Icon name="check_circle" size={18} className="text-success" />
                   <span className="text-success font-semibold">Proforma PDF Saved</span>
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[18px] text-ink-muted">
-                    description
-                  </span>
+                  <Icon name="description" size={18} className="text-ink-muted" />
                   <span>Download Proforma (PDF)</span>
                 </>
               )}
@@ -271,7 +266,7 @@ export default function OrderSubmittedModal() {
           <div className="p-3.5 rounded-lg bg-surface-raised border border-border flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-full bg-surface flex items-center justify-center text-success shrink-0 shadow-soft-sm border border-border">
-                <span className="material-symbols-outlined text-[20px]">support_agent</span>
+                <Icon name="support_agent" size={20} />
               </div>
               <div>
                 <span className="font-bold text-ink block">Need a change in quantities?</span>
@@ -284,7 +279,7 @@ export default function OrderSubmittedModal() {
               rel="noopener noreferrer"
               className="px-3 py-1.5 rounded-sm bg-surface border border-border text-ink font-bold hover:bg-surface-raised transition-colors flex items-center gap-1 shadow-soft-sm shrink-0"
             >
-              <span className="material-symbols-outlined text-[16px] text-[#25D366]">chat</span>
+              <Icon name="chat" size={16} className="text-[#25D366]" />
               <span>Desk</span>
             </a>
           </div>

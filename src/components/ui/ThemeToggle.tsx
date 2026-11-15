@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Icon } from "./Icon";
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -13,7 +14,8 @@ export function ThemeToggle({
   className = "",
   showLabels = false,
 }: ThemeToggleProps) {
-  const [theme, setTheme] = useState<ThemeMode>("system");
+  // Brand spec: Dark theme is DEFAULT unless explicitly chosen otherwise
+  const [theme, setTheme] = useState<ThemeMode>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -21,6 +23,9 @@ export function ThemeToggle({
       const stored = localStorage.getItem("theme") as ThemeMode | null;
       if (stored === "light" || stored === "dark" || stored === "system") {
         setTheme(stored);
+      } else {
+        setTheme("dark");
+        document.documentElement.setAttribute("data-theme", "dark");
       }
     } catch {
       // localStorage may fail in restricted/private modes
@@ -48,44 +53,43 @@ export function ThemeToggle({
   if (!mounted) {
     return (
       <div
-        className={`inline-flex items-center p-1 bg-surface border border-border rounded-lg shadow-soft-sm ${className}`}
+        className={`inline-flex items-center p-0.5 bg-surface border border-border rounded-md shadow-soft-xs ${className}`}
       >
-        <div className="min-h-[44px] min-w-[44px] px-3 py-2" />
+        <div className="h-8 min-w-[36px] px-2" />
       </div>
     );
   }
 
   const options: { mode: ThemeMode; label: string; icon: string }[] = [
-    { mode: "light", label: "Light", icon: "light_mode" },
-    { mode: "system", label: "Auto", icon: "desktop_windows" },
     { mode: "dark", label: "Dark", icon: "dark_mode" },
+    { mode: "light", label: "Light", icon: "light_mode" },
+    { mode: "system", label: "System", icon: "desktop_windows" },
   ];
 
   return (
     <div
       role="radiogroup"
       aria-label="Theme mode"
-      className={`inline-flex items-center p-1 bg-surface border border-border rounded-lg shadow-soft-sm select-none ${className}`}
+      className={`inline-flex items-center p-0.5 bg-surface border border-border rounded-md shadow-soft-xs select-none ${className}`}
     >
       {options.map((opt) => {
         const isActive = theme === opt.mode;
         return (
           <button
             key={opt.mode}
+            type="button"
             role="radio"
             aria-checked={isActive}
             onClick={() => applyTheme(opt.mode)}
-            className={`min-h-[44px] px-3.5 py-2 rounded-md text-xs font-semibold inline-flex items-center justify-center gap-1.5 transition-all duration-200 ease-out cursor-pointer focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
+            className={`h-7 px-2.5 rounded-sm text-xs font-medium inline-flex items-center justify-center gap-1.5 transition-all duration-150 ease-out cursor-pointer ${
               isActive
-                ? "bg-primary text-primary-foreground shadow-soft-sm"
-                : "text-ink-muted hover:text-ink hover:bg-background/80"
+                ? "bg-surface-raised text-primary border border-border-strong shadow-soft-xs"
+                : "text-ink-muted hover:text-ink hover:bg-surface-raised/50"
             }`}
             title={`Switch to ${opt.label} theme`}
           >
-            <span className="material-symbols-outlined text-[18px]">
-              {opt.icon}
-            </span>
-            {showLabels && <span>{opt.label}</span>}
+            <Icon name={opt.icon} size={14} />
+            {showLabels && <span className="text-[11px] font-sans">{opt.label}</span>}
           </button>
         );
       })}

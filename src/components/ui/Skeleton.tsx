@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -15,10 +17,10 @@ export function Skeleton({
   ...props
 }: SkeletonProps) {
   const variantStyles: Record<string, string> = {
-    text: "h-4 w-full rounded-sm",
+    text: "h-3.5 w-full rounded-xs",
     circular: "rounded-full shrink-0",
-    rectangular: "w-full h-24 rounded-none",
-    rounded: "w-full h-24 rounded-md",
+    rectangular: "w-full h-20 rounded-none",
+    rounded: "w-full h-20 rounded-sm",
   };
 
   const inlineStyles: React.CSSProperties = {
@@ -29,10 +31,12 @@ export function Skeleton({
 
   return (
     <div
-      className={`animate-shimmer border border-border/40 select-none ${variantStyles[variant]} ${className}`}
+      className={`animate-shimmer border border-border/30 select-none ${variantStyles[variant]} ${className}`}
       style={inlineStyles}
       aria-hidden="true"
       {...props}
     />
   );
 }
+
+export default Skeleton;

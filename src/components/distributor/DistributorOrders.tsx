@@ -1,4 +1,6 @@
 "use client";
+import { Icon } from "@/components/ui/Icon";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useApp } from "@/context/AppContext";
@@ -293,10 +295,10 @@ export default function DistributorOrders() {
       retailerId: order.retailerId,
       retailerName: order.retailerName,
       retailerTown: order.retailerTown,
-      retailerGstin: orderRetailer?.gstin || "36AAACF1234F1Z5",
+      retailerGstin: orderRetailer?.gstin || retailers[0]?.gstin || "",
       billedDate: currentDate.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
       date: currentDate.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-      dueDate: new Date(Date.now() + 15 * 86400000).toLocaleDateString("en-IN", {
+      dueDate: new Date(currentDate.getTime() + 15 * 86400000).toLocaleDateString("en-IN", {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -437,8 +439,8 @@ export default function DistributorOrders() {
     <div className="w-full space-y-6 pb-24">
       {/* Toast Notification */}
       {actionToast && (
-        <div className="fixed top-20 right-6 z-50 bg-ink text-surface px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-border animate-in fade-in slide-in-from-top-4">
-          <span className="material-symbols-outlined text-emerald-400 text-[20px]">check_circle</span>
+        <div className="fixed top-20 right-6 z-50 bg-ink text-surface px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 border border-border animate-in fade-in slide-in-from-top-4">
+          <Icon name="check_circle" size={20} className="text-success" />
           <span className="text-xs font-semibold">{actionToast}</span>
         </div>
       )}
@@ -465,7 +467,7 @@ export default function DistributorOrders() {
             onClick={handleExportOrders}
             className="px-4 h-10 rounded-md bg-surface hover:bg-surface-raised text-ink font-semibold text-xs flex items-center gap-1.5 transition-colors border border-border shadow-soft-sm cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px]">file_download</span>
+            <Icon name="file_download" size={18} />
             <span>Export Orders CSV</span>
           </button>
         </div>
@@ -524,14 +526,12 @@ export default function DistributorOrders() {
       <div className="bg-surface rounded-md p-3 sm:p-4 border border-border shadow-soft-sm flex flex-col md:flex-row items-center gap-3">
         {/* Search Input */}
         <div className="relative flex-1 w-full">
-          <span className="material-symbols-outlined absolute left-3.5 top-2.5 text-ink-muted text-[18px]">
-            search
-          </span>
+          <Icon name="search" size={18} className="absolute left-3.5 top-2.5 text-ink-muted" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search by PO # (e.g. ARK-8903), retailer name, town, or LR #..."
+            placeholder="Search by PO #, retailer name, town, or LR #..."
             className="w-full pl-10 pr-9 py-2 rounded-md bg-surface-raised border border-border text-xs sm:text-sm text-ink placeholder:text-ink-muted focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-mono"
           />
           {searchQuery && (
@@ -540,7 +540,7 @@ export default function DistributorOrders() {
               onClick={() => setSearchQuery("")}
               className="absolute right-3 top-2.5 text-ink-muted hover:text-ink cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">close</span>
+              <Icon name="close" size={16} />
             </button>
           )}
         </div>
@@ -565,76 +565,66 @@ export default function DistributorOrders() {
       <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[950px]">
-            <thead>
-              <tr className="bg-surface-raised text-ink-muted text-xs uppercase tracking-wider font-mono border-b border-border select-none sticky top-0 z-10">
+            <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
+              <tr className="text-ink-muted text-xs uppercase tracking-wider font-mono">
                 <th
-                  className="py-3.5 px-4 font-bold cursor-pointer hover:text-ink transition-colors whitespace-nowrap"
+                  className="py-2.5 px-4 font-bold cursor-pointer hover:text-ink transition-colors whitespace-nowrap"
                   onClick={() => toggleSort("orderNumber")}
                 >
                   <div className="flex items-center gap-1">
                     <span>PO #</span>
                     {sortField === "orderNumber" && (
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        {sortDirection === "asc" ? "arrow_upward" : "arrow_downward"}
-                      </span>
+                      <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} size={16} className="text-primary" />
                     )}
                   </div>
                 </th>
                 <th
-                  className="py-3.5 px-4 font-bold min-w-[240px] sm:w-72 max-w-[320px] cursor-pointer hover:text-ink transition-colors"
+                  className="py-2.5 px-4 font-bold min-w-[240px] sm:w-72 max-w-[320px] cursor-pointer hover:text-ink transition-colors"
                   onClick={() => toggleSort("retailerName")}
                 >
                   <div className="flex items-center gap-1">
                     <span>Retailer &amp; Destination</span>
                     {sortField === "retailerName" && (
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        {sortDirection === "asc" ? "arrow_upward" : "arrow_downward"}
-                      </span>
+                      <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} size={16} className="text-primary" />
                     )}
                   </div>
                 </th>
                 <th
-                  className="py-3.5 px-3 font-bold cursor-pointer hover:text-ink transition-colors whitespace-nowrap"
+                  className="py-2.5 px-3 font-bold cursor-pointer hover:text-ink transition-colors whitespace-nowrap"
                   onClick={() => toggleSort("date")}
                 >
                   <div className="flex items-center gap-1">
                     <span>Date</span>
                     {sortField === "date" && (
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        {sortDirection === "asc" ? "arrow_upward" : "arrow_downward"}
-                      </span>
+                      <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} size={16} className="text-primary" />
                     )}
                   </div>
                 </th>
                 <th
-                  className="py-3.5 px-3 font-bold text-right cursor-pointer hover:text-ink transition-colors whitespace-nowrap"
+                  className="py-2.5 px-3 font-bold text-right cursor-pointer hover:text-ink transition-colors whitespace-nowrap"
                   onClick={() => toggleSort("totalBoxes")}
                 >
                   <div className="flex items-center justify-end gap-1">
                     <span>Boxes</span>
                     {sortField === "totalBoxes" && (
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        {sortDirection === "asc" ? "arrow_upward" : "arrow_downward"}
-                      </span>
+                      <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} size={16} className="text-primary" />
                     )}
                   </div>
                 </th>
                 <th
-                  className="py-3.5 px-3 font-bold text-right cursor-pointer hover:text-ink transition-colors whitespace-nowrap"
+                  className="py-2.5 px-3 font-bold text-right cursor-pointer hover:text-ink transition-colors whitespace-nowrap"
                   onClick={() => toggleSort("grandTotal")}
                 >
                   <div className="flex items-center justify-end gap-1">
                     <span>Value (incl. GST)</span>
                     {sortField === "grandTotal" && (
-                      <span className="material-symbols-outlined text-[16px] text-primary">
-                        {sortDirection === "asc" ? "arrow_upward" : "arrow_downward"}
-                      </span>
+                      <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} size={16} className="text-primary" />
                     )}
                   </div>
                 </th>
-                <th className="py-3.5 px-3 font-bold">Status</th>
-                <th className="py-3.5 px-3 font-bold">Transporter / LR</th>
-                <th className="py-3.5 px-4 text-right font-bold">Action</th>
+                <th className="py-2.5 px-3 font-bold">Status</th>
+                <th className="py-2.5 px-3 font-bold">Transporter / LR</th>
+                <th className="py-2.5 px-4 text-right font-bold">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-xs sm:text-sm">
@@ -663,17 +653,17 @@ export default function DistributorOrders() {
                   <tr
                     key={order.id}
                     onClick={() => setViewDrawerOrder(order)}
-                    className="hover:bg-surface-raised/70 transition-colors cursor-pointer group"
+                    className="hover:bg-surface-raised transition-colors cursor-pointer group"
                   >
                     {/* PO # */}
-                    <td className="py-4 px-4 whitespace-nowrap font-mono num font-bold text-primary group-hover:underline">
+                    <td className="py-2.5 sm:py-3 px-4 whitespace-nowrap font-mono num font-bold text-primary group-hover:underline">
                       #{order.orderNumber}
                     </td>
 
                     {/* Wider Retailer column */}
-                    <td className="py-4 px-4 min-w-[240px] sm:w-72 max-w-[320px]">
+                    <td className="py-2.5 sm:py-3 px-4 min-w-[240px] sm:w-72 max-w-[320px]">
                       <div className="flex flex-col">
-                        <span className="font-bold text-ink leading-snug font-sans">
+                        <span className="font-bold text-ink leading-snug font-sans group-hover:text-primary transition-colors">
                           {order.retailerName}
                         </span>
                         <div className="flex items-center gap-1.5 text-[11px] text-ink-muted mt-0.5">
@@ -691,12 +681,12 @@ export default function DistributorOrders() {
                     </td>
 
                     {/* Date */}
-                    <td className="py-4 px-3 whitespace-nowrap font-mono num text-xs text-ink-muted">
+                    <td className="py-2.5 sm:py-3 px-3 whitespace-nowrap font-mono num text-xs text-ink-muted">
                       {order.date}
                     </td>
 
                     {/* Boxes (Right aligned, mono) */}
-                    <td className="py-4 px-3 text-right whitespace-nowrap font-mono num font-bold text-ink">
+                    <td className="py-2.5 sm:py-3 px-3 text-right whitespace-nowrap font-mono num font-bold text-ink">
                       {order.totalBoxes} bx
                       <span className="block text-[11px] font-normal text-ink-muted">
                         {order.totalPieces} pcs
@@ -704,7 +694,7 @@ export default function DistributorOrders() {
                     </td>
 
                     {/* Value (Right aligned, mono) */}
-                    <td className="py-4 px-3 text-right whitespace-nowrap font-mono num font-bold text-ink">
+                    <td className="py-2.5 sm:py-3 px-3 text-right whitespace-nowrap font-mono num font-bold text-ink">
                       {formatINR(order.grandTotal)}
                       <span className="block text-[10px] font-normal text-ink-muted">
                         {formatINR(order.subtotal)} + GST
@@ -712,7 +702,7 @@ export default function DistributorOrders() {
                     </td>
 
                     {/* Status Chip from shared Badge */}
-                    <td className="py-4 px-3 whitespace-nowrap">
+                    <td className="py-2.5 sm:py-3 px-3 whitespace-nowrap">
                       <StatusChip
                         variant={getStatusVariant(order.status)}
                         size="sm"
@@ -724,7 +714,7 @@ export default function DistributorOrders() {
                     </td>
 
                     {/* Transporter / LR */}
-                    <td className="py-4 px-3 text-xs">
+                    <td className="py-2.5 sm:py-3 px-3 text-xs">
                       {order.lrNumber ? (
                         <div className="flex flex-col">
                           <span className="font-mono num font-bold text-success">
@@ -743,7 +733,7 @@ export default function DistributorOrders() {
 
                     {/* Action buttons by stage */}
                     <td
-                      className="py-4 px-4 text-right whitespace-nowrap"
+                      className="py-2.5 sm:py-3 px-4 text-right whitespace-nowrap"
                       onClick={e => e.stopPropagation()}
                     >
                       <div className="flex items-center justify-end gap-1.5">
@@ -763,7 +753,7 @@ export default function DistributorOrders() {
                             onClick={() => openCreditCheckModal(order)}
                             className="px-3 py-1.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[15px]">verified_user</span>
+                            <Icon name="verified_user" size={15} />
                             <span>Approve PO</span>
                           </button>
                         )}
@@ -773,9 +763,9 @@ export default function DistributorOrders() {
                           <button
                             type="button"
                             onClick={() => handleCreateInvoice(order)}
-                            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
+                            className="px-3.5 py-1.5 rounded-md bg-success hover:opacity-90 text-white font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[15px]">receipt_long</span>
+                            <Icon name="receipt_long" size={15} />
                             <span>Create Invoice</span>
                           </button>
                         )}
@@ -785,9 +775,9 @@ export default function DistributorOrders() {
                           <button
                             type="button"
                             onClick={() => handleMarkPacked(order)}
-                            className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
+                            className="px-3.5 py-1.5 rounded-md bg-primary hover:bg-primary-hover text-white font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[15px]">inventory</span>
+                            <Icon name="inventory" size={15} />
                             <span>Mark Packed</span>
                           </button>
                         )}
@@ -797,9 +787,9 @@ export default function DistributorOrders() {
                           <button
                             type="button"
                             onClick={() => openDispatchModal(order)}
-                            className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
+                            className="px-3.5 py-1.5 rounded-md bg-accent hover:opacity-90 text-background font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[15px]">local_shipping</span>
+                            <Icon name="local_shipping" size={15} />
                             <span>Dispatch</span>
                           </button>
                         )}
@@ -809,17 +799,17 @@ export default function DistributorOrders() {
                           <button
                             type="button"
                             onClick={() => handleMarkDelivered(order)}
-                            className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
+                            className="px-3.5 py-1.5 rounded-md bg-success hover:opacity-90 text-white font-bold text-xs shadow-soft-sm transition-all cursor-pointer flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[15px]">done_all</span>
+                            <Icon name="done_all" size={15} />
                             <span>Mark Delivered</span>
                           </button>
                         )}
 
                         {/* Stage 6: Delivered */}
                         {order.status === "Delivered" && (
-                          <span className="inline-flex items-center gap-1 text-emerald-700 font-bold text-xs px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-200">
-                            <span className="material-symbols-outlined text-[15px]">check_circle</span>
+                          <span className="inline-flex items-center gap-1 text-success font-bold text-xs px-2 py-1 bg-success/10 rounded-md border border-success/30">
+                            <Icon name="check_circle" size={15} />
                             <span>Completed</span>
                           </span>
                         )}
@@ -831,16 +821,12 @@ export default function DistributorOrders() {
 
               {filteredOrders.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center">
-                    <span className="material-symbols-outlined text-[40px] text-ink-muted block mb-2">
-                      inventory_2
-                    </span>
-                    <span className="font-bold text-ink text-sm block">
-                      No orders found in this view
-                    </span>
-                    <p className="text-xs text-ink-muted mt-1 max-w-sm mx-auto">
-                      Adjust your search query or switch tabs to see other wholesale purchase orders.
-                    </p>
+                  <td colSpan={8} className="py-12">
+                    <EmptyState
+                      icon={<Icon name="inbox" size={28} />}
+                      title="No orders found in this view"
+                      description="Adjust your search query or switch tabs to see other wholesale purchase orders."
+                    />
                   </td>
                 </tr>
               )}
@@ -854,7 +840,7 @@ export default function DistributorOrders() {
       {/* ==================================================================== */}
       {viewDrawerOrder && (
         <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={e => {
             if (e.target === e.currentTarget) setViewDrawerOrder(null);
           }}
@@ -905,7 +891,7 @@ export default function DistributorOrders() {
                 onClick={() => setViewDrawerOrder(null)}
                 className="w-8 h-8 rounded-md bg-surface border border-border text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer shadow-soft-sm"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
@@ -915,7 +901,7 @@ export default function DistributorOrders() {
                 <span className="text-xs font-bold text-ink uppercase tracking-wider block">
                   Order Status Timeline
                 </span>
-                <div className="p-4 bg-surface-raised rounded-2xl border border-border">
+                <div className="p-4 bg-surface-raised rounded-lg border border-border">
                   <div className="relative pl-6 space-y-5 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-raised">
                     {[
                       {
@@ -969,16 +955,16 @@ export default function DistributorOrders() {
                     ].map(stage => (
                       <div key={stage.key} className="relative">
                         <div
-                          className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white ${
+                          className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-surface ${
                             stage.active
-                              ? "bg-primary text-white ring-blue-100 animate-pulse"
+                              ? "bg-primary text-white ring-primary/20 animate-pulse"
                               : stage.done
-                              ? "bg-emerald-500 text-white"
+                              ? "bg-success text-white"
                               : "bg-surface-raised text-ink-muted"
                           }`}
                         >
                           {stage.done && !stage.active ? (
-                            <span className="material-symbols-outlined text-[13px]">check</span>
+                            <Icon name="check" size={13} />
                           ) : stage.active ? (
                             <span className="w-2 h-2 rounded-full bg-surface" />
                           ) : (
@@ -1016,7 +1002,7 @@ export default function DistributorOrders() {
                   </span>
                 </div>
 
-                <div className="divide-y divide-border border border-border rounded-2xl overflow-hidden text-xs bg-surface">
+                <div className="divide-y divide-border border border-border rounded-lg overflow-hidden text-xs bg-surface">
                   {viewDrawerOrder.items.map((item, idx) => {
                     const hubStockBoxes = 140 - idx * 25; // realistic hub availability
                     const lineSubtotal = item.units * item.rate;
@@ -1056,8 +1042,8 @@ export default function DistributorOrders() {
                         {/* Hub Stock Availability Badge */}
                         <div className="flex items-center justify-between pt-1 border-t border-border text-[11px]">
                           <span className="text-ink-muted">Hub Stock Level:</span>
-                          <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="inline-flex items-center gap-1 font-semibold text-success bg-success/10 px-2 py-0.5 rounded border border-success/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-success" />
                             <span>In Stock: {hubStockBoxes} boxes available</span>
                           </span>
                         </div>
@@ -1068,7 +1054,7 @@ export default function DistributorOrders() {
               </div>
 
               {/* Financial & GST Breakdown */}
-              <div className="p-4 rounded-2xl bg-surface-raised border border-border space-y-2 text-xs">
+              <div className="p-4 rounded-lg bg-surface-raised border border-border space-y-2 text-xs">
                 <span className="font-bold text-ink uppercase tracking-wider block text-[11px]">
                   Financial &amp; Tax Summary
                 </span>
@@ -1096,12 +1082,12 @@ export default function DistributorOrders() {
 
               {/* Transporter / LR Consignment Details */}
               {(viewDrawerOrder.lrNumber || viewDrawerOrder.transporter) && (
-                <div className="p-4 rounded-2xl bg-primary/10/60 border border-primary/20 space-y-2.5 text-xs">
+                <div className="p-4 rounded-lg bg-primary/10/60 border border-primary/20 space-y-2.5 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-blue-900 uppercase tracking-wider text-[11px]">
+                    <span className="font-bold text-primary uppercase tracking-wider text-[11px]">
                       Lorry Freight Consignment
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                    <span className="px-2 py-0.5 rounded bg-success/15 text-success border border-success/30 font-bold text-[10px]">
                       Waybill Issued
                     </span>
                   </div>
@@ -1140,7 +1126,7 @@ export default function DistributorOrders() {
               <button
                 type="button"
                 onClick={() => setViewDrawerOrder(null)}
-                className="flex-1 h-11 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs cursor-pointer transition-colors"
+                className="flex-1 h-11 rounded-md bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs cursor-pointer transition-colors"
               >
                 Close Drawer
               </button>
@@ -1149,9 +1135,9 @@ export default function DistributorOrders() {
                 <button
                   type="button"
                   onClick={() => openCreditCheckModal(viewDrawerOrder)}
-                  className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                  className="flex-1 h-11 rounded-md bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
                 >
-                  <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                  <Icon name="verified_user" size={18} />
                   <span>Approve PO</span>
                 </button>
               )}
@@ -1160,9 +1146,9 @@ export default function DistributorOrders() {
                 <button
                   type="button"
                   onClick={() => handleCreateInvoice(viewDrawerOrder)}
-                  className="flex-1 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                  className="flex-1 h-11 rounded-md bg-success hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
                 >
-                  <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                  <Icon name="receipt_long" size={18} />
                   <span>Create Invoice</span>
                 </button>
               )}
@@ -1171,9 +1157,9 @@ export default function DistributorOrders() {
                 <button
                   type="button"
                   onClick={() => handleMarkPacked(viewDrawerOrder)}
-                  className="flex-1 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                  className="flex-1 h-11 rounded-md bg-primary hover:bg-primary-hover text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
                 >
-                  <span className="material-symbols-outlined text-[18px]">inventory</span>
+                  <Icon name="inventory" size={18} />
                   <span>Mark Packed</span>
                 </button>
               )}
@@ -1182,9 +1168,9 @@ export default function DistributorOrders() {
                 <button
                   type="button"
                   onClick={() => openDispatchModal(viewDrawerOrder)}
-                  className="flex-1 h-11 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                  className="flex-1 h-11 rounded-md bg-accent hover:opacity-90 text-background font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
                 >
-                  <span className="material-symbols-outlined text-[18px]">local_shipping</span>
+                  <Icon name="local_shipping" size={18} />
                   <span>Dispatch Lorry</span>
                 </button>
               )}
@@ -1193,9 +1179,9 @@ export default function DistributorOrders() {
                 <button
                   type="button"
                   onClick={() => handleMarkDelivered(viewDrawerOrder)}
-                  className="flex-1 h-11 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                  className="flex-1 h-11 rounded-md bg-success hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
                 >
-                  <span className="material-symbols-outlined text-[18px]">done_all</span>
+                  <Icon name="done_all" size={18} />
                   <span>Mark Delivered</span>
                 </button>
               )}
@@ -1209,7 +1195,7 @@ export default function DistributorOrders() {
       {/* ==================================================================== */}
       {creditCheckOrder && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200"
           onClick={e => {
             if (e.target === e.currentTarget) setCreditCheckOrder(null);
           }}
@@ -1220,7 +1206,7 @@ export default function DistributorOrders() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="w-8 h-8 rounded-md bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold">
-                    <span className="material-symbols-outlined text-[20px]">credit_score</span>
+                    <Icon name="credit_score" size={20} />
                   </span>
                   <div>
                     <h3 className="text-lg font-bold text-ink font-sans">
@@ -1237,16 +1223,14 @@ export default function DistributorOrders() {
                 onClick={() => setCreditCheckOrder(null)}
                 className="w-8 h-8 rounded-md bg-surface-raised border border-border text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer shadow-soft-sm"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
             {/* Requirement 5: Clear Success/Warning/Danger Credit-Check Result Banner */}
             {currentOrderRetailer?.creditHold ? (
               <div className="p-4 bg-danger/10 rounded-md border-2 border-danger/40 text-danger flex items-start gap-3 shadow-soft-sm">
-                <span className="material-symbols-outlined text-[24px] text-danger shrink-0 mt-0.5">
-                  block
-                </span>
+                <Icon name="block" size={24} className="text-danger shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-bold text-sm uppercase tracking-wide font-sans">
@@ -1261,26 +1245,22 @@ export default function DistributorOrders() {
               </div>
             ) : hasOverdue ? (
               <div className="p-4 bg-warning/10 rounded-md border-2 border-warning/40 text-warning flex items-start gap-3 shadow-soft-sm">
-                <span className="material-symbols-outlined text-[24px] text-warning shrink-0 mt-0.5">
-                  warning
-                </span>
+                <Icon name="warning" size={24} className="text-warning shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-bold text-sm uppercase tracking-wide font-sans">
                       Credit Check Result: WARNING (Overdue Invoices Exist)
                     </span>
-                    <Badge variant="warning" size="sm">Overdue ₹{overdue.toLocaleString("en-IN")}</Badge>
+                    <Badge variant="warning" size="sm">Overdue {formatINR(overdue)}</Badge>
                   </div>
                   <p className="text-xs text-warning/90 mt-1 leading-relaxed">
-                    Retailer has an overdue balance of <strong>₹{overdue.toLocaleString("en-IN")}</strong> past credit terms on invoice <strong>INV-0079</strong>. Requires manager approval or override to release this PO.
+                    Retailer has an overdue balance of <strong>{formatINR(overdue)}</strong> past credit terms on invoice <strong>{invoices.find(i => i.retailerId === creditCheckOrder?.retailerId && i.balanceDue > 0)?.invoiceNumber || "overdue invoice"}</strong>. Requires manager approval or override to release this PO.
                   </p>
                 </div>
               </div>
             ) : (
               <div className="p-4 bg-success/10 rounded-md border-2 border-success/40 text-success flex items-start gap-3 shadow-soft-sm">
-                <span className="material-symbols-outlined text-[24px] text-success shrink-0 mt-0.5">
-                  check_circle
-                </span>
+                <Icon name="check_circle" size={24} className="text-success shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-bold text-sm uppercase tracking-wide font-sans">
@@ -1365,9 +1345,7 @@ export default function DistributorOrders() {
                   Audit Status
                 </span>
                 <span className="text-sm font-black flex items-center gap-1 mt-0.5">
-                  <span className="material-symbols-outlined text-[18px]">
-                    {checkStatus === "WARNING" ? "warning" : "check_circle"}
-                  </span>
+                  <Icon name={checkStatus === "WARNING" ? "warning" : "check_circle"} size={18} />
                   <span>{checkStatus}</span>
                 </span>
               </div>
@@ -1384,7 +1362,7 @@ export default function DistributorOrders() {
                 </span>
               </div>
 
-              <div className="border border-border rounded-xl divide-y divide-border max-h-48 overflow-y-auto">
+              <div className="border border-border rounded-md divide-y divide-border max-h-48 overflow-y-auto">
                 {editableOrderItems.map((item, idx) => {
                   const hubStock = 150 - idx * 30;
 
@@ -1399,7 +1377,7 @@ export default function DistributorOrders() {
                           <span>•</span>
                           <span>{item.size}</span>
                           <span>•</span>
-                          <span className="text-emerald-700 font-semibold">
+                          <span className="text-success font-semibold">
                             Hub Available: {hubStock} bx
                           </span>
                         </div>
@@ -1441,57 +1419,57 @@ export default function DistributorOrders() {
                 <button
                   type="button"
                   onClick={() => handleConfirmApproval(false)}
-                  className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-all"
+                  className="flex-1 py-3 px-4 rounded-md bg-success hover:opacity-90 text-background font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-all"
                 >
-                  <span className="material-symbols-outlined text-[18px]">done</span>
+                  <Icon name="done" size={18} />
                   <span>Standard Approve</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveCreditAction(activeCreditAction === "override" ? null : "override")}
-                  className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer border transition-all ${
+                  className={`flex-1 py-3 px-4 rounded-md font-bold text-xs flex items-center justify-center gap-2 cursor-pointer border transition-all ${
                     activeCreditAction === "override"
-                      ? "bg-amber-500 text-ink border-amber-600 shadow-sm"
-                      : "bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200"
+                      ? "bg-warning text-background border-warning shadow-sm"
+                      : "bg-warning/10 hover:bg-warning/20 text-warning border-warning/30"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">verified</span>
+                  <Icon name="verified" size={18} />
                   <span>Approve with Override</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setActiveCreditAction(activeCreditAction === "reject" ? null : "reject")}
-                  className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 cursor-pointer border transition-all ${
+                  className={`py-3 px-4 rounded-md font-bold text-xs flex items-center justify-center gap-2 cursor-pointer border transition-all ${
                     activeCreditAction === "reject"
-                      ? "bg-rose-600 text-white border-rose-700"
-                      : "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200"
+                      ? "bg-danger text-white border-danger/40"
+                      : "bg-danger/10 hover:bg-danger/20 text-danger border-danger/30"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">cancel</span>
+                  <Icon name="cancel" size={18} />
                   <span>Reject PO</span>
                 </button>
               </div>
 
               {/* Override Reason Form */}
               {activeCreditAction === "override" && (
-                <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-300 space-y-3 animate-in fade-in">
-                  <label className="text-xs font-bold text-amber-950 block">
-                    Manager Override Justification <span className="text-rose-600">*</span>:
+                <div className="p-4 bg-warning/10 rounded-lg border border-warning/30 space-y-3 animate-in fade-in">
+                  <label className="text-xs font-bold text-ink block">
+                    Manager Override Justification <span className="text-danger">*</span>:
                   </label>
                   <textarea
                     rows={2}
                     value={overrideReason}
                     onChange={e => setOverrideReason(e.target.value)}
-                    placeholder="E.g. Proprietor promised RTGS settlement of INV-0079 by 5 PM today; approved by Wholesale Lead."
-                    className="w-full p-2.5 rounded-xl bg-surface border border-amber-300 text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-amber-500 font-sans"
+                    placeholder="E.g. Proprietor promised RTGS settlement by 5 PM today; approved by Wholesale Lead."
+                    className="w-full p-2.5 rounded-md bg-surface border border-warning/40 text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-warning/20 font-sans"
                   />
                   <button
                     type="button"
                     onClick={() => handleConfirmApproval(true)}
                     disabled={!overrideReason.trim()}
-                    className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-surface-raised disabled:text-ink-muted text-ink font-black text-xs cursor-pointer transition-all shadow-soft-sm"
+                    className="w-full py-2.5 rounded-md bg-warning text-background font-bold text-xs cursor-pointer transition-all shadow-soft-sm"
                   >
                     Confirm Override &amp; Release PO
                   </button>
@@ -1500,22 +1478,22 @@ export default function DistributorOrders() {
 
               {/* Rejection Reason Form */}
               {activeCreditAction === "reject" && (
-                <div className="p-4 bg-rose-50 rounded-2xl border border-rose-300 space-y-3 animate-in fade-in">
-                  <label className="text-xs font-bold text-rose-950 block">
-                    Rejection Reason <span className="text-rose-600">*</span>:
+                <div className="p-4 bg-danger/10 rounded-lg border border-danger/30 space-y-3 animate-in fade-in">
+                  <label className="text-xs font-bold text-ink block">
+                    Rejection Reason <span className="text-danger">*</span>:
                   </label>
                   <textarea
                     rows={2}
                     value={rejectionReason}
                     onChange={e => setRejectionReason(e.target.value)}
-                    placeholder="E.g. Outstanding overdue balance of ₹31,000 exceeds 30-day term. Settle INV-0079 before placing new orders."
-                    className="w-full p-2.5 rounded-xl bg-surface border border-rose-300 text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-rose-500 font-sans"
+                    placeholder="E.g. Outstanding overdue balance exceeds credit term. Settle overdue invoices before placing new orders."
+                    className="w-full p-2.5 rounded-md bg-surface border border-danger/40 text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-danger/20 font-sans"
                   />
                   <button
                     type="button"
                     onClick={handleConfirmRejection}
                     disabled={!rejectionReason.trim()}
-                    className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:bg-surface-raised disabled:text-ink-muted text-white font-bold text-xs cursor-pointer transition-all shadow-soft-sm"
+                    className="w-full py-2.5 rounded-md bg-danger hover:opacity-90 disabled:bg-surface-raised disabled:text-ink-muted text-white font-bold text-xs cursor-pointer transition-all shadow-soft-sm"
                   >
                     Confirm Rejection &amp; Notify Retailer
                   </button>
@@ -1527,7 +1505,7 @@ export default function DistributorOrders() {
               <button
                 type="button"
                 onClick={() => setCreditCheckOrder(null)}
-                className="px-4 py-2 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs cursor-pointer"
+                className="px-4 py-2 rounded-md bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs cursor-pointer"
               >
                 Cancel
               </button>
@@ -1541,7 +1519,7 @@ export default function DistributorOrders() {
       {/* ==================================================================== */}
       {dispatchOrder && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200"
           onClick={e => {
             if (e.target === e.currentTarget) setDispatchOrder(null);
           }}
@@ -1564,7 +1542,7 @@ export default function DistributorOrders() {
                 onClick={() => setDispatchOrder(null)}
                 className="w-8 h-8 rounded-md bg-surface-raised border border-border text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer shadow-soft-sm"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
@@ -1576,7 +1554,7 @@ export default function DistributorOrders() {
                 <select
                   value={dispatchTransporter}
                   onChange={e => setDispatchTransporter(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-surface-raised border border-border font-semibold text-ink focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full p-2.5 rounded-md bg-surface-raised border border-border font-semibold text-ink focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="Navata Road Transport">Navata Road Transport (Direct Secunderabad - Siddipet)</option>
                   <option value="VRL Logistics">VRL Logistics (Express B2B)</option>
@@ -1587,14 +1565,14 @@ export default function DistributorOrders() {
 
               <div>
                 <label className="text-ink font-bold block mb-1">
-                  Lorry Receipt (LR) Number <span className="text-rose-600">*</span>:
+                  Lorry Receipt (LR) Number <span className="text-danger">*</span>:
                 </label>
                 <input
                   type="text"
                   value={dispatchLR}
                   onChange={e => setDispatchLR(e.target.value)}
                   placeholder="E.g. NRT-88492-SDP"
-                  className="w-full p-2.5 rounded-xl bg-surface border border-border font-mono font-bold text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full p-2.5 rounded-md bg-surface border border-border font-mono font-bold text-ink focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
@@ -1607,7 +1585,7 @@ export default function DistributorOrders() {
                   value={dispatchEwayBill}
                   onChange={e => setDispatchEwayBill(e.target.value)}
                   placeholder="E.g. 241098452103"
-                  className="w-full p-2.5 rounded-xl bg-surface border border-border font-mono font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full p-2.5 rounded-md bg-surface border border-border font-mono font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
@@ -1619,13 +1597,13 @@ export default function DistributorOrders() {
                   type="text"
                   value={dispatchDate}
                   onChange={e => setDispatchDate(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-surface border border-border font-mono text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full p-2.5 rounded-md bg-surface border border-border font-mono text-ink focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
-              <div className="p-3 bg-primary/10/70 rounded-xl border border-primary/20 text-[11px] text-blue-900">
+              <div className="p-3 bg-primary/10/70 rounded-md border border-primary/20 text-[11px] text-blue-900">
                 <span className="font-bold block">Consignment Sync Notice:</span>
-                Assigning this LR number will automatically feed into the retailer&apos;s Track Lorry Receipt drawer and notify Sri Laxmi Narasimha Textiles.
+                Assigning this LR number will automatically feed into the retailer&apos;s Track Lorry Receipt drawer and notify {dispatchOrder?.retailerName || "the retailer"}.
               </div>
             </div>
 
@@ -1633,16 +1611,16 @@ export default function DistributorOrders() {
               <button
                 type="button"
                 onClick={() => setDispatchOrder(null)}
-                className="flex-1 h-11 rounded-xl bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs cursor-pointer"
+                className="flex-1 h-11 rounded-md bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDispatch}
-                className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
+                className="flex-1 h-11 rounded-md bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
               >
-                <span className="material-symbols-outlined text-[18px]">local_shipping</span>
+                <Icon name="local_shipping" size={18} />
                 <span>Confirm Dispatch</span>
               </button>
             </div>

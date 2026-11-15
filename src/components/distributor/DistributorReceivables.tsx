@@ -1,4 +1,5 @@
 "use client";
+import { Icon } from "@/components/ui/Icon";
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
@@ -296,7 +297,7 @@ export const DistributorReceivables: React.FC = () => {
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
             <span>Finance</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <Icon name="chevron_right" size={14} />
             <span className="text-ink font-bold">Receivables</span>
           </div>
           <h1 className="text-2xl font-bold text-ink tracking-tight">Receivables</h1>
@@ -308,10 +309,10 @@ export const DistributorReceivables: React.FC = () => {
           <span className="text-xs text-ink-muted font-medium">As of {formattedDate}</span>
           <button
             onClick={handleExportCSV}
-            className="h-9 px-3.5 rounded-xl bg-surface border border-border hover:bg-surface-raised text-ink font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-soft-sm"
+            className="h-9 px-3.5 rounded-md bg-surface border border-border hover:bg-surface-raised text-ink font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-soft-sm"
             type="button"
           >
-            <span className="material-symbols-outlined text-[16px]">download</span>
+            <Icon name="download" size={16} />
             <span>Export CSV</span>
           </button>
           <button
@@ -319,10 +320,10 @@ export const DistributorReceivables: React.FC = () => {
               setReceiptPrefillRetailerId(null);
               setIsReceiptModalOpen(true);
             }}
-            className="h-9 px-4 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer active:scale-98"
+            className="h-9 px-4 rounded-md bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer active:scale-98"
             type="button"
           >
-            <span className="material-symbols-outlined text-[16px]">add</span>
+            <Icon name="add" size={16} />
             <span>Record receipt</span>
           </button>
         </div>
@@ -336,9 +337,7 @@ export const DistributorReceivables: React.FC = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-ink-muted font-mono">
               Total Owed
             </span>
-            <span className="material-symbols-outlined text-ink-muted text-[20px]">
-              account_balance_wallet
-            </span>
+            <Icon name="account_balance_wallet" size={20} className="text-ink-muted" />
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-2xl font-black text-ink tracking-tight font-mono num">
@@ -356,9 +355,7 @@ export const DistributorReceivables: React.FC = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-danger font-mono">
               Overdue
             </span>
-            <span className="material-symbols-outlined text-danger text-[20px]">
-              error_outline
-            </span>
+            <Icon name="error_outline" size={20} className="text-danger" />
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-2xl font-black text-danger tracking-tight font-mono num">
@@ -376,9 +373,7 @@ export const DistributorReceivables: React.FC = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-ink-muted font-mono">
               Not Yet Due
             </span>
-            <span className="material-symbols-outlined text-success text-[20px]">
-              schedule
-            </span>
+            <Icon name="schedule" size={20} className="text-success" />
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-2xl font-black text-ink tracking-tight font-mono num">
@@ -396,7 +391,7 @@ export const DistributorReceivables: React.FC = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-ink-muted font-mono">
               Open Invoices
             </span>
-            <span className="material-symbols-outlined text-ink-muted text-[20px]">receipt</span>
+            <Icon name="receipt" size={20} className="text-ink-muted" />
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-2xl font-black text-ink tracking-tight font-mono num">
@@ -437,12 +432,12 @@ export const DistributorReceivables: React.FC = () => {
               onClick={() => setAgeFilter(ageFilter === "1-30" ? "all" : "1-30")}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer text-left ${
                 ageFilter === "1-30"
-                  ? "bg-warning/10 border-warning/30 text-warning font-bold"
+                  ? "bg-primary/10 border-primary/30 text-primary font-bold"
                   : "bg-surface-raised border-border text-ink-muted hover:text-ink"
               }`}
               type="button"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-warning shrink-0"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></span>
               <span className="truncate">
                 1–30 days: <strong className="font-mono num">{formatINR(ageing.d1_30)}</strong> ({ageing.d1_30Pct}%)
               </span>
@@ -452,12 +447,12 @@ export const DistributorReceivables: React.FC = () => {
               onClick={() => setAgeFilter(ageFilter === "31-60" ? "all" : "31-60")}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-colors cursor-pointer text-left ${
                 ageFilter === "31-60"
-                  ? "bg-accent/10 border-accent/30 text-accent font-bold"
+                  ? "bg-warning/10 border-warning/30 text-warning font-bold"
                   : "bg-surface-raised border-border text-ink-muted hover:text-ink"
               }`}
               type="button"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-warning shrink-0"></span>
               <span className="truncate">
                 31–60 days: <strong className="font-mono num">{formatINR(ageing.d31_60)}</strong> ({ageing.d31_60Pct}%)
               </span>
@@ -489,13 +484,13 @@ export const DistributorReceivables: React.FC = () => {
             onClick={() => setAgeFilter(ageFilter === "not_due" ? "all" : "not_due")}
           ></div>
           <div
-            className="h-full bg-warning hover:opacity-90 transition-opacity"
+            className="h-full bg-primary hover:opacity-90 transition-opacity"
             style={{ width: `${ageing.d1_30Pct}%` }}
-            title={`1-30 days overdue: ${formatINR(ageing.d1_30)}`}
+            title={`1-30 days: ${formatINR(ageing.d1_30)}`}
             onClick={() => setAgeFilter(ageFilter === "1-30" ? "all" : "1-30")}
           ></div>
           <div
-            className="h-full bg-accent hover:opacity-90 transition-opacity"
+            className="h-full bg-warning hover:opacity-90 transition-opacity"
             style={{ width: `${ageing.d31_60Pct}%` }}
             title={`31-60 days overdue: ${formatINR(ageing.d31_60)}`}
             onClick={() => setAgeFilter(ageFilter === "31-60" ? "all" : "31-60")}
@@ -513,11 +508,9 @@ export const DistributorReceivables: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           <div className="relative w-72">
-            <span className="material-symbols-outlined absolute left-3 top-2.5 text-ink-muted text-[18px]">
-              search
-            </span>
+            <Icon name="search" size={18} className="absolute left-3 top-2.5 text-ink-muted" />
             <input
-              className="w-full h-10 pl-9 pr-3 bg-surface border border-border rounded-xl text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-soft-sm"
+              className="w-full h-10 pl-9 pr-3 bg-surface border border-border rounded-md text-xs text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-soft-sm"
               placeholder="Search retailer, code, or town..."
               type="text"
               value={searchQuery}
@@ -535,7 +528,7 @@ export const DistributorReceivables: React.FC = () => {
                 setDistrictFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="h-10 px-3 bg-surface border border-border rounded-xl text-xs font-semibold text-ink shadow-soft-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+              className="h-10 px-3 bg-surface border border-border rounded-md text-xs font-semibold text-ink shadow-soft-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
             >
               <option value="all">District: All districts</option>
               {districts.map(d => (
@@ -551,7 +544,7 @@ export const DistributorReceivables: React.FC = () => {
                 setAgeFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="h-10 px-3 bg-surface border border-border rounded-xl text-xs font-semibold text-ink shadow-soft-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+              className="h-10 px-3 bg-surface border border-border rounded-md text-xs font-semibold text-ink shadow-soft-sm focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
             >
               <option value="all">Overdue Age: All</option>
               <option value="1-30">1–30 days overdue</option>
@@ -572,7 +565,7 @@ export const DistributorReceivables: React.FC = () => {
               setPageSize(val);
               setCurrentPage(1);
             }}
-            className="h-9 px-2.5 bg-surface border border-border rounded-xl text-xs font-semibold text-ink shadow-soft-sm focus:outline-none cursor-pointer"
+            className="h-9 px-2.5 bg-surface border border-border rounded-md text-xs font-semibold text-ink shadow-soft-sm focus:outline-none cursor-pointer"
           >
             <option value={10}>10 per page</option>
             <option value={25}>25 per page</option>
@@ -583,7 +576,7 @@ export const DistributorReceivables: React.FC = () => {
 
       {/* Requirement 1: Bulk Action Floating Bar when rows are selected */}
       {selectedRowIds.length > 0 && (
-        <div className="bg-ink text-surface rounded-2xl px-5 py-3 shadow-2xl flex flex-wrap items-center justify-between gap-4 border border-border animate-in fade-in slide-in-from-bottom-2">
+        <div className="bg-ink text-surface rounded-lg px-5 py-3 shadow-2xl flex flex-wrap items-center justify-between gap-4 border border-border animate-in fade-in slide-in-from-bottom-2">
           <div className="flex items-center gap-3">
             <span className="px-2.5 py-1 rounded-full bg-primary/100/20 text-blue-300 font-bold text-xs border border-blue-400/30">
               {selectedRowIds.length} retailers selected
@@ -596,35 +589,35 @@ export const DistributorReceivables: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={handleBulkWhatsAppReminders}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              className="px-3.5 py-2 rounded-md bg-success hover:opacity-90 text-background font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
               type="button"
             >
-              <span className="material-symbols-outlined text-[16px]">chat</span>
+              <Icon name="chat" size={16} />
               <span>Send WhatsApp Reminders</span>
             </button>
 
             <button
               onClick={handleBulkRecordReceipt}
-              className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/100 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+              className="px-3.5 py-2 rounded-md bg-primary hover:bg-primary/100 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
               type="button"
             >
-              <span className="material-symbols-outlined text-[16px]">receipt_long</span>
+              <Icon name="receipt_long" size={16} />
               <span>Record Receipt</span>
             </button>
 
             {/* Requirement 6: Credit Hold Bulk Action */}
             <button
               onClick={handleBulkToggleHold}
-              className="px-3 py-2 rounded-xl bg-surface-raised hover:bg-surface text-ink-muted font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-border"
+              className="px-3 py-2 rounded-md bg-surface-raised hover:bg-surface text-ink-muted font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-border"
               type="button"
             >
-              <span className="material-symbols-outlined text-[16px]">lock</span>
+              <Icon name="lock" size={16} />
               <span>Toggle Credit Hold</span>
             </button>
 
             <button
               onClick={() => setSelectedRowIds([])}
-              className="px-3 py-2 rounded-xl text-ink-muted hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+              className="px-3 py-2 rounded-md text-ink-muted hover:text-white text-xs font-semibold transition-colors cursor-pointer"
               type="button"
             >
               Clear
@@ -636,12 +629,12 @@ export const DistributorReceivables: React.FC = () => {
       {/* Split View: Table (Left) + Detail Drawer (Right, when selected) */}
       <div className="flex flex-col lg:flex-row items-start gap-5 w-full">
         {/* Table Container: Expands to full width when no row selected */}
-        <div className="flex-1 bg-surface rounded-2xl shadow-soft-sm border border-border overflow-hidden flex flex-col w-full min-w-0">
+        <div className="flex-1 bg-surface rounded-lg shadow-soft-sm border border-border overflow-hidden flex flex-col w-full min-w-0">
           <div className="overflow-x-auto w-full">
             <table className="w-full min-w-[1050px] text-left border-collapse">
-              <thead>
-                <tr className="bg-surface-raised border-b border-border text-ink-muted text-[11px] font-bold uppercase tracking-wider select-none">
-                  <th className="py-3 px-3.5 w-10 text-center">
+              <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border text-ink-muted text-[11px] font-bold uppercase tracking-wider font-mono select-none">
+                <tr>
+                  <th className="py-2.5 px-3.5 w-10 text-center">
                     <input
                       type="checkbox"
                       checked={
@@ -649,18 +642,18 @@ export const DistributorReceivables: React.FC = () => {
                         paginatedLedgers.every(l => selectedRowIds.includes(l.retailer.id))
                       }
                       onChange={handleSelectAllCurrentPage}
-                      className="rounded w-4 h-4 accent-blue-600 cursor-pointer"
+                      className="rounded w-4 h-4 accent-primary cursor-pointer"
                     />
                   </th>
-                  <th className="py-3 px-3 min-w-[220px]">Retailer / Shop</th>
-                  <th className="py-3 px-3 text-right min-w-[100px]">Not yet due</th>
-                  <th className="py-3 px-3 text-right min-w-[105px]">1–30 days</th>
-                  <th className="py-3 px-3 text-right min-w-[105px]">31–60 days</th>
-                  <th className="py-3 px-3 text-right min-w-[105px]">60+ days</th>
-                  <th className="py-3 px-3 text-right min-w-[120px]">Total owed</th>
-                  <th className="py-3 px-4 min-w-[150px]">Credit used</th>
+                  <th className="py-2.5 px-3 min-w-[220px]">Retailer / Shop</th>
+                  <th className="py-2.5 px-3 text-right min-w-[100px]">Not yet due</th>
+                  <th className="py-2.5 px-3 text-right min-w-[105px]">1–30 days</th>
+                  <th className="py-2.5 px-3 text-right min-w-[105px]">31–60 days</th>
+                  <th className="py-2.5 px-3 text-right min-w-[105px]">60+ days</th>
+                  <th className="py-2.5 px-3 text-right min-w-[120px]">Total owed</th>
+                  <th className="py-2.5 px-4 min-w-[150px]">Credit used</th>
                   {/* Requirement 1: ACTION column is permanently visible and spacious */}
-                  <th className="py-3 px-3.5 text-center min-w-[130px]">Actions</th>
+                  <th className="py-2.5 px-3.5 text-center min-w-[130px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-xs text-ink">
@@ -673,100 +666,100 @@ export const DistributorReceivables: React.FC = () => {
                     <tr
                       key={item.retailer.id}
                       onClick={() => setSelectedRetailerId(isDrawerActive ? null : item.retailer.id)}
-                      className={`transition-colors cursor-pointer ${
+                      className={`transition-colors cursor-pointer group ${
                         isDrawerActive
-                          ? "bg-primary/10/80 hover:bg-primary/10"
+                          ? "bg-primary/10"
                           : isChecked
-                          ? "bg-surface-raised hover:bg-surface-raised/70"
-                          : "hover:bg-surface-raised/70"
+                          ? "bg-primary/5 hover:bg-primary/10"
+                          : "hover:bg-surface-raised"
                       }`}
                     >
                       {/* Selection Checkbox */}
-                      <td className="py-3.5 px-3.5 text-center" onClick={e => e.stopPropagation()}>
+                      <td className="py-2.5 px-3.5 text-center" onClick={e => e.stopPropagation()}>
                         <input
                           checked={isChecked}
                           onChange={() => handleToggleSelectRow(item.retailer.id)}
-                          className="rounded w-4 h-4 accent-blue-600 cursor-pointer"
+                          className="rounded w-4 h-4 accent-primary cursor-pointer"
                           type="checkbox"
                         />
                       </td>
 
                       {/* Retailer Info & Hold Badge */}
-                      <td className="py-3.5 px-3">
+                      <td className="py-2.5 px-3">
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-bold text-ink text-xs truncate">
+                            <span className="font-bold text-ink text-xs truncate group-hover:text-primary transition-colors font-sans">
                               {item.retailer.name}
                             </span>
                             <span
                               className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                hasOverdue ? "bg-amber-500" : "bg-emerald-500"
+                                hasOverdue ? "bg-warning" : "bg-success"
                               }`}
                             ></span>
                             {/* Requirement 6: Credit Hold Badge */}
                             {item.retailer.creditHold && (
-                              <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-300 uppercase tracking-tight">
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-danger/15 text-danger border border-danger/30 uppercase tracking-tight">
                                 HOLD
                               </span>
                             )}
                           </div>
-                          <span className="text-[11px] text-ink-muted truncate">
+                          <span className="text-[11px] text-ink-muted truncate font-mono">
                             {item.retailer.code} • {formatLocation(item.retailer.town, item.retailer.district, item.retailer.state)}
                           </span>
                         </div>
                       </td>
 
                       {/* Not Yet Due */}
-                      <td className="py-3.5 px-3 text-right font-mono text-ink whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-right font-mono num text-ink whitespace-nowrap">
                         {item.notYetDue > 0 ? formatINR(item.notYetDue) : "—"}
                       </td>
 
-                      {/* 1–30 Days */}
-                      <td className="py-3.5 px-3 text-right font-mono font-medium text-amber-600 whitespace-nowrap">
+                      {/* 1–30 Days (Primary Blue) */}
+                      <td className="py-2.5 px-3 text-right font-mono num font-semibold text-primary whitespace-nowrap">
                         {item.d1_30 > 0 ? formatINR(item.d1_30) : "—"}
                       </td>
 
-                      {/* 31–60 Days */}
-                      <td className="py-3.5 px-3 text-right font-mono font-medium text-orange-600 whitespace-nowrap">
+                      {/* 31–60 Days (Warning Amber) */}
+                      <td className="py-2.5 px-3 text-right font-mono num font-semibold text-warning whitespace-nowrap">
                         {item.d31_60 > 0 ? formatINR(item.d31_60) : "—"}
                       </td>
 
-                      {/* 60+ Days */}
-                      <td className="py-3.5 px-3 text-right font-mono font-bold text-rose-600 whitespace-nowrap">
+                      {/* 60+ Days (Danger Coral) */}
+                      <td className="py-2.5 px-3 text-right font-mono num font-bold text-danger whitespace-nowrap">
                         {item.d60_plus > 0 ? formatINR(item.d60_plus) : "—"}
                       </td>
 
                       {/* Total Owed */}
-                      <td className="py-3.5 px-3 text-right font-mono font-bold text-ink whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-right font-mono num font-bold text-ink whitespace-nowrap">
                         {formatINR(item.totalOwed)}
                       </td>
 
                       {/* Requirement 3: Credit Used % uses real credit limit */}
-                      <td className="py-3.5 px-4 min-w-[140px]">
+                      <td className="py-2.5 px-4 min-w-[140px]">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-between items-center text-[11px]">
                             <span
-                              className={`font-bold font-mono ${
+                              className={`font-bold font-mono num ${
                                 item.creditUsedPercent > 90
-                                  ? "text-rose-600"
+                                  ? "text-danger"
                                   : item.creditUsedPercent > 70
-                                  ? "text-amber-600"
+                                  ? "text-warning"
                                   : "text-ink"
                               }`}
                             >
                               {item.creditUsedPercent}%
                             </span>
-                            <span className="text-ink-muted font-mono text-[10px]">
+                            <span className="text-ink-muted font-mono num text-[10px]">
                               of {formatINR(item.retailer.creditLimit)}
                             </span>
                           </div>
-                          <div className="w-full bg-surface-raised h-1.5 rounded-full overflow-hidden">
+                          <div className="w-full bg-surface-raised h-1.5 rounded-full overflow-hidden border border-border/50">
                             <div
                               className={`h-full rounded-full transition-all ${
                                 item.creditUsedPercent > 90
-                                  ? "bg-rose-500"
+                                  ? "bg-danger"
                                   : item.creditUsedPercent > 70
-                                  ? "bg-amber-500"
+                                  ? "bg-warning"
                                   : "bg-primary"
                               }`}
                               style={{ width: `${Math.min(100, item.creditUsedPercent)}%` }}
@@ -784,19 +777,17 @@ export const DistributorReceivables: React.FC = () => {
                             title="View Statement & Invoices"
                             type="button"
                           >
-                            <span className="material-symbols-outlined text-[18px]">
-                              description
-                            </span>
+                            <Icon name="description" size={18} />
                           </button>
 
                           {/* Requirement 4: Prefilled WhatsApp Reminder */}
                           <button
                             onClick={() => handleSendRowReminder(item)}
-                            className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-md text-success hover:text-success hover:bg-success/10 transition-colors cursor-pointer"
                             title="Send WhatsApp payment reminder"
                             type="button"
                           >
-                            <span className="material-symbols-outlined text-[18px]">chat</span>
+                            <Icon name="chat" size={18} />
                           </button>
 
                           {/* Requirement 4: Record Receipt Prefilled */}
@@ -806,9 +797,7 @@ export const DistributorReceivables: React.FC = () => {
                             title="Record payment receipt"
                             type="button"
                           >
-                            <span className="material-symbols-outlined text-[18px]">
-                              add_circle
-                            </span>
+                            <Icon name="add_circle" size={18} />
                           </button>
                         </div>
                       </td>
@@ -820,7 +809,7 @@ export const DistributorReceivables: React.FC = () => {
                   <tr>
                     <td colSpan={9} className="py-12 px-4 text-center">
                       <EmptyState
-                        icon={<span className="material-symbols-outlined text-[28px]">account_balance_wallet</span>}
+                        icon={<Icon name="account_balance_wallet" size={28} />}
                         title="No receivables found"
                         description="No retailer accounts match the selected status, route, or search criteria."
                         actionLabel="Reset Filters"
@@ -845,13 +834,13 @@ export const DistributorReceivables: React.FC = () => {
                   <td className="py-3.5 px-3 text-right font-mono text-ink">
                     {formatINR(totals.notYetDue)}
                   </td>
-                  <td className="py-3.5 px-3 text-right font-mono text-amber-700">
+                  <td className="py-3.5 px-3 text-right font-mono text-primary">
                     {formatINR(totals.d1_30)}
                   </td>
-                  <td className="py-3.5 px-3 text-right font-mono text-orange-700">
+                  <td className="py-3.5 px-3 text-right font-mono text-warning">
                     {formatINR(totals.d31_60)}
                   </td>
-                  <td className="py-3.5 px-3 text-right font-mono text-rose-700">
+                  <td className="py-3.5 px-3 text-right font-mono text-danger">
                     {formatINR(totals.d60_plus)}
                   </td>
                   <td className="py-3.5 px-3 text-right font-mono text-sm font-black text-ink whitespace-nowrap">
@@ -910,7 +899,7 @@ export const DistributorReceivables: React.FC = () => {
 
         {/* Right Drawer: Detail View for Selected Retailer (Only when a row is clicked) */}
         {activeRetailer && (
-          <div className="w-full lg:w-[420px] shrink-0 bg-surface rounded-2xl shadow-md border border-border p-5 flex flex-col gap-5 animate-in slide-in-from-right-2">
+          <div className="w-full lg:w-[420px] shrink-0 bg-surface rounded-lg shadow-md border border-border p-5 flex flex-col gap-5 animate-in slide-in-from-right-2">
             {/* Drawer Header with Close Button */}
             <div className="flex items-start justify-between pb-3 border-b border-border">
               <div className="flex flex-col gap-1 min-w-0">
@@ -932,9 +921,9 @@ export const DistributorReceivables: React.FC = () => {
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-soft-sm transition-colors cursor-pointer"
+                    className="px-2 py-0.5 rounded-md bg-success hover:opacity-90 text-background font-bold text-[11px] flex items-center gap-1 shadow-soft-sm transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[13px]">chat</span>
+                    <Icon name="chat" size={13} />
                     WhatsApp
                   </a>
                 </div>
@@ -947,21 +936,21 @@ export const DistributorReceivables: React.FC = () => {
                 title="Close drawer"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <Icon name="close" size={18} />
               </button>
             </div>
 
             {/* Requirement 6: Credit Hold Toggle Box */}
-            <div className="p-3.5 rounded-xl bg-surface-raised border border-border flex items-center justify-between gap-3">
+            <div className="p-3.5 rounded-md bg-surface-raised border border-border flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-xs text-ink">Credit Hold Status</span>
                   {activeRetailer.creditHold ? (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-danger/15 text-danger border border-danger/30">
                       ON HOLD
                     </span>
                   ) : (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-success/15 text-success border border-success/30">
                       ACTIVE
                     </span>
                   )}
@@ -974,23 +963,21 @@ export const DistributorReceivables: React.FC = () => {
               </div>
               <button
                 onClick={() => toggleCreditHold(activeRetailer.id)}
-                className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-md font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer ${
                   activeRetailer.creditHold
-                    ? "bg-rose-600 hover:bg-rose-700 text-white"
+                    ? "bg-danger hover:opacity-90 text-white"
                     : "bg-surface-raised hover:bg-surface-raised text-ink"
                 }`}
                 type="button"
               >
-                <span className="material-symbols-outlined text-[15px]">
-                  {activeRetailer.creditHold ? "lock" : "lock_open"}
-                </span>
+                <Icon name={activeRetailer.creditHold ? "lock" : "lock_open"} size={15} />
                 <span>{activeRetailer.creditHold ? "Release" : "Hold"}</span>
               </button>
             </div>
 
             {/* Micro KPI Cards */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-surface-raised p-2.5 rounded-xl flex flex-col border border-border/60">
+              <div className="bg-surface-raised p-2.5 rounded-md flex flex-col border border-border/60">
                 <span className="text-[10px] text-ink-muted font-bold uppercase tracking-wider">
                   Total Owed
                 </span>
@@ -998,11 +985,11 @@ export const DistributorReceivables: React.FC = () => {
                   {formatINR(activeLedger?.totalOwed || 0)}
                 </span>
               </div>
-              <div className="bg-rose-50 p-2.5 rounded-xl flex flex-col border border-rose-200">
-                <span className="text-[10px] text-rose-600 font-bold uppercase tracking-wider">
+              <div className="bg-danger/10 p-2.5 rounded-md flex flex-col border border-danger/30">
+                <span className="text-[10px] text-danger font-bold uppercase tracking-wider">
                   Overdue
                 </span>
-                <span className="font-mono text-sm font-bold text-rose-700 mt-1">
+                <span className="font-mono text-sm font-bold text-danger mt-1">
                   {formatINR(
                     (activeLedger?.d1_30 || 0) +
                       (activeLedger?.d31_60 || 0) +
@@ -1010,7 +997,7 @@ export const DistributorReceivables: React.FC = () => {
                   )}
                 </span>
               </div>
-              <div className="bg-surface-raised p-2.5 rounded-xl flex flex-col border border-border/60">
+              <div className="bg-surface-raised p-2.5 rounded-md flex flex-col border border-border/60">
                 <span className="text-[10px] text-ink-muted font-bold uppercase tracking-wider">
                   Available
                 </span>
@@ -1039,7 +1026,7 @@ export const DistributorReceivables: React.FC = () => {
                   return (
                     <div
                       key={inv.id}
-                      className="p-3 rounded-xl bg-surface-raised border border-border/80 flex flex-col gap-2"
+                      className="p-3 rounded-md bg-surface-raised border border-border/80 flex flex-col gap-2"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
@@ -1049,8 +1036,8 @@ export const DistributorReceivables: React.FC = () => {
                           <span
                             className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                               isOverdue
-                                ? "bg-rose-100 text-rose-700 border border-rose-200"
-                                : "bg-blue-100 text-primary border border-primary/20"
+                                ? "bg-danger/15 text-danger border border-danger/30"
+                                : "bg-success/15 text-success border border-success/30"
                             }`}
                           >
                             {isOverdue ? `${Math.abs(daysUntil)}d Overdue` : "Not yet due"}
@@ -1062,7 +1049,7 @@ export const DistributorReceivables: React.FC = () => {
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-ink-muted pt-1 border-t border-border">
                         <span>Billed: {inv.billedDate || inv.date}</span>
-                        <span className={`font-semibold ${isOverdue ? "text-rose-600" : "text-ink"}`}>
+                        <span className={`font-semibold ${isOverdue ? "text-danger" : "text-ink"}`}>
                           Due: {inv.dueDate}
                         </span>
                       </div>
@@ -1071,7 +1058,7 @@ export const DistributorReceivables: React.FC = () => {
                 })}
 
                 {activeRetailerInvoices.length === 0 && (
-                  <div className="p-4 rounded-xl bg-surface-raised border border-border text-center text-ink-muted text-xs">
+                  <div className="p-4 rounded-md bg-surface-raised border border-border text-center text-ink-muted text-xs">
                     No open invoices. Account is fully settled.
                   </div>
                 )}
@@ -1082,10 +1069,10 @@ export const DistributorReceivables: React.FC = () => {
             <div className="flex flex-col gap-2 pt-1">
               <button
                 onClick={() => handleOpenReceiptForRetailer(activeRetailer.id)}
-                className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+                className="w-full h-10 rounded-md bg-primary hover:bg-primary/90 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[18px]">add</span>
+                <Icon name="add" size={18} />
                 <span>Record receipt for {activeRetailer.name.split(" ")[0]}</span>
               </button>
 
@@ -1093,21 +1080,21 @@ export const DistributorReceivables: React.FC = () => {
                 onClick={() => {
                   if (activeLedger) handleSendRowReminder(activeLedger);
                 }}
-                className="w-full h-9 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="w-full h-9 rounded-md bg-success/10 hover:bg-success/20 text-success border border-success/30 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[16px]">chat</span>
+                <Icon name="chat" size={16} />
                 <span>Send WhatsApp Reminder</span>
               </button>
             </div>
 
             {/* Reminder Preview Card */}
-            <div className="bg-surface-raised p-3 rounded-xl border border-border/80 flex flex-col gap-1.5">
+            <div className="bg-surface-raised p-3 rounded-md border border-border/80 flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider">
                   Reminder preview (editable)
                 </span>
-                <span className="material-symbols-outlined text-ink-muted text-[14px]">edit</span>
+                <Icon name="edit" size={14} className="text-ink-muted" />
               </div>
               <textarea
                 className="w-full p-2 bg-surface border border-border rounded-lg text-xs text-ink focus:outline-none focus:ring-1 focus:ring-primary/20 resize-none leading-relaxed"

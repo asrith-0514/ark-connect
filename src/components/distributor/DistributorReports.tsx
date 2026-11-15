@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import {
   getDistributorKPIs,
@@ -338,7 +339,7 @@ export const DistributorReports: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           {/* Date range picker */}
           <div className="flex items-center gap-2 bg-surface px-3 py-1.5 rounded-md border border-border shadow-soft-sm text-xs font-semibold">
-            <span className="material-symbols-outlined text-[16px] text-ink-muted">calendar_month</span>
+            <Icon name="calendar_month" size={16} className="text-ink-muted" />
             <select
               value={dateRange}
               onChange={e => setDateRange(e.target.value)}
@@ -356,7 +357,7 @@ export const DistributorReports: React.FC = () => {
             onClick={handleExportCurrent}
             className="px-4 h-10 rounded-md bg-surface-raised hover:bg-surface text-ink font-semibold text-xs flex items-center gap-1.5 transition-colors border border-border shadow-soft-sm cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px]">file_download</span>
+            <Icon name="file_download" size={18} />
             <span>Export CSV</span>
           </button>
         </div>
@@ -380,7 +381,7 @@ export const DistributorReports: React.FC = () => {
                 : "bg-surface hover:bg-surface-raised text-ink-muted hover:text-ink border border-border"
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">{t.icon}</span>
+            <Icon name={t.icon} size={18} />
             <span>{t.label}</span>
           </button>
         ))}
@@ -428,35 +429,35 @@ export const DistributorReports: React.FC = () => {
           <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[700px]">
-                <thead>
-                  <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
-                    <th className="py-3 px-4">Brand</th>
-                    <th className="py-3 px-3 text-right">Master Boxes</th>
-                    <th className="py-3 px-3 text-right">Total Pieces</th>
-                    <th className="py-3 px-3 text-right">Wholesale Sales (incl. GST)</th>
-                    <th className="py-3 px-3 text-right">Volume Share</th>
-                    <th className="py-3 px-4 text-right">MoM Growth</th>
+                <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
+                  <tr className="text-ink-muted text-[11px] uppercase tracking-wider font-bold font-mono">
+                    <th className="py-2.5 px-4">Brand</th>
+                    <th className="py-2.5 px-3 text-right">Master Boxes</th>
+                    <th className="py-2.5 px-3 text-right">Total Pieces</th>
+                    <th className="py-2.5 px-3 text-right">Wholesale Sales (incl. GST)</th>
+                    <th className="py-2.5 px-3 text-right">Volume Share</th>
+                    <th className="py-2.5 px-4 text-right">MoM Growth</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border text-xs sm:text-sm">
                   {brandSalesData.map(b => (
-                    <tr key={b.brand} className="hover:bg-primary/5 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-ink flex items-center gap-2">
+                    <tr key={b.brand} className="hover:bg-surface-raised transition-colors">
+                      <td className="py-2.5 sm:py-3 px-4 font-bold text-ink flex items-center gap-2">
                         <span className="w-6 h-6 rounded bg-surface-raised border border-border text-ink font-mono num text-[10px] flex items-center justify-center font-bold">
                           {b.shortCode}
                         </span>
                         <span>{b.brand}</span>
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num font-bold text-ink">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num font-bold text-ink">
                         {b.boxes.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-ink-muted">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-ink-muted">
                         {b.pieces.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-bold font-mono num text-ink">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-bold font-mono num text-ink">
                         {formatINR(b.revenue)}
                       </td>
-                      <td className="py-3.5 px-3 text-right">
+                      <td className="py-2.5 sm:py-3 px-3 text-right">
                         <div className="flex items-center justify-end gap-2 font-mono num">
                           <span>{b.share}%</span>
                           <div className="w-16 bg-surface-raised rounded-full h-1.5 overflow-hidden border border-border">
@@ -464,7 +465,7 @@ export const DistributorReports: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-success font-mono num">
+                      <td className="py-2.5 sm:py-3 px-4 text-right font-bold text-success font-mono num">
                         {b.growth}
                       </td>
                     </tr>
@@ -482,42 +483,42 @@ export const DistributorReports: React.FC = () => {
           <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[850px]">
-                <thead>
-                  <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
-                    <th className="py-3 px-4">Retailer</th>
-                    <th className="py-3 px-3">Town</th>
-                    <th className="py-3 px-3 text-right">POs</th>
-                    <th className="py-3 px-3 text-right">Boxes</th>
-                    <th className="py-3 px-3 text-right">Invoiced (incl. GST)</th>
-                    <th className="py-3 px-3 text-right">Paid</th>
-                    <th className="py-3 px-4 text-right">Outstanding</th>
+                <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
+                  <tr className="text-ink-muted text-[11px] uppercase tracking-wider font-bold font-mono">
+                    <th className="py-2.5 px-4">Retailer</th>
+                    <th className="py-2.5 px-3">Town</th>
+                    <th className="py-2.5 px-3 text-right">POs</th>
+                    <th className="py-2.5 px-3 text-right">Boxes</th>
+                    <th className="py-2.5 px-3 text-right">Invoiced (incl. GST)</th>
+                    <th className="py-2.5 px-3 text-right">Paid</th>
+                    <th className="py-2.5 px-4 text-right">Outstanding</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border text-xs">
+                <tbody className="divide-y divide-border text-xs sm:text-sm">
                   {retailerSalesData.map(r => (
-                    <tr key={r.code} className="hover:bg-primary/5 transition-colors">
-                      <td className="py-3.5 px-4">
+                    <tr key={r.code} className="hover:bg-surface-raised transition-colors">
+                      <td className="py-2.5 sm:py-3 px-4">
                         <div className="font-bold text-ink">{r.name}</div>
                         <div className="text-[11px] text-ink-muted font-mono num">
                           {r.code} • Prop. {r.owner}
                         </div>
                       </td>
-                      <td className="py-3.5 px-3 text-ink-muted">
+                      <td className="py-2.5 sm:py-3 px-3 text-ink-muted">
                         {r.town}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num font-bold text-ink">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num font-bold text-ink">
                         {r.pos}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-ink-muted">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-ink-muted">
                         {r.boxes.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-bold font-mono num text-ink text-sm">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-bold font-mono num text-ink">
                         {formatINR(r.invoiced)}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-success font-semibold">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-success font-semibold">
                         {formatINR(r.paid)}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold font-mono num text-danger">
+                      <td className="py-2.5 sm:py-3 px-4 text-right font-bold font-mono num text-danger">
                         {formatINR(r.outstanding)}
                       </td>
                     </tr>
@@ -534,7 +535,7 @@ export const DistributorReports: React.FC = () => {
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
-              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block font-mono">
                 Not Yet Due (Within Terms)
               </span>
               <span className="text-2xl font-bold text-success font-mono num mt-1 block">
@@ -544,37 +545,37 @@ export const DistributorReports: React.FC = () => {
                 {ageing.notYetDuePct}% of Book • Within 30-day terms
               </span>
             </div>
-            <div className="p-4 rounded-md bg-surface border border-warning/30 shadow-soft-sm">
-              <span className="text-[10px] uppercase font-bold text-warning tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-primary/30 shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-primary tracking-wider block font-mono">
                 1–30 Days Overdue
               </span>
-              <span className="text-2xl font-bold text-warning font-mono num mt-1 block">
+              <span className="text-2xl font-bold text-primary font-mono num mt-1 block">
                 {formatINR(ageing.d1_30)}
               </span>
-              <span className="text-[11px] text-warning/90 mt-0.5 block">
-                {ageing.d1_30Pct}% • First Follow-up Alert
+              <span className="text-[11px] text-primary/90 mt-0.5 block">
+                {ageing.d1_30Pct}% • Active Follow-up Window
               </span>
             </div>
-            <div className="p-4 rounded-md bg-surface border border-accent/30 shadow-soft-sm">
-              <span className="text-[10px] uppercase font-bold text-accent tracking-wider block">
+            <div className="p-4 rounded-md bg-surface border border-warning/30 shadow-soft-sm">
+              <span className="text-[10px] uppercase font-bold text-warning tracking-wider block font-mono">
                 31–60 Days Overdue
               </span>
-              <span className="text-2xl font-bold text-accent font-mono num mt-1 block">
+              <span className="text-2xl font-bold text-warning font-mono num mt-1 block">
                 {formatINR(ageing.d31_60)}
               </span>
-              <span className="text-[11px] text-accent/90 mt-0.5 block">
-                {ageing.d31_60Pct}% • Credit Hold Recommended
+              <span className="text-[11px] text-warning/90 mt-0.5 block">
+                {ageing.d31_60Pct}% • Credit Hold Alert
               </span>
             </div>
             <div className="p-4 rounded-md bg-surface border border-danger/30 shadow-soft-sm">
-              <span className="text-[10px] uppercase font-bold text-danger tracking-wider block">
+              <span className="text-[10px] uppercase font-bold text-danger tracking-wider block font-mono">
                 60+ Days Overdue
               </span>
               <span className="text-2xl font-bold text-danger font-mono num mt-1 block">
                 {formatINR(ageing.d60_plus)}
               </span>
               <span className="text-[11px] text-danger/90 mt-0.5 block">
-                {ageing.d60_plusPct}% • Action Required
+                {ageing.d60_plusPct}% • Critical Delinquent
               </span>
             </div>
           </div>
@@ -582,43 +583,43 @@ export const DistributorReports: React.FC = () => {
           <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[850px]">
-                <thead>
-                  <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
-                    <th className="py-3 px-4">Retailer Name</th>
-                    <th className="py-3 px-3">Town</th>
-                    <th className="py-3 px-3 text-right">Total Outstanding</th>
-                    <th className="py-3 px-3 text-right text-success">Not Yet Due</th>
-                    <th className="py-3 px-3 text-right text-warning">1–30 Days</th>
-                    <th className="py-3 px-3 text-right text-accent">31–60 Days</th>
-                    <th className="py-3 px-3 text-right text-danger">60+ Days</th>
-                    <th className="py-3 px-4 text-center">Risk Rating</th>
+                <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
+                  <tr className="text-ink-muted text-[11px] uppercase tracking-wider font-bold font-mono">
+                    <th className="py-2.5 px-4">Retailer Name</th>
+                    <th className="py-2.5 px-3">Town</th>
+                    <th className="py-2.5 px-3 text-right">Total Outstanding</th>
+                    <th className="py-2.5 px-3 text-right text-success">Not Yet Due</th>
+                    <th className="py-2.5 px-3 text-right text-primary">1–30 Days</th>
+                    <th className="py-2.5 px-3 text-right text-warning">31–60 Days</th>
+                    <th className="py-2.5 px-3 text-right text-danger">60+ Days</th>
+                    <th className="py-2.5 px-4 text-center">Risk Rating</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border text-xs">
+                <tbody className="divide-y divide-border text-xs sm:text-sm">
                   {ageingData.map(a => (
-                    <tr key={a.retailer} className="hover:bg-primary/5 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-ink">
+                    <tr key={a.retailer} className="hover:bg-surface-raised transition-colors">
+                      <td className="py-2.5 sm:py-3 px-4 font-bold text-ink">
                         {a.retailer}
                       </td>
-                      <td className="py-3.5 px-3 text-ink-muted">
+                      <td className="py-2.5 sm:py-3 px-3 text-ink-muted">
                         {a.town}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-bold font-mono num text-ink text-sm">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-bold font-mono num text-ink">
                         {formatINR(a.total)}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-success font-semibold">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-success font-semibold">
                         {a.current > 0 ? formatINR(a.current) : "—"}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-warning">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-primary font-semibold">
                         {a.d30 > 0 ? formatINR(a.d30) : "—"}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-accent">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-warning font-semibold">
                         {a.d60 > 0 ? formatINR(a.d60) : "—"}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-danger font-bold">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-danger font-bold">
                         {a.d90plus > 0 ? formatINR(a.d90plus) : "—"}
                       </td>
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-2.5 sm:py-3 px-4 text-center">
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             a.risk === "Low"
@@ -645,7 +646,7 @@ export const DistributorReports: React.FC = () => {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
-              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block font-mono">
                 {currentMonthLabel} Invoiced Sales
               </span>
               <span className="text-2xl font-bold text-primary font-mono num mt-1 block">
@@ -656,7 +657,7 @@ export const DistributorReports: React.FC = () => {
               </span>
             </div>
             <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
-              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block font-mono">
                 {currentMonthLabel} Collections Settled
               </span>
               <span className="text-2xl font-bold text-success font-mono num mt-1 block">
@@ -667,7 +668,7 @@ export const DistributorReports: React.FC = () => {
               </span>
             </div>
             <div className="p-4 rounded-md bg-surface border border-border shadow-soft-sm">
-              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block">
+              <span className="text-[10px] uppercase font-bold text-ink-muted tracking-wider block font-mono">
                 {currentMonthLabel} Realization Deficit
               </span>
               <span className="text-2xl font-bold text-warning font-mono num mt-1 block">
@@ -682,31 +683,31 @@ export const DistributorReports: React.FC = () => {
           <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[700px]">
-                <thead>
-                  <tr className="bg-surface-raised text-ink-muted text-[11px] uppercase tracking-wider border-b border-border font-bold">
-                    <th className="py-3 px-4">Cycle Month</th>
-                    <th className="py-3 px-3 text-right">Invoiced Sales (INR)</th>
-                    <th className="py-3 px-3 text-right">Collections Received (INR)</th>
-                    <th className="py-3 px-3 text-right">Gap / Deficit (INR)</th>
-                    <th className="py-3 px-4 text-right">Realization Efficiency</th>
+                <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
+                  <tr className="text-ink-muted text-[11px] uppercase tracking-wider font-bold font-mono">
+                    <th className="py-2.5 px-4">Cycle Month</th>
+                    <th className="py-2.5 px-3 text-right">Invoiced Sales (INR)</th>
+                    <th className="py-2.5 px-3 text-right">Collections Received (INR)</th>
+                    <th className="py-2.5 px-3 text-right">Gap / Deficit (INR)</th>
+                    <th className="py-2.5 px-4 text-right">Realization Efficiency</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border text-xs">
+                <tbody className="divide-y divide-border text-xs sm:text-sm">
                   {collectionsData.map(c => (
-                    <tr key={c.month} className="hover:bg-primary/5 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-ink">
+                    <tr key={c.month} className="hover:bg-surface-raised transition-colors">
+                      <td className="py-2.5 sm:py-3 px-4 font-bold text-ink">
                         {c.month}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-bold font-mono num text-ink text-sm">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-bold font-mono num text-ink">
                         {formatINR(c.invoiced)}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-success font-semibold">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-success font-semibold">
                         {formatINR(c.collected)}
                       </td>
-                      <td className="py-3.5 px-3 text-right font-mono num text-warning">
+                      <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-warning">
                         {formatINR(c.gap)}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold font-mono num text-ink">
+                      <td className="py-2.5 sm:py-3 px-4 text-right font-bold font-mono num text-ink">
                         {c.efficiency}
                       </td>
                     </tr>
