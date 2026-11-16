@@ -20,12 +20,17 @@ export function ThemeToggle({
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("theme") as ThemeMode | null;
-      if (stored === "light" || stored === "dark" || stored === "system") {
-        setTheme(stored);
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlTheme = urlParams.get("theme");
+      const stored = (urlTheme || localStorage.getItem("ark-theme-v2")) as ThemeMode | null;
+      if (stored === "dark") {
+        setTheme("dark");
+        document.documentElement.setAttribute("data-theme", "dark");
+        document.documentElement.classList.add("dark");
       } else {
         setTheme("light");
         document.documentElement.setAttribute("data-theme", "light");
+        document.documentElement.classList.remove("dark");
       }
     } catch {
       // localStorage may fail in restricted/private modes
@@ -36,16 +41,17 @@ export function ThemeToggle({
   const applyTheme = (mode: ThemeMode) => {
     setTheme(mode);
     try {
-      localStorage.setItem("theme", mode);
+      localStorage.setItem("ark-theme-v2", mode);
     } catch {
       // ignore
     }
 
-    if (mode === "system") {
-      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.setAttribute("data-theme", systemDark ? "dark" : "light");
+    if (mode === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.setAttribute("data-theme", mode);
+      document.documentElement.setAttribute("data-theme", "light");
+      document.documentElement.classList.remove("dark");
     }
   };
 

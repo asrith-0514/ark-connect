@@ -280,46 +280,29 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
           </form>
         )}
 
-        {/* Roles & Permissions Preview / Demo Role Switcher */}
-        {isDemo && (
-          <div className="mt-6 pt-5 border-t border-border flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
-                Select Staff Role (1-Click Instant Login):
-              </span>
-              <Badge variant="primary" size="sm">
-                4 Roles Mapped
-              </Badge>
-            </div>
+        {/* 1-Click Instant Wholesaler Sign In for Demo */}
+        <div className="mt-6 pt-5 border-t border-border flex flex-col gap-3">
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => handleRoleQuickSelect("owner")}
+            className="w-full py-3 px-4 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm shadow-soft-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+          >
+            <Icon name="factory" size={18} />
+            <span>Instant 1-Click Wholesaler Sign In</span>
+          </button>
 
-            <div className="grid grid-cols-2 gap-2">
-              {(["owner", "accountant", "godown_staff", "salesman"] as DistributorRole[]).map(role => {
-                const meta = DISTRIBUTOR_ROLES_METADATA[role];
-                const isSelected = selectedRolePreview === role;
-                return (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => handleRoleQuickSelect(role)}
-                    className={`p-2.5 rounded-lg border text-left transition-all text-xs cursor-pointer ${
-                      isSelected
-                        ? "border-primary bg-primary/5 text-ink ring-1 ring-primary/30"
-                        : "border-border bg-background hover:bg-surface-raised text-ink-muted hover:text-ink"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className="font-bold text-ink truncate">{meta.title}</span>
-                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-primary" : "bg-ink-muted/30"}`} />
-                    </div>
-                    <p className="text-[10px] text-ink-muted line-clamp-2">
-                      {meta.description}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
+          <div className="pt-2 flex items-center justify-between text-xs text-ink-muted border-t border-border/60 mt-1">
+            <span>Need retailer ordering?</span>
+            <a
+              href="/"
+              className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+            >
+              <span>Switch to Retailer Portal</span>
+              <Icon name="arrow_forward" size={13} />
+            </a>
           </div>
-        )}
+        </div>
       </Card>
     </div>
   );

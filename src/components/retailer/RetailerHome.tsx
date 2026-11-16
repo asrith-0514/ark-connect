@@ -73,8 +73,15 @@ export function RetailerHome() {
   const storeName = user?.name || activeRetailer?.name || RETAILER_PROFILE.name;
   const proprietorName = activeRetailer?.ownerName || RETAILER_PROFILE.proprietor;
 
+  const buildWhatsAppPaymentProof = () => {
+    const inv = financials.oldestOverdue?.invoiceNumber || "INV-0079";
+    const amt = formatINR(financials.overdueAmount || financials.totalOutstanding);
+    const message = `Payment proof from ${storeName} (${activeRetailerCode}) for invoice ${inv} of amount ${amt}.`;
+    return `https://wa.me/919440123456?text=${encodeURIComponent(message)}`;
+  };
+
   return (
-    <div className="w-full flex flex-col gap-4 pb-28 text-ink max-w-full overflow-x-hidden">
+    <div className="w-full flex flex-col gap-4 pb-6 text-ink max-w-full overflow-x-hidden">
       {/* =========================================================================
           BLOCK A: DUES STRIP + DISPATCH CHIP
           "Outstanding Rs X, overdue Rs Y" with a Pay or View button
@@ -83,11 +90,11 @@ export function RetailerHome() {
       <div className="w-full rounded-2xl bg-surface border border-border p-4 sm:p-5 shadow-soft-sm flex flex-col gap-3">
         {/* Header Greeting & Dispatched Order Chip */}
         <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <span className="text-xs text-ink-muted">
               {getRetailerString(language, "namasteGreeting")} {proprietorName}
             </span>
-            <h1 className="text-base sm:text-lg font-bold text-ink truncate leading-tight">
+            <h1 className="text-base sm:text-lg font-bold text-ink line-clamp-2 leading-tight">
               {storeName}
             </h1>
           </div>
@@ -132,19 +139,22 @@ export function RetailerHome() {
             )}
           </div>
 
-          {/* 48px Pay / View Button */}
-          <button
-            type="button"
-            onClick={() => setRetailerNav("account")}
-            className={`min-h-[48px] h-12 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-soft-xs active:scale-[0.98] ${
-              financials.overdueAmount > 0
-                ? "bg-danger text-white hover:bg-danger/90"
-                : "bg-primary text-white hover:bg-primary/90"
-            }`}
+          {/* 48px Pay / View Button (Always primary blue) */}
+          <a
+            href={financials.overdueAmount > 0 ? buildWhatsAppPaymentProof() : undefined}
+            onClick={(e) => {
+              if (financials.overdueAmount <= 0) {
+                e.preventDefault();
+                setRetailerNav("account");
+              }
+            }}
+            target={financials.overdueAmount > 0 ? "_blank" : undefined}
+            rel="noopener noreferrer"
+            className="min-h-[48px] h-12 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-soft-xs active:scale-[0.98]"
           >
             <Icon name={financials.overdueAmount > 0 ? "payments" : "receipt_long"} size={18} />
             <span>{financials.overdueAmount > 0 ? "Pay now" : "View dues"}</span>
-          </button>
+          </a>
         </div>
       </div>
 

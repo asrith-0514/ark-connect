@@ -46,43 +46,34 @@ export function RetailerBottomNav() {
     },
   ];
 
+  const isHomeOrShop = retailerNav === "home" || retailerNav === "catalogue" || retailerNav === "shop";
+
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 md:hidden pointer-events-none pb-[calc(env(safe-area-inset-bottom,0px)+8px)] px-3">
-      {/* 1. Floating PO Dock Bar (Docks above bottom tab bar when items exist) */}
-      {cartTotalBoxes > 0 && retailerNav !== "review-po" && (
-        <div className="pointer-events-auto mb-2 animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <div className="w-full bg-surface text-ink rounded-2xl p-3 shadow-soft-lg border border-border flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 min-w-0 pl-1">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shrink-0 shadow-soft-xs">
-                <Icon name="shopping_bag" size={20} />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold text-primary">
-                    Order draft
-                  </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                </div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-mono font-bold text-sm text-ink num">
-                    {formatINR(cartGrandTotal)}
-                  </span>
-                  <span className="text-xs text-ink-muted font-mono num">
-                    ({cartTotalBoxes} {cartTotalBoxes === 1 ? "box" : "boxes"})
-                  </span>
-                </div>
-              </div>
+      {/* 1. Floating PO Draft Bar: Slim single-line pill (48px high) strictly on Home & Shop only */}
+      {cartTotalBoxes > 0 && isHomeOrShop && (
+        <div className="pointer-events-auto mb-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <button
+            type="button"
+            onClick={() => setIsReviewOrderOpen(true)}
+            className="w-full h-12 min-h-[48px] bg-primary hover:bg-primary-hover text-white rounded-full px-4 shadow-soft-lg flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+              <span className="text-xs font-semibold truncate">
+                {cartTotalBoxes} {cartTotalBoxes === 1 ? "box" : "boxes"}
+              </span>
+              <span className="text-white/40">•</span>
+              <span className="font-mono font-bold text-xs num">
+                {formatINR(cartGrandTotal)}
+              </span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setIsReviewOrderOpen(true)}
-              className="min-h-[48px] h-12 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white font-bold text-xs sm:text-sm shadow-soft-xs flex items-center gap-2 shrink-0 cursor-pointer active:scale-98 transition-all"
-            >
+            <div className="flex items-center gap-1 text-xs font-semibold shrink-0 pl-2">
               <span>Review order</span>
               <Icon name="arrow_forward" size={16} />
-            </button>
-          </div>
+            </div>
+          </button>
         </div>
       )}
 

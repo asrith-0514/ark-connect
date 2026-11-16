@@ -172,52 +172,26 @@ export function ProductTile({
     );
   }
 
-  // Neutral Branded Tile (Zero unrelated photos)
+  // Plain tinted tile with the brand's initials (no ruler or scissors icons, no inner borders)
   return (
     <div
-      className={`relative w-full ${aspectRatio} rounded-lg overflow-hidden border border-border flex flex-col justify-between p-3 select-none transition-transform duration-200 group-hover:border-primary/40 ${className}`}
+      className={`relative w-full ${aspectRatio} rounded-lg overflow-hidden flex flex-col items-center justify-center select-none transition-transform duration-200 ${className}`}
       style={{
-        background: `radial-gradient(circle at 80% 20%, ${meta.hex}18 0%, var(--surface) 70%)`,
+        backgroundColor: `${meta.hex}14`,
       }}
     >
-      {/* Top Header: Brand Monogram + Category Icon */}
-      <div className="flex items-center justify-between w-full">
-        <span
-          className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider border ${meta.badge}`}
-        >
-          {brand}
-        </span>
-        <div
-          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-          style={{ backgroundColor: `${meta.hex}15`, color: meta.hex }}
-        >
-          <Icon name={iconName} size={16} />
-        </div>
+      <div
+        className="w-12 h-12 rounded-xl flex items-center justify-center font-bold font-mono text-base tracking-wider shadow-soft-xs"
+        style={{
+          backgroundColor: `${meta.hex}22`,
+          color: meta.hex,
+        }}
+      >
+        {meta.monogram}
       </div>
-
-      {/* Center Silhouette / Graphic Display */}
-      <div className="flex flex-col items-center justify-center py-2 flex-1 text-center">
-        <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-soft-xs mb-1.5 transition-transform group-hover:scale-110"
-          style={{ backgroundColor: `${meta.hex}20`, color: meta.hex }}
-        >
-          <Icon name={iconName} size={26} />
-        </div>
-        <span className="text-xs font-semibold text-ink line-clamp-1 max-w-[90%]">
-          {category}
-        </span>
-      </div>
-
-      {/* Bottom Pack Size Strip */}
-      <div className="flex items-center justify-between pt-1.5 border-t border-border/60 text-[11px] text-ink-muted">
-        <span className="font-mono text-[10px]">
-          {pcsPerBox ? `Box of ${pcsPerBox}` : "Master pack"}
-        </span>
-        <span
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: meta.hex }}
-        />
-      </div>
+      <span className="text-[11px] font-semibold text-ink-muted mt-2 truncate px-2">
+        {brand}
+      </span>
     </div>
   );
 }

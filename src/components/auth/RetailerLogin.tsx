@@ -214,7 +214,7 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
                 </Badge>
               </div>
               <div className="grid grid-cols-1 gap-2">
-                {MOCK_RETAILERS.slice(0, 2).map(store => (
+                {MOCK_RETAILERS.slice(0, 3).map(store => (
                   <button
                     key={store.id}
                     type="button"
@@ -236,6 +236,16 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
                     </span>
                   </button>
                 ))}
+              </div>
+              <div className="pt-2 flex items-center justify-between text-xs text-ink-muted border-t border-border/60 mt-1">
+                <span>Distributor staff?</span>
+                <a
+                  href="/staff"
+                  className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Wholesaler Staff Login</span>
+                  <Icon name="arrow_forward" size={13} />
+                </a>
               </div>
             </div>
           </form>

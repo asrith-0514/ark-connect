@@ -18,6 +18,11 @@ async function StaffContent(props: {
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   let sessionUser = sessionCookie ? decodeSessionToken(sessionCookie) : null;
 
+  // On the /staff route, a retailer session is not a staff account
+  if (sessionUser && sessionUser.type !== "distributor") {
+    sessionUser = null;
+  }
+
   const isExplicitAuth = searchParams?.auth === "true";
 
   // When demo mode is active or staff route is visited, automatically instantiate staff demo session

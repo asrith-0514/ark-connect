@@ -1,87 +1,109 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
-import { isDemoModeEnabled } from "@/lib/mock/retailer";
 import { Icon } from "@/components/ui/Icon";
 
 export function HeaderSwitcher() {
-  const { portalMode, setPortalMode, cartTotalBoxes, orders, retailers } = useApp();
+  const { setPortalMode } = useApp();
   const { user, quickDemoLogin } = useAuth();
-  const [isDemo, setIsDemo] = useState(false);
 
-  useEffect(() => {
-    setIsDemo(isDemoModeEnabled());
-  }, []);
-
-  if (!isDemo) return null;
-
-  const pendingApprovals = retailers.filter(r => r.status === "Needs Approval").length;
-  const submittedOrders = orders.filter(o => o.status === "Submitted").length;
-
-  const handleSwitchToRetailer = async () => {
+  const handleSwitchToRetailer = async (code: string) => {
+    await quickDemoLogin("retailer", code);
     setPortalMode("retailer");
-    if (!user || user.type !== "retailer") {
-      await quickDemoLogin("retailer");
-    }
   };
 
-  const handleSwitchToDistributor = async () => {
+  const handleSwitchToWholesaler = async () => {
+    await quickDemoLogin("owner");
     setPortalMode("distributor");
-    if (!user || user.type !== "distributor") {
-      await quickDemoLogin("owner");
-    }
   };
+
+  const isWholesaler = user?.type === "distributor";
+  const activeRetailerCode = user?.type === "retailer" ? user.retailerCode : null;
 
   return (
-    <div className="bg-ink text-surface text-xs border-b border-border/40 px-4 py-2 flex items-center justify-between select-none z-50 relative">
-      <div className="flex items-center gap-3">
+    <div className="bg-ink text-surface text-xs border-b border-border/40 px-3 sm:px-4 py-2 flex items-center justify-between select-none z-50 relative flex-wrap gap-2">
+      {/* Current Active Account Indicator */}
+      <div className="flex items-center gap-2">
         <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-primary/20 text-surface font-semibold tracking-wider uppercase text-[10px]">
           <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
-          Demo Mode (?demo=true)
+          Demo Switcher
         </span>
-        <span className="text-surface/70 hidden sm:inline">
-          Fast-switch between wholesale portals:
-        </span>
+        <div className="flex items-center gap-1 text-surface/80 text-[11px]">
+          <span className="text-surface/50">Active:</span>
+          <strong className="text-surface font-semibold truncate max-w-[220px] sm:max-w-none">
+            {isWholesaler ? "ARK Wholesaler (Full Backoffice)" : `${user?.name || "Retailer"} (${activeRetailerCode || "RET-0001"})`}
+          </strong>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* Exactly 1 Wholesaler Account + 3 Retailer Accounts */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-surface/50 text-[11px] hidden sm:inline mr-1">Switch to:</span>
+
+        {/* 1. Wholesaler Account */}
         <button
-          onClick={handleSwitchToRetailer}
-          className={`px-3 py-1 rounded-md font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-            portalMode === "retailer"
-              ? "bg-primary text-primary-foreground shadow-soft-xs font-semibold ring-1 ring-white/20"
-              : "text-surface/80 hover:text-surface hover:bg-surface/10"
+          type="button"
+          onClick={handleSwitchToWholesaler}
+          className={`px-3 py-1 rounded-md font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+            isWholesaler
+              ? "bg-primary text-white shadow-soft-xs ring-1 ring-white/30"
+              : "bg-surface/10 text-surface/90 hover:bg-surface/20 hover:text-white"
           }`}
+          title="Switch to Wholesaler Backoffice (Full Access)"
         >
-          <Icon name="storefront" size={15} />
-          <span>Retailer Portal (ARK Connect)</span>
-          {cartTotalBoxes > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-primary/30 text-surface font-mono tabular-nums text-[10px]">
-              {cartTotalBoxes} bx
-            </span>
-          )}
+          <Icon name="factory" size={14} />
+          <span>Wholesaler</span>
         </button>
 
+        <span className="text-surface/30 mx-1">|</span>
+
+        {/* 2. Retailer 1 */}
         <button
-          onClick={handleSwitchToDistributor}
-          className={`px-3 py-1 rounded-md font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
-            portalMode === "distributor"
-              ? "bg-primary text-primary-foreground shadow-soft-xs font-semibold ring-1 ring-white/20"
-              : "text-surface/80 hover:text-surface hover:bg-surface/10"
+          type="button"
+          onClick={() => handleSwitchToRetailer("RET-0001")}
+          className={`px-2.5 py-1 rounded-md font-medium text-xs transition-all flex items-center gap-1 cursor-pointer ${
+            !isWholesaler && activeRetailerCode === "RET-0001"
+              ? "bg-primary text-white font-bold ring-1 ring-white/30"
+              : "bg-surface/10 text-surface/90 hover:bg-surface/20 hover:text-white"
           }`}
+          title="Switch to Retailer 1: Sri Laxmi Narasimha Textiles (Siddipet)"
         >
-          <Icon name="inventory_2" size={15} />
-          <span>Distributor Hub (ARK Backoffice)</span>
-          {(pendingApprovals > 0 || submittedOrders > 0) && (
-            <span className="px-1.5 py-0.2 rounded-full bg-warning text-ink font-semibold text-[10px]">
-              {pendingApprovals + submittedOrders} action
-            </span>
-          )}
+          <Icon name="storefront" size={13} />
+          <span>Retailer 1</span>
+        </button>
+
+        {/* 3. Retailer 2 */}
+        <button
+          type="button"
+          onClick={() => handleSwitchToRetailer("RET-0002")}
+          className={`px-2.5 py-1 rounded-md font-medium text-xs transition-all flex items-center gap-1 cursor-pointer ${
+            !isWholesaler && activeRetailerCode === "RET-0002"
+              ? "bg-primary text-white font-bold ring-1 ring-white/30"
+              : "bg-surface/10 text-surface/90 hover:bg-surface/20 hover:text-white"
+          }`}
+          title="Switch to Retailer 2: Sri Venkata Ramana Garments (Warangal)"
+        >
+          <Icon name="storefront" size={13} />
+          <span>Retailer 2</span>
+        </button>
+
+        {/* 4. Retailer 3 */}
+        <button
+          type="button"
+          onClick={() => handleSwitchToRetailer("RET-0003")}
+          className={`px-2.5 py-1 rounded-md font-medium text-xs transition-all flex items-center gap-1 cursor-pointer ${
+            !isWholesaler && activeRetailerCode === "RET-0003"
+              ? "bg-primary text-white font-bold ring-1 ring-white/30"
+              : "bg-surface/10 text-surface/90 hover:bg-surface/20 hover:text-white"
+          }`}
+          title="Switch to Retailer 3: Balaji Textiles (Karimnagar)"
+        >
+          <Icon name="storefront" size={13} />
+          <span>Retailer 3</span>
         </button>
       </div>
     </div>
   );
 }
-

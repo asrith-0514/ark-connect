@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { AppProvider, useApp } from "@/context/AppContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { AuthUser } from "@/lib/auth/types";
@@ -57,7 +57,16 @@ function MainApp() {
     selectedRetailer360Id,
   } = useApp();
 
-  const { user, isLoading, isDemo, hasPermission } = useAuth();
+  const { user, isLoading, isDemo, hasPermission, logout, quickDemoLogin } = useAuth();
+
+  // Auto-align session with portal mode during demo switching
+  useEffect(() => {
+    if (user && user.type === "retailer" && portalMode === "distributor") {
+      quickDemoLogin("owner");
+    } else if (user && user.type === "distributor" && portalMode === "retailer") {
+      quickDemoLogin("retailer", "RET-0001");
+    }
+  }, [portalMode, user?.type]);
 
   // 1. Initial authentication loading state (Splash Screen with Tagline)
   if (isLoading) {
@@ -100,13 +109,38 @@ function MainApp() {
           Your active session ({user.name}) is registered as a Retail Store Owner.
           Retailer accounts are strictly isolated from ARK Distributor Backoffice.
         </p>
-        <button
-          type="button"
-          onClick={() => setPortalMode("retailer")}
-          className="px-4 py-2 rounded-sm bg-primary text-primary-foreground font-semibold text-xs shadow-soft-xs cursor-pointer hover:bg-primary-hover transition-colors"
-        >
-          Return to Retailer Portal (ARK Connect)
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <button
+            type="button"
+            onClick={async () => {
+              await quickDemoLogin("owner");
+              setPortalMode("distributor");
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-primary text-white font-semibold text-xs shadow-soft-xs cursor-pointer hover:bg-primary/90 transition-colors"
+          >
+            Switch to Wholesaler Staff (Owner)
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              await logout();
+              window.location.href = "/staff";
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-surface border border-border text-ink font-semibold text-xs shadow-soft-xs cursor-pointer hover:bg-surface-raised transition-colors"
+          >
+            Sign Out
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setPortalMode("retailer");
+              window.location.href = "/";
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-ink-muted hover:text-ink font-semibold text-xs cursor-pointer transition-colors"
+          >
+            Return to Retailer Portal
+          </button>
+        </div>
       </div>
     );
   }
@@ -123,13 +157,38 @@ function MainApp() {
           Your active session ({user.name} • {user.roleTitle}) is a Distributor Staff account.
           Distributor staff cannot open the Retailer Ordering Portal.
         </p>
-        <button
-          type="button"
-          onClick={() => setPortalMode("distributor")}
-          className="px-4 py-2 rounded-sm bg-primary text-primary-foreground font-semibold text-xs shadow-soft-xs cursor-pointer hover:bg-primary-hover transition-colors"
-        >
-          Return to Distributor Backoffice
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <button
+            type="button"
+            onClick={async () => {
+              await quickDemoLogin("retailer", "RET-0001");
+              setPortalMode("retailer");
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-primary text-white font-semibold text-xs shadow-soft-xs cursor-pointer hover:bg-primary/90 transition-colors"
+          >
+            Switch to Retailer Store (RET-0001)
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              await logout();
+              window.location.href = "/";
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-surface border border-border text-ink font-semibold text-xs shadow-soft-xs cursor-pointer hover:bg-surface-raised transition-colors"
+          >
+            Sign Out
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setPortalMode("distributor");
+              window.location.href = "/staff";
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-ink-muted hover:text-ink font-semibold text-xs cursor-pointer transition-colors"
+          >
+            Return to Distributor Backoffice
+          </button>
+        </div>
       </div>
     );
   }

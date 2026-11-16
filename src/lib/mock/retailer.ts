@@ -608,7 +608,13 @@ export function isDemoModeEnabled(): boolean {
   }
   if (typeof window !== "undefined") {
     const params = new URLSearchParams(window.location.search);
-    return params.get("demo") === "true" || params.get("demo") === "1";
+    if (params.get("demo") === "true" || params.get("demo") === "1") {
+      return true;
+    }
+    // In local development or prototype testing, always enable demo switcher & seamless account switching
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return true;
+    }
   }
   return false;
 }

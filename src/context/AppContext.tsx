@@ -22,7 +22,8 @@ import {
   MOCK_TIER_ARTICLES
 } from "@/data/mockData";
 import confetti from "canvas-confetti";
-import { useCurrentDate, getDaysUntil } from "@/lib/mock/retailer";
+import { useCurrentDate, getDaysUntil, isDemoModeEnabled } from "@/lib/mock/retailer";
+import { useAuth } from "./AuthContext";
 import {
   CommunicationLogEntry,
   Complaint,
@@ -212,9 +213,32 @@ export function AppProvider({
   const [retailerNav, setRetailerNav] = useState<string>(normalizedRetailerNav);
   const [distributorNav, setDistributorNav] = useState<string>(initialDistributorNav);
 
-  // Initial cart populated with Draft PO #ARK-8902 items from design
+  const { user } = useAuth();
+
+  // Initial cart populated with Draft PO #ARK-8902 items only when demo mode is enabled (?demo=true)
   const initialDraftOrder = MOCK_ORDERS.find(o => o.orderNumber === "ARK-8902");
-  const [cartItems, setCartItems] = useState<OrderItem[]>(initialDraftOrder ? initialDraftOrder.items : []);
+  const [cartItems, setCartItems] = useState<OrderItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("ark_cart_v1");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch {}
+    }
+    const isExplicitDemo = typeof window !== "undefined" && (new URLSearchParams(window.location.search).get("demo") === "true" || new URLSearchParams(window.location.search).get("demo") === "1");
+    return (isExplicitDemo && initialDraftOrder) ? initialDraftOrder.items : [];
+  });
+
+  // Sync cart to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("ark_cart_v1", JSON.stringify(cartItems));
+      } catch {}
+    }
+  }, [cartItems]);
 
   // Modals state
   const [matrixProduct, setMatrixProduct] = useState<Product | null>(null);
@@ -228,8 +252,71 @@ export function AppProvider({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [orderTabFilter, setOrderTabFilter] = useState<string>("all");
 
-  // Data states
+  // Data states: Persistent across route changes, refreshes, tabs, and server
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+
+  // Hydrate orders from localStorage and sync with server API
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // 1. Immediate local cache retrieval
+    try {
+      const saved = localStorage.getItem("ark_orders_v1");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setOrders(parsed);
+        }
+      }
+    } catch (e) {
+      console.error("Error reading ark_orders_v1 on mount", e);
+    }
+
+    // 2. Fetch authoritative orders from /api/orders
+    const syncServerOrders = async () => {
+      try {
+        const res = await fetch("/api/orders");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.orders && Array.isArray(data.orders) && data.orders.length > 0) {
+            setOrders(prev => {
+              const serverIds = new Set(data.orders.map((o: Order) => o.id));
+              const localUnsynced = prev.filter(o => !serverIds.has(o.id) && o.orderNumber !== "ARK-8902");
+              const merged = [...localUnsynced, ...data.orders];
+              try {
+                localStorage.setItem("ark_orders_v1", JSON.stringify(merged));
+              } catch {}
+              return merged;
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error syncing orders from API:", err);
+      }
+    };
+
+    syncServerOrders();
+    const interval = setInterval(syncServerOrders, 3000);
+
+    // 3. Listen to cross-tab storage changes
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "ark_orders_v1" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setOrders(parsed);
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
   const [retailers, setRetailers] = useState<Retailer[]>(MOCK_RETAILERS);
   const activeRetailer = retailers[0];
   const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
@@ -605,13 +692,18 @@ export function AppProvider({
   const submitCurrentOrder = (transporter = "Navata Road Transport", notes = "") => {
     if (cartItems.length === 0) return;
 
-    const newOrderNumber = `ARK-${Math.floor(8900 + Math.random() * 900)}`;
+    const retId = user?.type === "retailer" && user.retailerCode ? user.retailerCode : "RET-0001";
+    const ret = retailers.find(r => r.code === retId || r.id === retId);
+    const retName = user?.type === "retailer" ? user.name : (ret?.name || "Sri Laxmi Narasimha Textiles");
+    const retTown = ret?.town || "Siddipet";
+
+    const newOrderNumber = `ARK-${Math.floor(9200 + Math.random() * 700)}`;
     const newOrder: Order = {
       id: `ord-${Date.now()}`,
       orderNumber: newOrderNumber,
-      retailerId: "RET-0001",
-      retailerName: "Sri Laxmi Narasimha Textiles",
-      retailerTown: "Siddipet",
+      retailerId: retId,
+      retailerName: retName,
+      retailerTown: retTown,
       date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
       status: "Submitted",
       totalBoxes: cartTotalBoxes,
@@ -624,9 +716,31 @@ export function AppProvider({
       items: [...cartItems]
     };
 
-    setOrders(prev => [newOrder, ...prev.filter(o => o.orderNumber !== "ARK-8902")]);
+    setOrders(prev => {
+      const updated = [newOrder, ...prev.filter(o => o.orderNumber !== "ARK-8902")];
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("ark_orders_v1", JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
     setLastSubmittedOrder(newOrder);
     setCartItems([]);
+
+    // Sync new order to server
+    if (typeof window !== "undefined") {
+      fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order: newOrder }),
+      }).catch(err => console.error("Error posting order to server:", err));
+    }
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("ark_cart_v1");
+      } catch {}
+    }
     setIsReviewOrderOpen(false);
     setIsOrderSuccessOpen(true);
 
@@ -643,8 +757,8 @@ export function AppProvider({
   };
 
   const updateOrderStatus = (orderId: string, status: Order["status"], extra?: Partial<Order>) => {
-    setOrders(prev =>
-      prev.map(order => {
+    setOrders(prev => {
+      const updated = prev.map(order => {
         if (order.id === orderId || order.orderNumber === orderId) {
           // Rule 4: An order can become Dispatched only with an issued invoice
           let invoiceNumber = order.invoiceNumber || extra?.invoiceNumber;
@@ -660,8 +774,23 @@ export function AppProvider({
           };
         }
         return order;
-      })
-    );
+      });
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("ark_orders_v1", JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+
+    // Sync order update to server
+    if (typeof window !== "undefined") {
+      fetch("/api/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, status, extra }),
+      }).catch(err => console.error("Error patching order on server:", err));
+    }
   };
 
   const deleteOrder = (orderId: string) => {

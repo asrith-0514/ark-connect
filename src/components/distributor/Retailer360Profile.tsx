@@ -103,7 +103,7 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
   const retComms = useMemo(() => getRetailerCommunications(retailer.id, communications), [retailer.id, communications]);
   const retComplaints = useMemo(() => getRetailerComplaints(retailer.id, complaints), [retailer.id, complaints]);
   const retFollowUps = useMemo(() => getRetailerFollowUps(retailer.id, followUps, currentDate), [retailer.id, followUps, currentDate]);
-  
+
   const segmentation = useMemo(
     () => getRetailerSegments(retailers, orders, invoices, {}, currentDate),
     [retailers, orders, invoices, currentDate]
@@ -184,17 +184,16 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                 </h1>
                 {segmentMetric && (
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                      segmentMetric.segment === "Champions"
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${segmentMetric.segment === "Champions"
                         ? "bg-warning/15 text-warning border border-warning/30"
                         : segmentMetric.segment === "Regular"
-                        ? "bg-primary/15 text-primary border border-primary/30"
-                        : segmentMetric.segment === "New"
-                        ? "bg-success/15 text-success border border-success/30"
-                        : segmentMetric.segment === "At risk"
-                        ? "bg-danger/15 text-danger border border-danger/30"
-                        : "bg-surface-raised text-ink-muted border border-border"
-                    }`}
+                          ? "bg-primary/15 text-primary border border-primary/30"
+                          : segmentMetric.segment === "New"
+                            ? "bg-success/15 text-success border border-success/30"
+                            : segmentMetric.segment === "At risk"
+                              ? "bg-danger/15 text-danger border border-danger/30"
+                              : "bg-surface-raised text-ink-muted border border-border"
+                      }`}
                   >
                     ★ {segmentMetric.segment}
                   </span>
@@ -274,11 +273,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             <button
               type="button"
               onClick={() => toggleCreditHold(retailer.id)}
-              className={`h-9 px-3 rounded-md border text-xs font-bold transition-colors cursor-pointer ${
-                retailer.creditHold
+              className={`h-9 px-3 rounded-md border text-xs font-bold transition-colors cursor-pointer ${retailer.creditHold
                   ? "bg-danger text-white border-danger hover:bg-danger/90"
                   : "bg-surface hover:bg-danger/10 text-danger border-border hover:border-danger/30"
-              }`}
+                }`}
             >
               {retailer.creditHold ? "Release Hold" : "Place Hold"}
             </button>
@@ -344,13 +342,12 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
           </div>
           <div className="w-full h-2.5 bg-background rounded-full overflow-hidden border border-border">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                creditUsagePct > 90
+              className={`h-full rounded-full transition-all duration-300 ${creditUsagePct > 90
                   ? "bg-danger"
                   : creditUsagePct > 70
-                  ? "bg-warning"
-                  : "bg-primary"
-              }`}
+                    ? "bg-warning"
+                    : "bg-primary"
+                }`}
               style={{ width: `${Math.min(100, Math.max(3, creditUsagePct))}%` }}
             />
           </div>
@@ -372,11 +369,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
             key={t.id}
             type="button"
             onClick={() => setActiveTab(t.id as any)}
-            className={`px-3.5 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
-              activeTab === t.id
+            className={`px-3.5 py-2.5 text-xs font-bold rounded-t-xl transition-all border-b-2 flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${activeTab === t.id
                 ? "border-primary text-primary bg-primary/5"
                 : "border-transparent text-ink-muted hover:text-ink hover:bg-surface-raised"
-            }`}
+              }`}
           >
             <Icon name={t.icon} size={16} />
             <span>{t.label}</span>
@@ -501,9 +497,8 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                   {retFollowUps.filter((f) => f.status === "open").slice(0, 3).map((f) => (
                     <div key={f.id} className="p-2.5 rounded-lg bg-surface border border-border text-xs">
                       <div className="flex items-center justify-between">
-                        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                          f.isMissed ? "bg-danger/10 text-danger" : f.isToday ? "bg-warning/15 text-warning" : "bg-primary/10 text-primary"
-                        }`}>
+                        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${f.isMissed ? "bg-danger/10 text-danger" : f.isToday ? "bg-warning/15 text-warning" : "bg-primary/10 text-primary"
+                          }`}>
                           {f.isMissed ? "Missed" : f.isToday ? "Due Today" : "Upcoming"}
                         </span>
                         <span className="font-mono text-[11px] text-ink-muted">{f.dueDate}</span>
@@ -564,18 +559,17 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                     {retailer.preferredLanguage === "te"
                       ? "తెలుగు (Telugu)"
                       : retailer.preferredLanguage === "hi"
-                      ? "Hindi"
-                      : retailer.preferredLanguage === "ta"
-                      ? "Tamil"
-                      : "English"}
+                        ? "Hindi"
+                        : retailer.preferredLanguage === "ta"
+                          ? "Tamil"
+                          : "English"}
                   </span>
                 </div>
                 <div>
                   <span className="text-ink-muted block text-[10px]">Phone Consent</span>
                   <span
-                    className={`font-semibold ${
-                      retailer.phoneConsent !== false ? "text-success" : "text-danger"
-                    }`}
+                    className={`font-semibold ${retailer.phoneConsent !== false ? "text-success" : "text-danger"
+                      }`}
                   >
                     {retailer.phoneConsent !== false ? "✓ Granted" : "✕ Revoked"}
                   </span>
@@ -583,9 +577,8 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                 <div>
                   <span className="text-ink-muted block text-[10px]">Calling Status</span>
                   <span
-                    className={`font-semibold ${
-                      retailer.doNotCall ? "text-danger" : "text-success"
-                    }`}
+                    className={`font-semibold ${retailer.doNotCall ? "text-danger" : "text-success"
+                      }`}
                   >
                     {retailer.doNotCall ? "DNC Active (No calls)" : "Eligible for calls"}
                   </span>
@@ -634,11 +627,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                     </div>
 
                     <div
-                      className={`w-full rounded-t-md transition-all duration-300 ${
-                        m.spend > 0
+                      className={`w-full rounded-t-md transition-all duration-300 ${m.spend > 0
                           ? "bg-primary hover:bg-primary/80 group-hover:scale-y-105"
                           : "bg-surface-raised"
-                      }`}
+                        }`}
                       style={{ height: `${heightPct}%` }}
                     />
                     <span className="text-[10px] text-ink-muted mt-2 font-mono truncate max-w-full">
@@ -811,11 +803,10 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                   key={f.id}
                   type="button"
                   onClick={() => setCommChannelFilter(f.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                    commChannelFilter === f.id
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors ${commChannelFilter === f.id
                       ? "bg-primary text-primary-foreground shadow-soft-xs"
                       : "bg-surface border border-border text-ink-muted hover:text-ink"
-                  }`}
+                    }`}
                 >
                   {f.label}
                 </button>
@@ -907,13 +898,12 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                   <div key={c.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          c.status === "resolved"
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.status === "resolved"
                             ? "bg-success/15 text-success"
                             : c.status === "in-progress"
-                            ? "bg-warning/15 text-warning"
-                            : "bg-danger/15 text-danger"
-                        }`}>
+                              ? "bg-warning/15 text-warning"
+                              : "bg-danger/15 text-danger"
+                          }`}>
                           {c.status}
                         </span>
                         <span className="font-bold text-xs text-ink uppercase tracking-wider">
@@ -976,15 +966,14 @@ export const Retailer360Profile: React.FC<Retailer360ProfileProps> = ({
                   <div key={f.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          f.status === "done"
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${f.status === "done"
                             ? "bg-surface-raised text-ink-muted"
                             : f.isMissed
-                            ? "bg-danger/15 text-danger"
-                            : f.isToday
-                            ? "bg-warning/15 text-warning"
-                            : "bg-primary/10 text-primary"
-                        }`}>
+                              ? "bg-danger/15 text-danger"
+                              : f.isToday
+                                ? "bg-warning/15 text-warning"
+                                : "bg-primary/10 text-primary"
+                          }`}>
                           {f.status === "done" ? "Done" : f.isMissed ? "Missed" : f.isToday ? "Due Today" : "Upcoming"}
                         </span>
                         <span className="text-xs font-bold text-ink uppercase tracking-wider">

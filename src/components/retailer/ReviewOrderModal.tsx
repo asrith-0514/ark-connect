@@ -69,8 +69,9 @@ export default function ReviewOrderModal() {
             <Icon name="arrow_back" size={20} />
           </button>
           <div>
-            <h2 className="text-sm sm:text-lg font-bold text-ink leading-tight">
-              {getRetailerString(language, "reviewOrderTitle")}
+            <h2 className="text-sm sm:text-lg font-bold text-ink leading-tight flex items-center gap-2">
+              <Icon name="shopping_cart" size={20} className="text-primary" />
+              <span>Wholesale Cart &amp; Order Review</span>
             </h2>
             <p className="text-[11px] text-ink-muted font-mono num">
               {RETAILER_PROFILE.name} • {RETAILER_PROFILE.town}

@@ -177,7 +177,7 @@ export default function MyOrdersView() {
     }
   };
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6 pb-24 text-ink">
+    <div className="w-full max-w-4xl mx-auto space-y-4 pb-6 text-ink">
       {/* 1. Urgent Action Banner for Approved Orders */}
       {(() => {
         const approvedOrder = orders.find(o => o.status === "Approved");
@@ -235,7 +235,7 @@ export default function MyOrdersView() {
                 : "text-ink-muted hover:text-ink"
                 }`}
             >
-              Orders ({orders.length})
+              Orders ({retailerOrders.length})
             </button>
             <button
               type="button"
@@ -263,7 +263,7 @@ export default function MyOrdersView() {
 
       {/* Active Dispatched Delivery: 3-Stage Progress Tracker */}
       {(() => {
-        const dispatchedOrder = orders.find(o => o.status === "Dispatched");
+        const dispatchedOrder = retailerOrders.find(o => o.status === "Dispatched");
         if (!dispatchedOrder) return null;
         return (
           <section className="w-full bg-surface rounded-2xl p-4 sm:p-5 border border-border shadow-soft-sm flex flex-col gap-3.5">
@@ -310,7 +310,7 @@ export default function MyOrdersView() {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs text-ink-muted">
-              <span>{dispatchedOrder.totalBoxes} boxes • {formatINR(dispatchedOrder.grandTotal)}</span>
+              <span>{dispatchedOrder.totalBoxes} boxes • {formatINR(dispatchedOrder.grandTotal)} (incl. GST)</span>
               <button
                 type="button"
                 onClick={() => setTrackingOrder(dispatchedOrder)}
@@ -413,7 +413,7 @@ export default function MyOrdersView() {
           {/* Requirement 5: Filter Tabs matching Home metrics */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
             {[
-              { id: "all", label: `All (${orders.length})` },
+              { id: "all", label: `All (${retailerOrders.length})` },
               { id: "active", label: `Active Pipeline (${activePipelineCount})` },
               { id: "in-review", label: `In Review (${inReviewCount})` },
               { id: "dispatched", label: `Dispatched (${dispatchedCount})` },
@@ -454,6 +454,9 @@ export default function MyOrdersView() {
               {filteredOrders.map(order => {
                 const brandsList =
                   Array.from(new Set(order.items.map(i => i.brand))).join(", ") || "Multi-brand";
+                const orderPieces = order.items && order.items.length > 0
+                  ? order.items.reduce((sum, item) => sum + (item.totalPieces || (item.units * 10)), 0)
+                  : (order.totalPieces || order.totalBoxes * 10);
 
                 return (
                   <article
@@ -493,8 +496,8 @@ export default function MyOrdersView() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-ink-muted">Volume</span>
-                        <span className="font-semibold text-ink font-mono">
-                          {order.totalBoxes} boxes ({order.totalPieces || order.totalBoxes * 10} pcs)
+                        <span className="font-semibold text-ink font-mono num">
+                          {order.totalBoxes} boxes ({orderPieces} pcs)
                         </span>
                       </div>
                     </div>
@@ -502,10 +505,10 @@ export default function MyOrdersView() {
                     {/* Values */}
                     <div className="flex items-baseline justify-between pt-1">
                       <span className="text-xs text-ink-muted">
-                        Estimated total (before GST)
+                        Total (incl. GST)
                       </span>
-                      <span className="text-base sm:text-lg font-bold text-ink font-mono">
-                        {formatINR(order.subtotal)}
+                      <span className="text-base sm:text-lg font-bold text-ink font-mono num">
+                        {formatINR(order.grandTotal || (order.subtotal * 1.05))}
                       </span>
                     </div>
 
@@ -573,7 +576,7 @@ export default function MyOrdersView() {
                             </div>
                           )}
 
-                          {/* Requirement 3: Dispatched Cards with Track Lorry Receipt (opens Drawer) */}
+                          {/* Dispatched Cards with Track delivery (opens Drawer) */}
                           {order.status === "Dispatched" && (
                             <div className="pt-2 border-t border-border space-y-2">
                               <div className="bg-primary/10/70 p-2.5 rounded-lg border border-primary/20 text-xs text-ink space-y-1">
@@ -585,20 +588,20 @@ export default function MyOrdersView() {
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-ink-muted">Lorry Receipt (LR):</span>
-                                  <span className="font-bold text-primary font-mono">
+                                  <span className="font-bold text-primary font-mono num">
                                     {order.lrNumber || "NRT-77492-SDP"}
                                   </span>
                                 </div>
                               </div>
 
-                              {/* Open Drawer Trigger */}
+                              {/* One Track delivery Action */}
                               <button
                                 type="button"
                                 onClick={() => setTrackingOrder(order)}
-                                className="w-full h-10 rounded-md bg-surface-raised hover:bg-surface-raised text-primary font-bold text-xs flex items-center justify-center gap-2 transition-colors border border-border cursor-pointer"
+                                className="w-full h-10 rounded-md bg-surface-raised hover:bg-surface-raised text-primary font-semibold text-xs flex items-center justify-center gap-2 transition-colors border border-border cursor-pointer shadow-soft-xs"
                               >
-                                <Icon name="local_shipping" size={18} />
-                                <span>Track Lorry Receipt (LR)</span>
+                                <Icon name="local_shipping" size={16} />
+                                <span>Track delivery</span>
                               </button>
                             </div>
                           )}
@@ -607,16 +610,16 @@ export default function MyOrdersView() {
                           {order.status === "Delivered" && (
                             <div className="pt-2 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2">
                               <div className="flex items-center gap-1.5 text-xs text-success font-semibold">
-                                <Icon name="verified_user" size={18} />
+                                <Icon name="verified_user" size={16} />
                                 <span>Delivered & verified at shop (Siddipet)</span>
                               </div>
                               <button
                                 type="button"
-                                onClick={() => setRetailerNav("catalogue")}
-                                className="w-full sm:w-auto px-4 h-9 rounded-md bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-border cursor-pointer"
+                                onClick={() => setTrackingOrder(order)}
+                                className="w-full sm:w-auto px-4 h-9 rounded-md bg-surface hover:bg-surface-raised text-ink font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-border cursor-pointer shadow-soft-xs"
                               >
-                                <Icon name="autorenew" size={16} />
-                                <span>Reorder Articles</span>
+                                <Icon name="local_shipping" size={15} />
+                                <span>Track delivery</span>
                               </button>
                             </div>
                           )}
