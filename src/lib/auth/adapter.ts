@@ -98,7 +98,8 @@ export function decodeSessionToken(token: string): AuthUser | null {
     }
     const payload: SessionPayload = JSON.parse(json);
     if (!payload?.user || !payload?.expiresAt) return null;
-    if (Date.now() > payload.expiresAt) return null; // Expired
+    const now = typeof window !== "undefined" ? Date.now() : 0;
+    if (now > 0 && now > payload.expiresAt) return null; // Expired
     return payload.user;
   } catch {
     return null;

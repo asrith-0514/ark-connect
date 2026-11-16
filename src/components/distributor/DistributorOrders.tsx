@@ -32,8 +32,29 @@ export default function DistributorOrders() {
     currentDate,
   } = useApp();
 
-  // Active tab state (synced with Dashboard navigation)
-  const [activeTab, setActiveTab] = useState<string>(() => orderTabFilter || "all");
+  // 1. Hide DRAFT orders (retailer-private)
+  const visibleOrders = useMemo(() => {
+    return orders.filter(o => o.status !== "Draft");
+  }, [orders]);
+
+  // Stage counts for tabs matching Dashboard
+  const submittedCount = useMemo(() => visibleOrders.filter(o => o.status === "Submitted").length, [visibleOrders]);
+  const approvedCount = useMemo(() => visibleOrders.filter(o => o.status === "Approved").length, [visibleOrders]);
+  const confirmedCount = useMemo(() => visibleOrders.filter(o => o.status === "Confirmed").length, [visibleOrders]);
+  const processingCount = useMemo(() => visibleOrders.filter(o => o.status === "Processing").length, [visibleOrders]);
+  const dispatchedCount = useMemo(() => visibleOrders.filter(o => o.status === "Dispatched").length, [visibleOrders]);
+  const deliveredCount = useMemo(() => visibleOrders.filter(o => o.status === "Delivered").length, [visibleOrders]);
+  const activeCount = useMemo(
+    () => visibleOrders.filter(o => o.status !== "Delivered").length,
+    [visibleOrders]
+  );
+
+  // Active tab state: Requirement 4: open on "Needs review" if any exist, otherwise "Active"
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (orderTabFilter) return orderTabFilter;
+    const initialSubmitted = orders.filter(o => o.status === "Submitted" && !o.orderNumber.startsWith("ARK-H")).length;
+    return initialSubmitted > 0 ? "review" : "active";
+  });
 
   useEffect(() => {
     if (orderTabFilter) {
@@ -46,6 +67,8 @@ export default function DistributorOrders() {
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [deliveredPage, setDeliveredPage] = useState<number>(1);
+  const pageSize = 15;
 
   // Modals and Drawers
   const [viewDrawerOrder, setViewDrawerOrder] = useState<Order | null>(null);
@@ -74,19 +97,6 @@ export default function DistributorOrders() {
     setTimeout(() => setActionToast(null), 3500);
   };
 
-  // 1. Hide DRAFT orders (retailer-private)
-  const visibleOrders = useMemo(() => {
-    return orders.filter(o => o.status !== "Draft");
-  }, [orders]);
-
-  // Stage counts for tabs matching Dashboard
-  const submittedCount = useMemo(() => visibleOrders.filter(o => o.status === "Submitted").length, [visibleOrders]);
-  const approvedCount = useMemo(() => visibleOrders.filter(o => o.status === "Approved").length, [visibleOrders]);
-  const confirmedCount = useMemo(() => visibleOrders.filter(o => o.status === "Confirmed").length, [visibleOrders]);
-  const processingCount = useMemo(() => visibleOrders.filter(o => o.status === "Processing").length, [visibleOrders]);
-  const dispatchedCount = useMemo(() => visibleOrders.filter(o => o.status === "Dispatched").length, [visibleOrders]);
-  const deliveredCount = useMemo(() => visibleOrders.filter(o => o.status === "Delivered").length, [visibleOrders]);
-
   // Retailer financial ledgers for credit checking
   const retailerLedgers = useMemo(() => {
     return getRetailerAgeingLedgers(retailers, invoices, currentDate);
@@ -97,6 +107,7 @@ export default function DistributorOrders() {
     let result = visibleOrders.filter(o => {
       // Tab filter
       if (activeTab === "review" && o.status !== "Submitted") return false;
+      if (activeTab === "active" && o.status === "Delivered") return false;
       if (activeTab === "ready_invoice" && o.status !== "Approved") return false;
       if (activeTab === "processing" && o.status !== "Processing" && o.status !== "Confirmed") return false;
       if (activeTab === "dispatched" && o.status !== "Dispatched") return false;
@@ -143,14 +154,24 @@ export default function DistributorOrders() {
       } else if (sortField === "grandTotal") {
         cmp = a.grandTotal - b.grandTotal;
       } else if (sortField === "date") {
-        // Approximate date sort
-        cmp = a.id.localeCompare(b.id);
+        const timeA = new Date(a.date).getTime() || 0;
+        const timeB = new Date(b.date).getTime() || 0;
+        cmp = timeA - timeB;
+        if (cmp === 0) cmp = a.id.localeCompare(b.id);
       }
       return sortDirection === "asc" ? cmp : -cmp;
     });
 
     return result;
   }, [visibleOrders, activeTab, searchQuery, dateFilter, sortField, sortDirection, currentDate]);
+
+  const paginatedOrders = useMemo(() => {
+    if (activeTab !== "delivered") return filteredOrders;
+    const start = (deliveredPage - 1) * pageSize;
+    return filteredOrders.slice(start, start + pageSize);
+  }, [filteredOrders, activeTab, deliveredPage]);
+
+  const totalDeliveredPages = Math.ceil(filteredOrders.length / pageSize) || 1;
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -473,31 +494,23 @@ export default function DistributorOrders() {
         </div>
       </div>
 
-      {/* Tabs with soft primary-tinted pill */}
+      {/* Tabs with sentence-case labels */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
         {[
-          { id: "all", label: `All (${visibleOrders.length})` },
           {
             id: "review",
-            label: `Needs Review (${submittedCount})`,
+            label: `Needs review (${submittedCount})`,
             alert: submittedCount > 0,
           },
           {
-            id: "ready_invoice",
-            label: `Ready to Invoice (${approvedCount})`,
-          },
-          {
-            id: "processing",
-            label: `Processing (${processingCount + confirmedCount})`,
-          },
-          {
-            id: "dispatched",
-            label: `Dispatched (${dispatchedCount})`,
+            id: "active",
+            label: `Active (${activeCount})`,
           },
           {
             id: "delivered",
-            label: `Delivered (${deliveredCount})`,
+            label: `Delivered history (${deliveredCount})`,
           },
+          { id: "all", label: `All (${visibleOrders.length})` },
         ].map(t => {
           const isActive = activeTab === t.id;
           return (
@@ -506,10 +519,11 @@ export default function DistributorOrders() {
               onClick={() => {
                 setActiveTab(t.id);
                 setOrderTabFilter(t.id);
+                setDeliveredPage(1);
               }}
-              className={`px-3.5 py-2 rounded-md text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
+              className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
                 isActive
-                  ? "bg-primary/10 text-primary ring-1 ring-primary/25 shadow-soft-sm"
+                  ? "bg-primary text-white shadow-soft-xs font-bold"
                   : "bg-surface hover:bg-surface-raised text-ink-muted hover:text-ink border border-border"
               }`}
             >
@@ -628,7 +642,7 @@ export default function DistributorOrders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-xs sm:text-sm">
-              {filteredOrders.map((order, idx) => {
+              {paginatedOrders.map((order, idx) => {
                 const label = getOrderStatusLabel(order.status, "distributor");
                 const orderRetailer = retailers.find(r => r.id === order.retailerId || r.name === order.retailerName);
 
@@ -653,7 +667,7 @@ export default function DistributorOrders() {
                   <tr
                     key={order.id}
                     onClick={() => setViewDrawerOrder(order)}
-                    className="hover:bg-surface-raised transition-colors cursor-pointer group"
+                    className="h-11 min-h-[44px] hover:bg-surface-raised transition-colors cursor-pointer group"
                   >
                     {/* PO # */}
                     <td className="py-2.5 sm:py-3 px-4 whitespace-nowrap font-mono num font-bold text-primary group-hover:underline">
@@ -833,6 +847,38 @@ export default function DistributorOrders() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination controls for Delivered History */}
+        {activeTab === "delivered" && totalDeliveredPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-surface-raised text-xs text-ink-muted">
+            <div>
+              Showing <span className="font-mono font-bold text-ink">{((deliveredPage - 1) * 15) + 1}</span> to{" "}
+              <span className="font-mono font-bold text-ink">{Math.min(deliveredPage * 15, filteredOrders.length)}</span> of{" "}
+              <span className="font-mono font-bold text-ink">{filteredOrders.length}</span> delivered orders
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={deliveredPage === 1}
+                onClick={() => setDeliveredPage(p => Math.max(1, p - 1))}
+                className="px-2.5 py-1 rounded-md border border-border bg-surface text-ink hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors cursor-pointer"
+              >
+                Previous
+              </button>
+              <span className="font-mono num px-2 font-semibold text-ink">
+                {deliveredPage} / {totalDeliveredPages}
+              </span>
+              <button
+                type="button"
+                disabled={deliveredPage === totalDeliveredPages}
+                onClick={() => setDeliveredPage(p => Math.min(totalDeliveredPages, p + 1))}
+                className="px-2.5 py-1 rounded-md border border-border bg-surface text-ink hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors cursor-pointer"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ==================================================================== */}

@@ -7,16 +7,7 @@ import { OrderItem } from "@/data/mockData";
 import { formatINR } from "@/lib/mock/retailer";
 import { useEntityImages } from "@/lib/storage/imageStore";
 
-function MatrixProductImage({ product }: { product: { id: string; title: string; image: string } }) {
-  const { primaryUrl } = useEntityImages("style", product.id);
-  return (
-    <img
-      src={primaryUrl || product.image}
-      alt={product.title}
-      className="w-full h-full object-cover"
-    />
-  );
-}
+import { ProductTile } from "./ProductTile";
 
 export default function VariantMatrixModal() {
   const { matrixProduct, closeMatrixModal, addToCart } = useApp();
@@ -192,8 +183,15 @@ export default function VariantMatrixModal() {
         {/* Modal Header */}
         <div className="p-4 sm:p-6 flex items-start justify-between bg-surface-raised/30 border-b border-border">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden bg-surface-raised shrink-0 border border-border shadow-soft-sm">
-              <MatrixProductImage product={matrixProduct} />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-border shadow-soft-sm">
+              <ProductTile
+                productId={matrixProduct.id}
+                brand={matrixProduct.brand}
+                category={matrixProduct.category}
+                title={matrixProduct.title}
+                pcsPerBox={piecesPerBox}
+                aspectRatio="aspect-square"
+              />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">

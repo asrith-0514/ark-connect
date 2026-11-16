@@ -632,7 +632,7 @@ export const DistributorReceivables: React.FC = () => {
         <div className="flex-1 bg-surface rounded-lg shadow-soft-sm border border-border overflow-hidden flex flex-col w-full min-w-0">
           <div className="overflow-x-auto w-full">
             <table className="w-full min-w-[1050px] text-left border-collapse">
-              <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border text-ink-muted text-[11px] font-bold uppercase tracking-wider font-mono select-none">
+              <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border text-ink-muted text-xs font-semibold select-none">
                 <tr>
                   <th className="py-2.5 px-3.5 w-10 text-center">
                     <input
@@ -645,7 +645,7 @@ export const DistributorReceivables: React.FC = () => {
                       className="rounded w-4 h-4 accent-primary cursor-pointer"
                     />
                   </th>
-                  <th className="py-2.5 px-3 min-w-[220px]">Retailer / Shop</th>
+                  <th className="py-2.5 px-3 min-w-[220px]">Retailer / shop</th>
                   <th className="py-2.5 px-3 text-right min-w-[100px]">Not yet due</th>
                   <th className="py-2.5 px-3 text-right min-w-[105px]">1–30 days</th>
                   <th className="py-2.5 px-3 text-right min-w-[105px]">31–60 days</th>
@@ -666,7 +666,7 @@ export const DistributorReceivables: React.FC = () => {
                     <tr
                       key={item.retailer.id}
                       onClick={() => setSelectedRetailerId(isDrawerActive ? null : item.retailer.id)}
-                      className={`transition-colors cursor-pointer group ${
+                      className={`h-11 min-h-[44px] transition-colors cursor-pointer group ${
                         isDrawerActive
                           ? "bg-primary/10"
                           : isChecked

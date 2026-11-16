@@ -42,23 +42,35 @@ export function RetailerHeader() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const latestDispatched = orders.find(o => o.status === "Dispatched") || orders[0];
-  const latestPayment = payments[0];
+  const activeRetailerId = user?.type === "retailer" ? (user.retailerId || "ret-1") : "ret-1";
+  const activeRetailerCode = user?.type === "retailer" ? (user.retailerCode || "RET-0001") : "RET-0001";
+
+  const retailerOrders = orders.filter(
+    o =>
+      (o.retailerId === activeRetailerId || o.retailerId === activeRetailerCode) &&
+      !o.orderNumber.startsWith("ARK-H")
+  );
+  const retailerPayments = payments.filter(
+    p => p.retailerId === activeRetailerId || p.retailerId === activeRetailerCode
+  );
+
+  const latestDispatched = retailerOrders.find(o => o.status === "Dispatched");
+  const latestPayment = retailerPayments[0];
 
   const notifications = [
     {
       id: "notif-1",
-      title: latestDispatched ? `Order Dispatched #${latestDispatched.orderNumber}` : "Order Dispatched",
-      desc: latestDispatched?.transporter ? `${latestDispatched.transporter} • ${latestDispatched.totalBoxes} boxes` : "In transit with logistics partner",
-      time: "2h ago",
+      title: latestDispatched ? `Order Dispatched #${latestDispatched.orderNumber}` : "Order Tracking Active",
+      desc: latestDispatched?.transporter ? `${latestDispatched.transporter} • ${latestDispatched.totalBoxes} boxes` : "No pending dispatches in transit",
+      time: latestDispatched ? "2h ago" : "Today",
       type: "dispatch",
-      read: false,
+      read: !latestDispatched,
     },
     {
       id: "notif-2",
-      title: latestPayment ? `Payment Received ${formatINR(latestPayment.amount)}` : "Payment Received",
-      desc: latestPayment?.referenceId ? `${latestPayment.referenceId} reconciled • Credit restored` : "Reconciled against open invoices",
-      time: "1d ago",
+      title: latestPayment ? `Payment Received ${formatINR(latestPayment.amount)}` : "Payment Reconciliation",
+      desc: latestPayment?.referenceId ? `${latestPayment.referenceId} reconciled • Credit restored` : "All payments up to date",
+      time: latestPayment ? "1d ago" : "Current",
       type: "payment",
       read: true,
     },
@@ -89,8 +101,8 @@ export function RetailerHeader() {
               aria-label="Go to Home"
             >
               <div className="flex sm:hidden items-center gap-1.5">
-                <ArkMonogram size={28} variant="gradient" />
-                <span className="font-mono text-[10px] font-bold text-accent tracking-widest uppercase">CONNECT</span>
+                <ArkMonogram size={26} variant="gradient" />
+                <span className="font-sans font-bold text-sm text-ink tracking-tight">ARK Connect</span>
               </div>
               <div className="hidden sm:block">
                 <ArkWordmark product="Connect" size="sm" />
@@ -102,7 +114,7 @@ export function RetailerHeader() {
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="w-full h-9.5 px-3 bg-surface-raised hover:bg-background rounded-full border border-border flex items-center justify-between text-xs text-ink-muted hover:text-ink shadow-soft-xs transition-all duration-150 cursor-pointer group hover:border-accent/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 focus:shadow-[0_0_12px_rgba(34,229,255,0.25)]"
+                className="w-full h-9.5 px-3 bg-surface-raised hover:bg-background rounded-full border border-border flex items-center justify-between text-xs text-ink-muted hover:text-ink shadow-soft-xs transition-all duration-150 cursor-pointer group hover:border-primary/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 title="Search (⌘K)"
               >
                 <div className="flex items-center gap-2 min-w-0 truncate">
@@ -208,18 +220,16 @@ export function RetailerHeader() {
                 )}
               </div>
 
-              {/* Desktop PO Pill */}
-              {cartTotalBoxes > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setIsReviewOrderOpen(true)}
-                  className="hidden md:flex min-h-[40px] items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary hover:bg-primary/15 transition-all text-xs font-semibold cursor-pointer shrink-0"
-                >
-                  <Icon name="shopping_bag" size={16} />
-                  <span className="font-mono num font-bold">{cartTotalBoxes} bx</span>
-                  <span className="font-mono num">({formatINR(cartGrandTotal)})</span>
-                </button>
-              )}
+              {/* Cart Button (Only cart symbol displayed, no details) */}
+              <button
+                type="button"
+                onClick={() => setIsReviewOrderOpen(true)}
+                className="w-10 h-10 min-h-[44px] min-w-[44px] rounded-full hover:bg-surface-raised flex items-center justify-center text-ink transition-colors relative cursor-pointer"
+                title="Cart"
+                aria-label="View Cart"
+              >
+                <Icon name="shopping_cart" size={18} />
+              </button>
 
               {/* Avatar Menu with Embedded Theme Toggle */}
               <div className="relative" ref={avatarMenuRef}>
@@ -303,13 +313,13 @@ export function RetailerHeader() {
                   key={tab.id}
                   type="button"
                   onClick={() => setRetailerNav(tab.id)}
-                  className={`min-h-[36px] px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`min-h-[36px] px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
                     retailerNav === tab.id
                       ? "bg-primary text-primary-foreground shadow-soft-sm"
                       : "text-ink-muted hover:text-ink hover:bg-background"
                   }`}
                 >
-                  {tab.label}
+                  <span>{tab.label}</span>
                 </button>
               ))}
             </nav>

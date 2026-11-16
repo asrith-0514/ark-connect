@@ -210,6 +210,8 @@ function createHistOrder(
   const gstAmount = Math.round(subtotal * 0.05 * 100) / 100;
   const grandTotal = Math.round((subtotal + gstAmount) * 100) / 100;
 
+  const numSeed = 10000 + (Math.abs(id.split("").reduce((acc, c) => acc * 31 + c.charCodeAt(0), 0)) % 80000);
+
   return {
     id,
     orderNumber,
@@ -222,7 +224,7 @@ function createHistOrder(
     deliveryDate: delivDateStr,
     dispatchDate: dateStr,
     transporter: "Navata Road Transport",
-    lrNumber: `NRT-${Math.floor(10000 + Math.random() * 89999)}-${retTown.slice(0, 3).toUpperCase()}`,
+    lrNumber: `NRT-${numSeed}-${retTown.slice(0, 3).toUpperCase()}`,
     totalBoxes,
     totalPieces,
     subtotal,

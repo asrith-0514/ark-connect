@@ -239,29 +239,20 @@ export function getDistributorKPIs(
 
   if (selectedMonth) {
     const target = parseMonthString(selectedMonth, today);
-    const mInvoices = issuedInvoices.filter(inv => {
+    periodInvoices = issuedInvoices.filter(inv => {
       const bDate = parseDate(inv.billedDate);
       return bDate.getMonth() === target.month && bDate.getFullYear() === target.year;
     });
-    if (mInvoices.length > 0) {
-      periodInvoices = mInvoices;
-    }
 
-    const mOrders = nonDraftOrders.filter(o => {
+    periodOrders = nonDraftOrders.filter(o => {
       const oDate = parseDate(o.date);
       return oDate.getMonth() === target.month && oDate.getFullYear() === target.year;
     });
-    if (mOrders.length > 0) {
-      periodOrders = mOrders;
-    }
 
-    const mPayments = payments.filter(p => {
+    periodPayments = payments.filter(p => {
       const pDate = parseDate(p.date);
       return pDate.getMonth() === target.month && pDate.getFullYear() === target.year;
     });
-    if (mPayments.length > 0) {
-      periodPayments = mPayments;
-    }
   }
 
   // 1. Order Value: non-draft orders
@@ -537,14 +528,22 @@ export function getTopRetailersBySales(
   });
 }
 
-// Period deltas vs previous period (Requirement 1)
+// Period deltas vs previous period (Requirement 1 & 6)
 export interface DashboardPeriodDeltas {
-  orderValueDelta: string;
-  invoicedSalesDelta: string;
-  collectionsDelta: string;
-  receivablesDelta: string;
-  overdueDelta: string;
-  payablesDelta: string;
+  orderValueDelta: string | null;
+  invoicedSalesDelta: string | null;
+  collectionsDelta: string | null;
+  receivablesDelta: string | null;
+  overdueDelta: string | null;
+  payablesDelta: string | null;
+}
+
+function computeDelta(current: number, prev: number): string | null {
+  // Hide delta when previous period is zero or tiny (< 1000)
+  if (prev <= 1000) return null;
+  const diffPercent = ((current - prev) / prev) * 100;
+  const rounded = Math.round(diffPercent * 10) / 10;
+  return rounded >= 0 ? `+${rounded}%` : `${rounded}%`;
 }
 
 export function getDashboardPeriodDeltas(
@@ -559,47 +558,44 @@ export function getDashboardPeriodDeltas(
     const prevMonth = target.month === 0 ? 11 : target.month - 1;
     const prevYear = target.month === 0 ? target.year - 1 : target.year;
 
+    // Previous month invoiced sales
     const prevMonthInvoices = invoices.filter(inv => {
       if (inv.status === "Draft") return false;
       const bDate = parseDate(inv.billedDate);
       return bDate.getMonth() === prevMonth && bDate.getFullYear() === prevYear;
     });
     const prevInvoiced = prevMonthInvoices.reduce((sum, inv) => sum + inv.grandTotal, 0);
+    const invoicedSalesDelta = computeDelta(kpis.invoicedSales, prevInvoiced);
 
-    const invoicedDeltaNum = prevInvoiced > 0
-      ? Math.round(((kpis.invoicedSales - prevInvoiced) / prevInvoiced) * 1000) / 10
-      : 14.8;
-    const invoicedSalesDelta = invoicedDeltaNum >= 0 ? `+${invoicedDeltaNum}%` : `${invoicedDeltaNum}%`;
+    // From 6-month trend if available
+    const prevTrendPoint = trend.find(t => {
+      const parts = t.monthLabel.split(" ");
+      return parts.length === 2 && t.invoiced === prevInvoiced;
+    }) || (trend.length >= 2 ? trend[trend.length - 2] : null);
+
+    const collectionsDelta = prevTrendPoint ? computeDelta(kpis.collectionsReceived, prevTrendPoint.collected) : null;
 
     return {
-      orderValueDelta: "+15.2%",
+      orderValueDelta: null, // No previous period order baseline
       invoicedSalesDelta,
-      collectionsDelta: "+8.5%",
-      receivablesDelta: "+4.2%",
-      overdueDelta: "-6.5%",
-      payablesDelta: "+3.1%",
+      collectionsDelta,
+      receivablesDelta: null,
+      overdueDelta: null,
+      payablesDelta: null,
     };
   }
 
   const prevTrend = trend.length >= 2 ? trend[trend.length - 2] : null;
-
-  const invoicedDeltaNum = prevTrend && prevTrend.invoiced > 0
-    ? Math.round(((kpis.invoicedSales - prevTrend.invoiced) / prevTrend.invoiced) * 1000) / 10
-    : 14.8;
-  const invoicedSalesDelta = invoicedDeltaNum >= 0 ? `+${invoicedDeltaNum}%` : `${invoicedDeltaNum}%`;
-
-  const collectionsDeltaNum = prevTrend && prevTrend.collected > 0
-    ? Math.round(((kpis.collectionsReceived - prevTrend.collected) / prevTrend.collected) * 1000) / 10
-    : 8.5;
-  const collectionsDelta = collectionsDeltaNum >= 0 ? `+${collectionsDeltaNum}%` : `${collectionsDeltaNum}%`;
+  const invoicedSalesDelta = prevTrend ? computeDelta(kpis.invoicedSales, prevTrend.invoiced) : null;
+  const collectionsDelta = prevTrend ? computeDelta(kpis.collectionsReceived, prevTrend.collected) : null;
 
   return {
-    orderValueDelta: "+15.2%",
+    orderValueDelta: null,
     invoicedSalesDelta,
     collectionsDelta,
-    receivablesDelta: "+4.2%",
-    overdueDelta: "-6.5%",
-    payablesDelta: "+3.1%",
+    receivablesDelta: null,
+    overdueDelta: null,
+    payablesDelta: null,
   };
 }
 

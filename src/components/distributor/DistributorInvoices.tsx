@@ -425,7 +425,7 @@ export const DistributorInvoices: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
-                <tr className="text-ink-muted text-xs font-semibold uppercase tracking-wider font-mono">
+                <tr className="text-ink-muted text-xs font-semibold">
                   <th className="py-2.5 pl-4 pr-2 w-10">
                     <input
                       className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary cursor-pointer"
@@ -439,19 +439,19 @@ export const DistributorInvoices: React.FC = () => {
                     onClick={() => handleSort("invoiceNumber")}
                   >
                     <div className="flex items-center gap-1">
-                      <span>Invoice #</span>
+                      <span>Invoice number</span>
                       {sortField === "invoiceNumber" && (
                         <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
                     </div>
                   </th>
-                  <th className="py-2.5 px-3 whitespace-nowrap">PO Ref #</th>
+                  <th className="py-2.5 px-3 whitespace-nowrap">PO reference</th>
                   <th
                     className="py-2.5 px-4 whitespace-nowrap cursor-pointer hover:text-ink"
                     onClick={() => handleSort("retailerName")}
                   >
                     <div className="flex items-center gap-1">
-                      <span>Retailer / Shop</span>
+                      <span>Retailer / shop</span>
                       {sortField === "retailerName" && (
                         <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
@@ -462,7 +462,7 @@ export const DistributorInvoices: React.FC = () => {
                     onClick={() => handleSort("date")}
                   >
                     <div className="flex items-center gap-1">
-                      <span>Billed Date</span>
+                      <span>Billed date</span>
                       {sortField === "date" && (
                         <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
@@ -474,7 +474,7 @@ export const DistributorInvoices: React.FC = () => {
                     onClick={() => handleSort("dueDate")}
                   >
                     <div className="flex items-center gap-1">
-                      <span>Due Date</span>
+                      <span>Due date</span>
                       {sortField === "dueDate" && (
                         <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
@@ -485,7 +485,7 @@ export const DistributorInvoices: React.FC = () => {
                     onClick={() => handleSort("grandTotal")}
                   >
                     <div className="flex items-center justify-end gap-1">
-                      <span>Grand Total</span>
+                      <span>Grand total</span>
                       {sortField === "grandTotal" && (
                         <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
@@ -497,7 +497,7 @@ export const DistributorInvoices: React.FC = () => {
                     onClick={() => handleSort("balanceDue")}
                   >
                     <div className="flex items-center justify-end gap-1">
-                      <span>Balance Due</span>
+                      <span>Balance due</span>
                       {sortField === "balanceDue" && (
                         <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
@@ -520,7 +520,7 @@ export const DistributorInvoices: React.FC = () => {
                     <tr
                       key={inv.id}
                       onClick={() => setViewingInvoice(inv)}
-                      className={`transition-colors cursor-pointer group ${
+                      className={`h-11 min-h-[44px] transition-colors cursor-pointer group ${
                         isOverdue
                           ? "bg-danger/5 hover:bg-danger/10"
                           : isSelected

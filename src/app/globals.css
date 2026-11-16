@@ -8,42 +8,77 @@
    ========================================================================== */
 
 :root {
-  /* DARK THEME BY DEFAULT (Obsidian + Electric Blue + Neon Cyan) */
-  --background: #07090D;
-  --surface: #0D1117;
-  --surface-raised: #121823;
-  --border: #1E2633;
-  --border-strong: #2A3547;
-  --ink: #E8ECF3;
-  --ink-muted: #8B97AB;
-  --ink-faint: #7988A1;
-  --muted: #8B97AB;
+  /* LIGHT THEME BY DEFAULT (Warm white + White cards + Ink #14161A + Blue #2F6BFF) */
+  --background: #F8F9FA;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --border: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --ink: #14161A;
+  --ink-muted: #5A6270;
+  --ink-faint: #8A94A6;
+  --muted: #5A6270;
 
   --primary: #2F6BFF;
-  --primary-hover: #4A80FF;
-  --primary-link: #6EA0FF;
+  --primary-hover: #1E55E3;
+  --primary-link: #2F6BFF;
   --primary-foreground: #FFFFFF;
 
-  --accent: #22E5FF;
-  --accent-foreground: #07090D;
+  --accent: #2F6BFF;
+  --accent-foreground: #FFFFFF;
 
-  --success: #2FD08A;
-  --warning: #F5B73B;
-  --danger: #FF5C6C;
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
 
-  /* Subtle Dark Elevation Shadows (Industrial-Tech) */
-  --shadow-color-sm: rgba(0, 0, 0, 0.50);
-  --shadow-color-md: rgba(0, 0, 0, 0.65);
-  --shadow-color-lg: rgba(0, 0, 0, 0.80);
+  /* Clean Soft Shadows */
+  --shadow-color-sm: rgba(20, 22, 26, 0.04);
+  --shadow-color-md: rgba(20, 22, 26, 0.08);
+  --shadow-color-lg: rgba(20, 22, 26, 0.12);
 
   --shadow-soft-xs: 0 1px 2px var(--shadow-color-sm);
-  --shadow-soft-sm: 0 2px 4px var(--shadow-color-sm);
+  --shadow-soft-sm: 0 1px 3px var(--shadow-color-sm);
   --shadow-soft-md: 0 4px 12px -2px var(--shadow-color-md), 0 1px 3px var(--shadow-color-sm);
   --shadow-soft-lg: 0 8px 24px -6px var(--shadow-color-lg), 0 2px 6px -1px var(--shadow-color-sm);
-  --shadow-soft-xl: 0 16px 40px -10px rgba(0, 0, 0, 0.90), 0 4px 12px -2px var(--shadow-color-sm);
+  --shadow-soft-xl: 0 16px 36px -10px rgba(20, 22, 26, 0.14), 0 4px 12px -2px var(--shadow-color-sm);
 }
 
-/* Explicit Dark Theme */
+/* Explicit Light Theme (Toggleable) */
+[data-theme="light"] {
+  --background: #F8F9FA;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --border: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --ink: #14161A;
+  --ink-muted: #5A6270;
+  --ink-faint: #8A94A6;
+  --muted: #5A6270;
+
+  --primary: #2F6BFF;
+  --primary-hover: #1E55E3;
+  --primary-link: #2F6BFF;
+  --primary-foreground: #FFFFFF;
+
+  --accent: #2F6BFF;
+  --accent-foreground: #FFFFFF;
+
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+
+  --shadow-color-sm: rgba(20, 22, 26, 0.04);
+  --shadow-color-md: rgba(20, 22, 26, 0.08);
+  --shadow-color-lg: rgba(20, 22, 26, 0.12);
+
+  --shadow-soft-xs: 0 1px 2px var(--shadow-color-sm);
+  --shadow-soft-sm: 0 1px 3px var(--shadow-color-sm);
+  --shadow-soft-md: 0 4px 12px -2px var(--shadow-color-md), 0 1px 3px var(--shadow-color-sm);
+  --shadow-soft-lg: 0 8px 24px -6px var(--shadow-color-lg), 0 2px 6px -1px var(--shadow-color-sm);
+  --shadow-soft-xl: 0 16px 36px -10px rgba(20, 22, 26, 0.14), 0 4px 12px -2px var(--shadow-color-sm);
+}
+
+/* Explicit Dark Theme (Toggleable) */
 [data-theme="dark"] {
   --background: #07090D;
   --surface: #0D1117;
@@ -76,41 +111,6 @@
   --shadow-soft-md: 0 4px 12px -2px var(--shadow-color-md), 0 1px 3px var(--shadow-color-sm);
   --shadow-soft-lg: 0 8px 24px -6px var(--shadow-color-lg), 0 2px 6px -1px var(--shadow-color-sm);
   --shadow-soft-xl: 0 16px 40px -10px rgba(0, 0, 0, 0.90), 0 4px 12px -2px var(--shadow-color-sm);
-}
-
-/* Explicit Light Theme (Toggleable with WCAG AA Contrast) */
-[data-theme="light"] {
-  --background: #F5F7FA;
-  --surface: #FFFFFF;
-  --surface-raised: #FFFFFF;
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
-  --ink: #0B1220;
-  --ink-muted: #475569;
-  --ink-faint: #64748B;
-  --muted: #475569;
-
-  --primary: #1F57F0;
-  --primary-hover: #1744C2;
-  --primary-link: #1F57F0;
-  --primary-foreground: #FFFFFF;
-
-  --accent: #0891B2;
-  --accent-foreground: #FFFFFF;
-
-  --success: #059669;
-  --warning: #B45309;
-  --danger: #DC2626;
-
-  --shadow-color-sm: rgba(11, 18, 32, 0.04);
-  --shadow-color-md: rgba(11, 18, 32, 0.08);
-  --shadow-color-lg: rgba(11, 18, 32, 0.12);
-
-  --shadow-soft-xs: 0 1px 2px var(--shadow-color-sm);
-  --shadow-soft-sm: 0 1px 3px var(--shadow-color-sm);
-  --shadow-soft-md: 0 4px 12px -2px var(--shadow-color-md), 0 1px 3px var(--shadow-color-sm);
-  --shadow-soft-lg: 0 8px 24px -6px var(--shadow-color-lg), 0 2px 6px -1px var(--shadow-color-sm);
-  --shadow-soft-xl: 0 16px 36px -10px rgba(11, 18, 32, 0.16), 0 4px 12px -2px var(--shadow-color-sm);
 }
 
 @theme {

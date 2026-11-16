@@ -16,23 +16,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { getRetailerString } from "@/lib/i18n/retailer";
 import { useEntityImages } from "@/lib/storage/imageStore";
 
-function CatalogueProductImage({
-  product,
-}: {
-  product: { id: string; title: string; image: string };
-}) {
-  const { primaryUrl } = useEntityImages("style", product.id);
-  const display = primaryUrl || product.image;
-
-  return (
-    <img
-      src={display}
-      alt={product.title}
-      loading="lazy"
-      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
-    />
-  );
-}
+import { ProductTile } from "./ProductTile";
 
 function AnimatedCounter({ value }: { value: number }) {
   const [display, setDisplay] = useState(value);
@@ -135,74 +119,39 @@ export default function CatalogueView() {
     (selectedBrand !== "All" ? 1 : 0) +
     (inStockOnly ? 1 : 0);
 
+  // Split products: Available to order (priced) vs Price coming soon (pricePending)
+  const availableProducts = filteredProducts.filter(p => !p.pricePending);
+  const pendingProducts = filteredProducts.filter(p => p.pricePending);
+  const [isPendingSectionOpen, setIsPendingSectionOpen] = useState(false);
+
   return (
-    <div className="flex flex-col w-full pb-36 sm:pb-32 text-ink">
-      {/* Top Header & Search Area */}
-      <div className="bg-surface border-b border-border py-4 px-3 sm:px-6 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-          <div>
-            <h1 className="font-page-title text-xl sm:text-3xl text-ink font-normal tracking-tight">
-              {getRetailerString(language, "navShop")} • Tiruppur Wholesale
-            </h1>
-            <p className="text-[11px] sm:text-xs text-ink-muted mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <span>{RETAILER_PROFILE.dispatchHub}</span>
-              <span>•</span>
-              <span>Box packed wholesale</span>
-              <span>•</span>
-              <span>Net prices (GST extra)</span>
-            </p>
-          </div>
-
-          {/* Search Input */}
-          <div className="relative w-full sm:w-80">
-            <Icon name="search" size={18} className="absolute left-3.5 top-2.5 sm:top-3 text-ink-muted" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={getRetailerString(language, "searchPlaceholder")}
-              className="w-full min-h-[44px] pl-10 pr-9 py-2 rounded-xl bg-background border border-border text-xs sm:text-sm text-ink placeholder:text-ink-muted/60 focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-soft-sm"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-2.5 sm:top-3 text-ink-muted hover:text-ink cursor-pointer p-1"
-                aria-label="Clear search query"
-              >
-                <Icon name="close" size={16} />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Sticky Filter & Category Bar */}
+    <div className="flex flex-col w-full pb-6 sm:pb-8 text-ink">
+      {/* Sticky Category & Filter Chips Bar */}
       <div
-        style={{ top: "var(--retailer-header-height, 60px)" }}
-        className="sticky top-[var(--retailer-header-height,60px)] z-20 bg-surface/95 backdrop-blur-md border-b border-border shadow-soft-sm py-2.5 px-3 sm:px-6 transition-colors duration-200"
+        style={{ top: "var(--retailer-header-height, 56px)" }}
+        className="sticky top-[var(--retailer-header-height,56px)] z-20 bg-surface/95 backdrop-blur-md border-b border-border shadow-soft-sm py-2 px-3 sm:px-6 transition-colors duration-200"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
-          {/* Filter Bottom Sheet Trigger Button */}
+          {/* Filter Trigger Button */}
           <button
             type="button"
             onClick={() => setIsFilterSheetOpen(true)}
-            className={`min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 flex items-center gap-1.5 border transition-all cursor-pointer ${
+            className={`h-9 px-3 rounded-full text-xs font-semibold shrink-0 flex items-center gap-1.5 border transition-all cursor-pointer ${
               activeFiltersCount > 0
-                ? "bg-primary text-primary-foreground border-primary shadow-soft-sm"
-                : "bg-background border-border text-ink hover:bg-surface"
+                ? "bg-primary text-white border-primary shadow-soft-xs"
+                : "bg-surface border-border text-ink hover:bg-surface-raised"
             }`}
           >
-            <Icon name="tune" size={16} />
+            <Icon name="tune" size={15} />
             <span>{getRetailerString(language, "filterBtn")}</span>
             {activeFiltersCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-white text-primary text-[10px] font-bold flex items-center justify-center">
                 {activeFiltersCount}
               </span>
             )}
           </button>
 
-          <div className="h-5 w-px bg-border shrink-0" />
+          <div className="h-4 w-px bg-border shrink-0" />
 
           {/* Horizontal Category Chips Bar */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
@@ -211,10 +160,10 @@ export default function CatalogueView() {
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                className={`h-9 px-3.5 rounded-full text-xs whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   selectedCategory === cat
-                    ? "bg-accent/15 text-accent border border-accent/40 shadow-[0_0_8px_rgba(34,229,255,0.2)] font-bold"
-                    : "bg-surface border border-border text-ink-muted hover:text-ink hover:bg-background"
+                    ? "bg-primary text-white shadow-soft-xs font-semibold"
+                    : "bg-surface border border-border text-ink-muted hover:text-ink hover:bg-surface-raised"
                 }`}
               >
                 {cat === "All" ? getRetailerString(language, "allCategories") : cat}
@@ -227,7 +176,7 @@ export default function CatalogueView() {
             <select
               value={selectedBrand}
               onChange={e => setSelectedBrand(e.target.value)}
-              className="min-h-[40px] px-3 py-1.5 rounded-lg bg-surface border border-border text-xs font-semibold text-ink outline-none cursor-pointer focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-soft-sm"
+              className="h-9 px-3 rounded-lg bg-surface border border-border text-xs font-semibold text-ink outline-none cursor-pointer focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-soft-xs"
             >
               {brands.map(b => (
                 <option key={b} value={b}>
@@ -236,7 +185,7 @@ export default function CatalogueView() {
               ))}
             </select>
 
-            <label className="min-h-[40px] flex items-center gap-2 text-xs text-ink font-medium cursor-pointer bg-surface px-3 py-1.5 rounded-lg border border-border hover:bg-background shadow-soft-sm select-none">
+            <label className="h-9 flex items-center gap-2 text-xs text-ink font-medium cursor-pointer bg-surface px-3 rounded-lg border border-border hover:bg-surface-raised shadow-soft-xs select-none">
               <input
                 type="checkbox"
                 checked={inStockOnly}
@@ -250,18 +199,18 @@ export default function CatalogueView() {
       </div>
 
       {/* 2-Column Product Grid Main Content */}
-      <main className="max-w-7xl mx-auto px-2.5 sm:px-6 py-4 sm:py-8 w-full">
+      <main className="max-w-7xl mx-auto px-2.5 sm:px-6 py-3 sm:py-6 w-full">
         {/* Count Strip */}
-        <div className="flex items-center justify-between mb-3 px-1">
-          <span className="text-[11px] sm:text-xs font-bold text-ink-muted uppercase tracking-wider num">
-            {filteredProducts.length} wholesale articles
+        <div className="flex items-center justify-between mb-2.5 px-0.5">
+          <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider num">
+            {availableProducts.length} articles available to order
           </span>
           <Badge variant="success" size="sm" dot pulse>
-            Ready in Hub
+            In Stock
           </Badge>
         </div>
 
-        {filteredProducts.length === 0 ? (
+        {availableProducts.length === 0 && pendingProducts.length === 0 ? (
           <EmptyState
             icon={<Icon name="search_off" size={28} />}
             title="No articles match your filters"
@@ -277,11 +226,8 @@ export default function CatalogueView() {
           />
         ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {filteredProducts.map(product => {
+            {availableProducts.map(product => {
               const pieces = product.piecesPerUnit || 10;
-              const pricePerPiece = product.pricePerUnit / pieces;
-              const unitShort = getUnitShort(product.unitLabel);
-
               const productCartItems = cartItems.filter(item => item.productId === product.id);
               const totalBoxesInCart = productCartItems.reduce((sum, item) => sum + item.units, 0);
               const isInDraftPO = totalBoxesInCart > 0;
@@ -289,131 +235,150 @@ export default function CatalogueView() {
               return (
                 <div
                   key={product.id}
-                  className="flex flex-col justify-between bg-surface rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-soft-sm hover:shadow-soft-md transition-all duration-200 border border-border group"
+                  className="flex flex-col justify-between bg-surface rounded-xl p-2.5 sm:p-3.5 shadow-soft-xs hover:shadow-soft-sm transition-all duration-200 border border-border group"
                 >
-                  {/* Top Imagery Container */}
-                  <div>
-                    <div className="relative w-full aspect-square sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-background mb-2 sm:mb-3 border border-border">
-                      <CatalogueProductImage product={product} />
-                      {/* Top Badges */}
-                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 flex flex-col gap-1">
-                        <span className="bg-surface/90 backdrop-blur-md text-ink text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-soft-sm border border-border">
-                          {product.brand}
-                        </span>
-                        {product.pricePending && (
-                          <span className="bg-warning/20 border border-warning/40 text-warning text-[9px] px-1.5 py-0.5 rounded font-bold font-mono uppercase shadow-soft-sm">
-                            {getRetailerString(language, "pricePending")}
-                          </span>
-                        )}
-                      </div>
+                  {/* Top Imagery Container & Details */}
+                  <div
+                    onClick={() => openMatrixModal(product)}
+                    className="cursor-pointer"
+                  >
+                    <ProductTile
+                      productId={product.id}
+                      brand={product.brand}
+                      category={product.category}
+                      title={product.title}
+                      pcsPerBox={pieces}
+                      aspectRatio="aspect-square"
+                    />
 
-                      {/* Stock LED Badge */}
-                      <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-surface/90 backdrop-blur-md px-1.5 py-0.5 rounded flex items-center gap-1.5 shadow-soft-sm border border-border">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-success shadow-[0_0_6px_rgba(47,208,138,0.9)]" />
-                        </span>
-                        <span className="text-[10px] text-success font-bold font-mono num">
-                          {product.stockUnits.toLocaleString("en-IN")} pcs
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Article Info */}
-                    <div>
-                      <div className="flex items-center justify-between gap-1 text-[9px] text-ink-muted font-mono uppercase tracking-wider num">
-                        <span>ART #{product.artNumber}</span>
-                        <span>{product.category}</span>
-                      </div>
-                      <h3 className="font-bold text-ink text-xs sm:text-sm mt-0.5 leading-snug line-clamp-1 group-hover:text-accent transition-colors">
+                    {/* Article Info: Name, Price per box, Box of N */}
+                    <div className="mt-2">
+                      <h3 className="font-semibold text-ink text-xs sm:text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                         {product.title}
                       </h3>
-                      <p className="text-[10px] sm:text-xs text-ink-muted mt-0.5 line-clamp-1">
-                        {product.description}
-                      </p>
 
-                      {/* Pricing in Mono + Pack Info */}
-                      <div className="mt-2 p-2 sm:p-2.5 bg-background rounded-lg border border-border">
-                        {product.pricePending ? (
-                          <div className="text-[11px] sm:text-xs font-bold text-warning font-mono flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
-                            <span>{getRetailerString(language, "pricePending")}</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-baseline justify-between gap-1 flex-wrap">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-xs sm:text-base font-bold text-ink font-mono num">
-                                {formatINR(product.pricePerUnit)}
-                              </span>
-                              <span className="text-[10px] text-ink-muted font-mono">/{unitShort}</span>
-                            </div>
-                            <span className="text-[10px] sm:text-[11px] font-semibold text-ink-muted font-mono num">
-                              {formatINR(pricePerPiece)}/{getRetailerString(language, "perPiece")}
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="mt-1 pt-1 border-t border-border flex items-center justify-between text-[10px] text-ink-muted font-mono">
-                          <span>{getRetailerString(language, "boxOf")} {pieces} {getRetailerString(language, "pcs")}</span>
-                          <span className="font-medium">Min: {product.minOrderUnits || 5}</span>
+                      <div className="mt-1 flex flex-col">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-sm sm:text-base font-bold text-ink font-mono num">
+                            {formatINR(product.pricePerUnit)}
+                          </span>
+                          <span className="text-[11px] text-ink-muted">/ box</span>
                         </div>
+                        <span className="text-[11px] text-ink-muted">
+                          Box of {pieces} pcs
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Action Button: 48px Tap Target */}
-                  <div className="mt-2.5 pt-1">
+                  {/* One Add button / Qty Stepper */}
+                  <div className="mt-2.5">
                     {isInDraftPO ? (
-                      <div className="w-full min-h-[44px] flex items-center bg-success/15 border border-success/30 rounded-xl overflow-hidden shadow-soft-sm">
+                      <div className="w-full h-9 flex items-center bg-primary/10 border border-primary/30 rounded-lg overflow-hidden shadow-soft-xs">
                         <button
                           type="button"
                           onClick={() => handleStepQuantity(product.id, -1)}
-                          className="w-11 min-h-[44px] flex items-center justify-center text-success hover:bg-success/20 active:bg-success/30 transition-colors cursor-pointer"
+                          className="w-9 h-9 flex items-center justify-center text-primary hover:bg-primary/20 active:bg-primary/30 transition-colors cursor-pointer text-base font-bold"
                           aria-label={`Decrease ${product.title} by 1 box`}
                         >
-                          <Icon name="remove" size={18} />
+                          <Icon name="remove" size={16} />
                         </button>
 
                         <button
                           type="button"
                           onClick={() => openMatrixModal(product)}
-                          className="flex-1 min-h-[44px] px-1 flex items-center justify-center gap-1 text-success font-bold text-xs cursor-pointer num"
+                          className="flex-1 h-9 px-1 flex items-center justify-center gap-1 text-primary font-bold text-xs cursor-pointer num"
                         >
-                          <span>{totalBoxesInCart} {getRetailerString(language, "boxes")}</span>
+                          <span>{totalBoxesInCart} {totalBoxesInCart === 1 ? "bx" : "bx"}</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleStepQuantity(product.id, 1)}
-                          className="w-11 min-h-[44px] flex items-center justify-center text-success hover:bg-success/20 active:bg-success/30 transition-colors cursor-pointer"
+                          className="w-9 h-9 flex items-center justify-center text-primary hover:bg-primary/20 active:bg-primary/30 transition-colors cursor-pointer text-base font-bold"
                           aria-label={`Increase ${product.title} by 1 box`}
                         >
-                          <Icon name="add" size={18} />
+                          <Icon name="add" size={16} />
                         </button>
                       </div>
-                    ) : product.pricePending ? (
-                      <button
-                        type="button"
-                        onClick={() => openMatrixModal(product)}
-                        className="w-full min-h-[44px] px-2 rounded-xl bg-surface border border-warning/30 text-warning text-xs font-bold hover:bg-warning/10 flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-sm"
-                      >
-                        <Icon name="visibility" size={16} />
-                        <span>{getRetailerString(language, "previewVariants")}</span>
-                      </button>
                     ) : (
                       <button
                         type="button"
                         onClick={() => openMatrixModal(product)}
-                        className="w-full min-h-[44px] px-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 active:scale-98 transition-transform flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-sm"
+                        className="w-full h-9 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer shadow-soft-xs active:scale-[0.98] transition-transform"
                       >
-                        <Icon name="add_circle" size={16} />
-                        <span>{getRetailerString(language, "selectSizes")}</span>
+                        <Icon name="add" size={15} />
+                        <span>Add</span>
                       </button>
                     )}
                   </div>
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Collapsible Section: Price coming soon (for styles with pending wholesale prices) */}
+        {pendingProducts.length > 0 && (
+          <div className="mt-6 pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={() => setIsPendingSectionOpen(!isPendingSectionOpen)}
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-surface border border-border text-left hover:bg-surface-raised transition-colors cursor-pointer shadow-soft-xs"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span className="text-xs font-semibold text-ink">
+                  Price coming soon ({pendingProducts.length} styles)
+                </span>
+              </div>
+              <Icon
+                name={isPendingSectionOpen ? "expand_less" : "expand_more"}
+                size={18}
+                className="text-ink-muted"
+              />
+            </button>
+
+            {isPendingSectionOpen && (
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 mt-3">
+                {pendingProducts.map(product => {
+                  const pieces = product.piecesPerUnit || 10;
+                  return (
+                    <div
+                      key={product.id}
+                      className="flex flex-col justify-between bg-surface/80 rounded-xl p-2.5 sm:p-3 border border-border opacity-85 hover:opacity-100 transition-opacity"
+                    >
+                      <div onClick={() => openMatrixModal(product)} className="cursor-pointer">
+                        <ProductTile
+                          productId={product.id}
+                          brand={product.brand}
+                          category={product.category}
+                          title={product.title}
+                          pcsPerBox={pieces}
+                          aspectRatio="aspect-square"
+                        />
+                        <h3 className="font-semibold text-ink text-xs line-clamp-2 mt-2">
+                          {product.title}
+                        </h3>
+                        <div className="text-[11px] font-semibold text-amber-500 mt-1">
+                          Price pending
+                        </div>
+                        <div className="text-[11px] text-ink-muted">
+                          Box of {pieces} pcs
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => openMatrixModal(product)}
+                        className="w-full h-8 mt-2 rounded-lg border border-border text-ink-muted text-[11px] font-medium hover:bg-surface-raised flex items-center justify-center cursor-pointer"
+                      >
+                        Preview sizes
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </main>

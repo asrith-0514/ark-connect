@@ -608,7 +608,13 @@ export function isDemoModeEnabled(): boolean {
   }
   if (typeof window !== "undefined") {
     const params = new URLSearchParams(window.location.search);
-    return params.get("demo") === "true" || params.get("demo") === "1";
+    if (params.get("demo") === "true" || params.get("demo") === "1") {
+      return true;
+    }
+    // In local development or prototype testing, always enable demo switcher & seamless account switching
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return true;
+    }
   }
   return false;
 }
@@ -630,28 +636,35 @@ export function getRetailerFinancials(
   // Total Outstanding: sum of all unpaid balances (limit - available) = ₹54,200
   const totalOutstanding = invoices.reduce((sum, inv) => sum + inv.balanceDue, 0);
 
-  // Overdue Amount: sum of balanceDue for invoices past due date = ₹31,000 (INV-0079)
+  // Overdue Amount: sum of balanceDue for invoices past due date
   const overdueInvoices = invoices.filter(inv => {
     if (inv.balanceDue <= 0) return false;
     const days = getDaysUntil(inv.dueDate, today);
-    return days < 0 || inv.status === "Overdue";
+    return days < 0;
   });
   const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + inv.balanceDue, 0);
 
-  // Next Due Invoice: earliest upcoming invoice with balanceDue > 0
+  // Next Due Invoice: earliest upcoming invoice that is NOT YET DUE (dueDate >= today)
   const pendingInvoices = invoices.filter(inv => inv.balanceDue > 0);
-  // Sort pending by due date ascending
-  const sortedPending = [...pendingInvoices].sort((a, b) => {
-    return parseDate(a.dueDate).getTime() - parseDate(b.dueDate).getTime();
-  });
+  const upcomingInvoices = pendingInvoices
+    .filter(inv => getDaysUntil(inv.dueDate, today) >= 0)
+    .sort((a, b) => parseDate(a.dueDate).getTime() - parseDate(b.dueDate).getTime());
 
-  // Next due invoice (non-overdue if possible, or earliest upcoming)
-  const upcomingInvoices = sortedPending.filter(inv => getDaysUntil(inv.dueDate, today) >= 0);
-  const nextDueInvoice = upcomingInvoices[0] || sortedPending[0] || null;
+  // Strictly NOT-yet-due invoice, or null if none
+  const nextDueInvoice = upcomingInvoices.length > 0 ? upcomingInvoices[0] : null;
   const nextDueAmount = nextDueInvoice ? nextDueInvoice.balanceDue : 0;
   const nextDueDate = nextDueInvoice ? nextDueInvoice.dueDate : "—";
   const nextDueInvoiceNumber = nextDueInvoice ? nextDueInvoice.invoiceNumber : "";
-  const nextDueDays = nextDueInvoice ? getDaysUntil(nextDueInvoice.dueDate, today) : 0;
+  const nextDueDays = nextDueInvoice ? Math.max(0, getDaysUntil(nextDueInvoice.dueDate, today)) : 0;
+
+  // Oldest overdue invoice (by due date ascending)
+  const sortedOverdue = [...overdueInvoices].sort(
+    (a, b) => parseDate(a.dueDate).getTime() - parseDate(b.dueDate).getTime()
+  );
+  const oldestOverdue = sortedOverdue.length > 0 ? sortedOverdue[0] : null;
+  const overdueSummaryText = oldestOverdue
+    ? `${overdueInvoices.length} ${overdueInvoices.length === 1 ? "invoice" : "invoices"} overdue, ${formatINR(overdueAmount)}, oldest ${oldestOverdue.invoiceNumber}`
+    : "";
 
   // Available Credit: limit - outstanding = 1,50,000 - 54,200 = 95,800
   const availableCredit = Math.max(0, profile.creditLimit - totalOutstanding);
@@ -666,12 +679,15 @@ export function getRetailerFinancials(
     totalOutstanding,
     overdueAmount,
     overdueInvoices,
+    oldestOverdue,
+    overdueSummaryText,
     nextDueInvoice,
     nextDueAmount,
     nextDueDate,
     nextDueInvoiceNumber,
     nextDueDays,
-    nextDueBadge: formatDueInDays(nextDueDays),
+    nextDueBadge: nextDueInvoice ? formatDueInDays(nextDueDays) : "No upcoming dues",
+    hasUpcomingDue: Boolean(nextDueInvoice),
     availableCredit,
     availableCreditPercent,
     usedCreditPercent,

@@ -17,6 +17,7 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
     isDemo,
     sendOtp,
     verifyOtp,
+    quickDemoLogin,
     rateLimitSeconds,
   } = useAuth();
 
@@ -47,6 +48,15 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
     }
 
     setIsSubmitting(true);
+    // Instant Demo Login: match store or default to RET-0001 without requiring SMS OTP
+    const matched = MOCK_RETAILERS.find(r => r.phone.replace(/\D/g, "").includes(clean) || clean.includes(r.phone.replace(/\D/g, "").slice(-10)));
+    try {
+      await quickDemoLogin("retailer", matched?.code || "RET-0001");
+      return;
+    } catch {
+      // fallback to standard OTP flow if needed
+    }
+
     const res = await sendOtp(clean);
     setIsSubmitting(false);
 
@@ -78,9 +88,17 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
     }
   };
 
-  const handleDemoStoreSelect = (phone: string) => {
+  const handleDemoStoreLogin = async (code: string, phone: string) => {
     setPhoneNumber(phone);
     setErrorMsg(null);
+    setIsSubmitting(true);
+    try {
+      await quickDemoLogin("retailer", code);
+    } catch {
+      setErrorMsg("Demo login failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -185,39 +203,51 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
               {isSubmitting ? t("sendingOtp") : t("sendOtpBtn")}
             </Button>
 
-            {/* Quick Demo Store Buttons (Only when ?demo=true) */}
-            {isDemo && (
-              <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
-                    {t("quickDemoStores")}
-                  </span>
-                  <Badge variant="primary" size="sm">
-                    Demo Mode Active
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-1 gap-1.5">
-                  {MOCK_RETAILERS.slice(0, 2).map(store => (
-                    <button
-                      key={store.id}
-                      type="button"
-                      onClick={() => handleDemoStoreSelect(store.phone.replace(/[^0-9]/g, "").slice(-10))}
-                      className="p-2.5 rounded-lg border border-border bg-background hover:bg-surface-raised hover:border-primary/40 text-left transition-colors flex items-center justify-between text-xs cursor-pointer group"
-                    >
-                      <div>
-                        <p className="font-semibold text-ink group-hover:text-primary">
-                          {store.name}
-                        </p>
-                        <p className="text-[11px] text-ink-muted">
-                          {store.code} • {store.town} • {store.phone}
-                        </p>
-                      </div>
-                      <span className="text-primary text-xs font-semibold">Select</span>
-                    </button>
-                  ))}
-                </div>
+            {/* Quick Demo Store Buttons (Always accessible for instant 1-click login) */}
+            <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
+                  {t("quickDemoStores")}
+                </span>
+                <Badge variant="primary" size="sm">
+                  1-Click Demo Login
+                </Badge>
               </div>
-            )}
+              <div className="grid grid-cols-1 gap-2">
+                {MOCK_RETAILERS.slice(0, 3).map(store => (
+                  <button
+                    key={store.id}
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleDemoStoreLogin(store.code, store.phone.replace(/[^0-9]/g, "").slice(-10))}
+                    className="min-h-[48px] p-3 rounded-xl border border-border bg-background hover:bg-surface-raised hover:border-primary text-left transition-colors flex items-center justify-between text-xs cursor-pointer group disabled:opacity-50"
+                  >
+                    <div>
+                      <p className="font-bold text-ink text-sm group-hover:text-primary">
+                        {store.name}
+                      </p>
+                      <p className="text-[11px] text-ink-muted font-mono mt-0.5">
+                        {store.code} • {store.town} • {store.phone}
+                      </p>
+                    </div>
+                    <span className="min-h-[36px] px-3 py-1.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white font-bold text-xs transition-colors shrink-0 flex items-center gap-1">
+                      <span>{isSubmitting ? "Logging in..." : "Login"}</span>
+                      <Icon name="arrow_forward" size={14} />
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="pt-2 flex items-center justify-between text-xs text-ink-muted border-t border-border/60 mt-1">
+                <span>Distributor staff?</span>
+                <a
+                  href="/staff"
+                  className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Wholesaler Staff Login</span>
+                  <Icon name="arrow_forward" size={13} />
+                </a>
+              </div>
+            </div>
           </form>
         ) : (
           /* STEP 2: OTP Verification */
@@ -325,17 +355,6 @@ export function RetailerLogin({ onSwitchToStaff }: { onSwitchToStaff: () => void
           </form>
         )}
       </Card>
-
-      {/* Switch to Distributor Staff Login */}
-      <div className="text-center">
-        <button
-          type="button"
-          onClick={onSwitchToStaff}
-          className="text-xs sm:text-sm text-ink-muted hover:text-primary font-medium transition-colors cursor-pointer"
-        >
-          {t("switchToStaff")}
-        </button>
-      </div>
     </div>
   );
 }

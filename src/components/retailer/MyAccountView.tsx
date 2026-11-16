@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { RetailerRequestType, ComplaintType } from "@/lib/mock";
 import CreditMeter from "@/components/retailer/CreditMeter";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function MyAccountView() {
   const {
@@ -90,10 +91,17 @@ export default function MyAccountView() {
     paymentReminders: true,
     channel: "whatsapp" as "whatsapp" | "sms" | "both",
   });
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    whatsappDispatch: true,
+    smsDueReminders: true,
+    emailStatements: true,
+  });
 
   // Preferences
   const [selectedLanguage, setSelectedLanguage] = useState<"en" | "te" | "ta">("en");
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<string | null>("profile");
+  const toggleSection = (id: string) => setExpandedSection(prev => prev === id ? null : id);
 
   // Modals & form state
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -376,615 +384,548 @@ export default function MyAccountView() {
         </div>
       )}
 
-      {viewState === "ready" && (
-        <>
-
-      {/* 1. Business Profile Header Card */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-lg border border-primary/20 shrink-0">
-              <Icon name="storefront" size={26} />
-            </div>
+            {viewState === "ready" && (
+        <div className="space-y-4">
+          {/* Grouped List of 8 Rows */}
+          <div className="bg-surface rounded-xl border border-border divide-y divide-border overflow-hidden shadow-soft-xs">
+            {/* ROW 1: Profile */}
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-bold text-ink">
-                  {profile.name}
-                </h1>
-                <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-0.5 rounded-full font-mono">
-                  {RETAILER_PROFILE.code}
-                </span>
-                <span className="bg-success/10 text-success text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-success/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                  Verified Wholesaler Client
-                </span>
-              </div>
-              <p className="text-xs text-ink-muted mt-1">
-                Proprietor: <strong className="text-ink font-semibold">{profile.proprietor}</strong> • Main Bazaar, Siddipet, Telangana
-              </p>
-            </div>
-          </div>
-
-          <div className="self-start sm:self-auto">
-            <button
-              type="button"
-              onClick={() => {
-                setEditForm({
-                  name: profile.name,
-                  proprietor: profile.proprietor,
-                  gstin: profile.gstin,
-                  address: profile.address,
-                  phone: profile.phone.replace(/[^0-9]/g, "").slice(-10),
-                  email: profile.email,
-                });
-                setFormErrors({});
-                setIsEditProfileOpen(true);
-              }}
-              className="px-4 py-2 rounded-md bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center gap-1.5 shadow-sm transition-all active:scale-98"
-            >
-              <Icon name="edit" size={18} />
-              <span>Edit Details</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Business details grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-3 border-t border-border">
-          <div className="p-3 bg-surface-raised rounded-md border border-border/60">
-            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
-              GSTIN
-            </span>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-xs font-bold text-ink font-mono">
-                {profile.gstin}
-              </span>
-              <span className="px-1.5 py-0.2 bg-success/10 text-success font-mono font-bold text-[9px] rounded uppercase">
-                Verified
-              </span>
-            </div>
-          </div>
-
-          <div className="p-3 bg-surface-raised rounded-md border border-border/60">
-            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
-              Registered Phone
-            </span>
-            <span className="text-xs font-bold text-ink font-mono mt-0.5 block">
-              {profile.phone}
-            </span>
-          </div>
-
-          <div className="p-3 bg-surface-raised rounded-md border border-border/60">
-            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
-              Billing Email
-            </span>
-            <span className="text-xs font-bold text-ink truncate mt-0.5 block" title={profile.email}>
-              {profile.email}
-            </span>
-          </div>
-
-          <div className="sm:col-span-2 md:col-span-3 p-3 bg-surface-raised rounded-md border border-border/60">
-            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
-              Registered Trade Address
-            </span>
-            <span className="text-xs font-medium text-ink mt-0.5 block">
-              {profile.address}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Credit & Terms & Credit Meter Card */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Icon name="verified_user" size={20} className="text-success" />
-            <h2 className="text-base font-bold text-ink">Credit & Terms</h2>
-          </div>
-          <span className="px-2.5 py-0.5 rounded-full bg-success/10 text-success border border-success/30 text-xs font-bold">
-            {financials.availableCreditPercent}% Available
-          </span>
-        </div>
-
-        {/* Financial Highlights (Stacked on mobile to 1 col) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-3 rounded-md bg-surface-raised border border-border/60">
-            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
-              Credit Limit
-            </span>
-            <span className="text-sm font-bold text-ink font-mono mt-0.5 block">
-              {formatINR(financials.creditLimit)}
-            </span>
-            <span className="text-[10px] text-ink-muted font-semibold">
-              Authorized Revolving
-            </span>
-          </div>
-
-          <div className="p-3 rounded-md bg-surface-raised border border-border/60">
-            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
-              Credit Terms
-            </span>
-            <span className="text-sm font-bold text-ink mt-0.5 block">
-              {RETAILER_PROFILE.creditTermsDays} Days
-            </span>
-            <span className="text-[10px] text-ink-muted">
-              Net 30 from dispatch
-            </span>
-          </div>
-
-          <div className="p-3 rounded-md bg-surface-raised border border-border/60">
-            <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider block">
-              Used Credit
-            </span>
-            <span className="text-sm font-bold text-ink font-mono mt-0.5 block">
-              {formatINR(financials.totalOutstanding)}
-            </span>
-            <span className="text-[10px] text-ink-muted font-semibold">
-              {financials.usedCreditPercent}% utilized
-            </span>
-          </div>
-
-          <div className="p-3 rounded-md bg-primary/10/50 border border-primary/20">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-wider block">
-              Available Credit
-            </span>
-            <span className="text-sm font-bold text-primary font-mono mt-0.5 block">
-              {formatINR(financials.availableCredit)}
-            </span>
-            <span className="text-[10px] text-primary font-semibold">
-              Ready for new orders
-            </span>
-          </div>
-        </div>
-
-        {/* Dual-color Credit Meter (matches Invoices & Balance exactly) */}
-        <div className="p-4 rounded-md bg-surface-raised border border-border space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-              <span className="text-ink-muted font-medium">Used Credit:</span>
-              <strong className="text-ink font-mono">{formatINR(financials.totalOutstanding)}</strong>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-success" />
-              <span className="text-ink-muted font-medium">Available:</span>
-              <strong className="text-success font-mono">{formatINR(financials.availableCredit)}</strong>
-            </div>
-          </div>
-
-          <div className="w-full h-3 rounded-full bg-surface-raised overflow-hidden flex">
-            <div
-              className="h-full bg-primary transition-all duration-500"
-              style={{ width: `${financials.usedCreditPercent}%` }}
-              title={`Used: ${financials.usedCreditPercent}%`}
-            />
-            <div
-              className="h-full bg-success transition-all duration-500"
-              style={{ width: `${financials.availableCreditPercent}%` }}
-              title={`Available: ${financials.availableCreditPercent}%`}
-            />
-          </div>
-
-          <div className="flex items-center justify-between text-[11px] text-ink-muted pt-1">
-            <span>Overdue balance: <strong className="text-danger">{formatINR(financials.overdueAmount)}</strong></span>
-            <button
-              onClick={() => setRetailerNav("account")}
-              className="text-primary hover:underline font-semibold"
-            >
-              View Invoices & Ledgers →
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Delivery and Transport Card */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Icon name="local_shipping" size={20} className="text-primary" />
-            <h2 className="text-base font-bold text-ink">Delivery &amp; Transport Routing</h2>
-          </div>
-          <span className="text-xs text-ink-muted">Secunderabad Hub Route</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-4 rounded-md bg-surface-raised border border-border flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider">
-                  Default Delivery Destination
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
-                  Primary
-                </span>
-              </div>
-              <p className="text-xs text-ink font-medium leading-relaxed mt-1">
-                {profile.deliveryAddress}
-              </p>
-            </div>
-            <p className="text-[11px] text-ink-muted mt-3 pt-2 border-t border-border/60">
-              Pin code: <strong className="font-mono text-ink">502103</strong> (Telangana Region)
-            </p>
-          </div>
-
-          <div className="p-4 rounded-md bg-surface-raised border border-border flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold text-ink-muted uppercase tracking-wider">
-                  Preferred Transport Carrier
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-success/10 text-success font-mono font-bold">
-                  Active
-                </span>
-              </div>
-              <p className="text-sm font-bold text-ink mt-1">
-                {profile.preferredTransporter}
-              </p>
-              <p className="text-xs text-ink-muted mt-1">
-                Booking Station: <strong className="text-ink">{profile.destinationBookingPoint}</strong>
-              </p>
-            </div>
-            <p className="text-[11px] text-ink-muted mt-3 pt-2 border-t border-border/60">
-              Daily parcel service from Secunderabad Garment Hub to Siddipet depot
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 3.5. Store Requests & Support Desk */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold">
-              <Icon name="contact_support" size={22} />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-ink">Store Requests &amp; Support</h2>
-              <p className="text-xs text-ink-muted">Raise credit limit requests, address updates, or report delivery &amp; packing issues</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <button
-              type="button"
-              onClick={() => setIsRaiseRequestOpen(true)}
-              className="h-9 px-3.5 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-soft-xs transition-all cursor-pointer"
-            >
-              <Icon name="add_circle" size={16} />
-              Raise a Request
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsReportIssueOpen(true)}
-              className="h-9 px-3.5 rounded-md bg-surface border border-danger/30 hover:bg-danger/10 text-danger text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Icon name="report_problem" size={16} />
-              Report an Issue
-            </button>
-          </div>
-        </div>
-
-        {/* List of Submitted Requests */}
-        <div className="space-y-4 pt-2">
-          <div>
-            <h3 className="text-xs font-bold text-ink uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <span>Submitted Store Requests ({myRequests.length})</span>
-            </h3>
-            {myRequests.length === 0 ? (
-              <p className="text-xs text-ink-muted p-3 rounded-md bg-surface-raised border border-border">
-                No active store requests submitted.
-              </p>
-            ) : (
-              <div className="divide-y divide-border border border-border rounded-md overflow-hidden bg-background">
-                {myRequests.map((req) => (
-                  <div key={req.id} className="p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          req.status === "approved"
-                            ? "bg-success/15 text-success"
-                            : req.status === "rejected"
-                            ? "bg-danger/15 text-danger"
-                            : "bg-warning/15 text-warning"
-                        }`}>
-                          {req.status === "pending" ? "Under Review" : req.status === "approved" ? "Approved" : "Declined"}
-                        </span>
-                        <span className="font-bold text-ink">
-                          {req.type === "credit_limit"
-                            ? "Credit Limit Increase"
-                            : req.type === "address_change"
-                            ? "Delivery Address Update"
-                            : "New Product Request"}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-ink-muted mt-1">
-                        {req.type === "credit_limit" && (
-                          <span>Requested limit: <strong className="text-ink font-mono">{formatINR(req.payload.requestedCreditLimit || 0)}</strong> · Reason: {req.payload.reason}</span>
-                        )}
-                        {req.type === "address_change" && (
-                          <span>New address: {req.payload.address}, {req.payload.town}</span>
-                        )}
-                        {req.type === "new_product" && (
-                          <span>Product enquiry: {req.payload.productName} ({req.payload.brand})</span>
-                        )}
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-ink-muted font-mono self-start sm:self-auto shrink-0">
-                      {new Date(req.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                    </span>
+              <button
+                type="button"
+                onClick={() => toggleSection("profile")}
+                className="w-full min-h-[52px] px-4 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Icon name="storefront" size={18} />
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* List of Reported Issues */}
-          <div>
-            <h3 className="text-xs font-bold text-ink uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <span>Reported Issues &amp; Tickets ({myComplaints.length})</span>
-            </h3>
-            {myComplaints.length === 0 ? (
-              <p className="text-xs text-ink-muted p-3 rounded-md bg-surface-raised border border-border">
-                Zero issues reported. All shipments and bills are in good standing.
-              </p>
-            ) : (
-              <div className="divide-y divide-border border border-border rounded-md overflow-hidden bg-background">
-                {myComplaints.map((c) => (
-                  <div key={c.id} className="p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          c.status === "resolved"
-                            ? "bg-success/15 text-success"
-                            : c.status === "in-progress"
-                            ? "bg-warning/15 text-warning"
-                            : "bg-primary/10 text-primary"
-                        }`}>
-                          {c.status === "open" ? "Submitted" : c.status === "in-progress" ? "In Progress" : "Resolved"}
-                        </span>
-                        <span className="font-bold text-ink uppercase text-[11px]">
-                          {c.type === "shortage" ? "Missing Boxes" : c.type === "defect" ? "Defective Piece" : c.type}
-                        </span>
-                        {c.linkedOrderId && (
-                          <span className="text-[10px] text-ink-muted font-mono">PO: {c.linkedOrderId}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-ink mt-1 font-medium">{c.notes}</p>
-                    </div>
-                    <span className="text-[10px] text-ink-muted font-mono self-start sm:self-auto shrink-0">
-                      {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Contacts & Authorized Users */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Icon name="group" size={20} className="text-ink" />
-            <div>
-              <h2 className="text-base font-bold text-ink">Authorized Purchasing Contacts</h2>
-              <p className="text-xs text-ink-muted">Personnel approved to build, review, and confirm purchase orders</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setNewContact({ name: "", role: "Store Staff", phone: "" });
-              setContactError("");
-              setIsAddContactOpen(true);
-            }}
-            className="px-3.5 py-1.5 rounded-md bg-surface-raised hover:bg-surface-raised text-ink text-xs font-semibold flex items-center gap-1.5 transition-colors border border-border"
-          >
-            <Icon name="person_add" size={16} />
-            <span>Add User</span>
-          </button>
-        </div>
-
-        <div className="divide-y divide-border border border-border rounded-md overflow-hidden">
-          {contacts.map(contact => (
-            <div key={contact.id} className="p-3.5 bg-surface flex items-center justify-between gap-3 hover:bg-surface-raised/60 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs ${contact.isPrimary ? "bg-primary/10 text-primary" : "bg-surface-raised text-ink"}`}>
-                  {contact.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs sm:text-sm font-bold text-ink">{contact.name}</span>
-                    {contact.isPrimary && (
-                      <span className="px-2 py-0.2 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
-                        Primary Proprietor
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-ink-muted mt-0.5">
-                    <span>{contact.role}</span>
-                    <span>•</span>
-                    <span className="font-mono">{contact.phone}</span>
+                  <div>
+                    <span className="text-sm font-bold text-ink block">Profile</span>
+                    <span className="text-xs text-ink-muted truncate block max-w-[220px] sm:max-w-none">{profile.name}</span>
                   </div>
                 </div>
-              </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono font-medium text-ink-muted bg-surface-raised px-2 py-0.5 rounded">
+                    {profile.gstin}
+                  </span>
+                  <Icon
+                    name={expandedSection === "profile" ? "keyboard_arrow_up" : "keyboard_arrow_down"}
+                    size={20}
+                    className="text-ink-muted"
+                  />
+                </div>
+              </button>
 
-              {!contact.isPrimary && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveContact(contact.id)}
-                  className="p-1.5 rounded-sm text-ink-muted hover:text-danger hover:bg-danger/10 transition-colors"
-                  title="Remove user"
-                >
-                  <Icon name="delete" size={18} />
-                </button>
+              {expandedSection === "profile" && (
+                <div className="p-4 bg-surface-raised/40 border-t border-border space-y-3 animate-in fade-in duration-150">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">Trade name</span>
+                      <strong className="text-ink font-semibold">{profile.name}</strong>
+                    </div>
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">Proprietor</span>
+                      <strong className="text-ink font-semibold">{profile.proprietor}</strong>
+                    </div>
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">GSTIN</span>
+                      <strong className="text-ink font-mono font-semibold">{profile.gstin}</strong>
+                    </div>
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">Registered phone</span>
+                      <strong className="text-ink font-mono font-semibold">{profile.phone}</strong>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <span className="text-ink-muted block text-[11px]">Trade address</span>
+                      <span className="text-ink">{profile.address}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditForm({
+                          name: profile.name,
+                          proprietor: profile.proprietor,
+                          gstin: profile.gstin,
+                          address: profile.address,
+                          phone: profile.phone.replace(/[^0-9]/g, "").slice(-10),
+                          email: profile.email,
+                        });
+                        setFormErrors({});
+                        setIsEditProfileOpen(true);
+                      }}
+                      className="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-soft-xs"
+                    >
+                      <Icon name="edit" size={15} />
+                      <span>Edit profile</span>
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* 5. Notification Preferences */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
-        <div className="flex items-center gap-2">
-          <Icon name="notifications_active" size={20} className="text-warning" />
-          <h2 className="text-base font-bold text-ink">Wholesale Notifications & Alerts</h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3.5 rounded-md bg-surface-raised border border-border flex items-center justify-between">
+            {/* ROW 2: Credit and terms */}
             <div>
-              <span className="text-xs font-bold text-ink block">Order Status Updates</span>
-              <span className="text-[11px] text-ink-muted">Submission, approval & packaging</span>
-            </div>
-            <input
-              type="checkbox"
-              checked={notifications.orderUpdates}
-              onChange={e => setNotifications(prev => ({ ...prev, orderUpdates: e.target.checked }))}
-              className="w-4 h-4 accent-primary cursor-pointer"
-            />
-          </div>
-
-          <div className="p-3.5 rounded-md bg-surface-raised border border-border flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-ink block">Dispatch & LR Alerts</span>
-              <span className="text-[11px] text-ink-muted">Navata LR # and arrival alerts</span>
-            </div>
-            <input
-              type="checkbox"
-              checked={notifications.dispatchAlerts}
-              onChange={e => setNotifications(prev => ({ ...prev, dispatchAlerts: e.target.checked }))}
-              className="w-4 h-4 accent-primary cursor-pointer"
-            />
-          </div>
-
-          <div className="p-3.5 rounded-md bg-surface-raised border border-border flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-ink block">Payment Reminders</span>
-              <span className="text-[11px] text-ink-muted">Due date & overdue notices</span>
-            </div>
-            <input
-              type="checkbox"
-              checked={notifications.paymentReminders}
-              onChange={e => setNotifications(prev => ({ ...prev, paymentReminders: e.target.checked }))}
-              className="w-4 h-4 accent-primary cursor-pointer"
-            />
-          </div>
-        </div>
-
-        {/* Channel selector */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border">
-          <div>
-            <span className="text-xs font-bold text-ink">Alert Delivery Channels</span>
-            <p className="text-[11px] text-ink-muted">Receive dispatch PDFs and ledger updates instantly</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {[
-              { id: "whatsapp", label: "WhatsApp Only" },
-              { id: "sms", label: "SMS Only" },
-              { id: "both", label: "WhatsApp & SMS" },
-            ].map(opt => (
               <button
-                key={opt.id}
                 type="button"
-                onClick={() => setNotifications(prev => ({ ...prev, channel: opt.id as any }))}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${notifications.channel === opt.id ? "bg-primary text-white shadow-soft-sm" : "bg-surface-raised text-ink hover:bg-surface-raised"}`}
+                onClick={() => toggleSection("credit")}
+                className="w-full min-h-[52px] px-4 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors cursor-pointer"
               >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 6. Documents & Certificates */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Icon name="description" size={20} className="text-ink" />
-            <h2 className="text-base font-bold text-ink">Verified Legal Documents</h2>
-          </div>
-          <span className="text-xs text-ink-muted">KYC Compliant</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {RETAILER_PROFILE.documents.map(doc => (
-            <div key={doc.id} className="p-4 rounded-md bg-surface-raised border border-border flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-md bg-surface text-ink flex items-center justify-center border border-border shrink-0">
-                  <Icon name="verified" size={20} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-ink">{doc.name}</span>
-                    <span className="px-1.5 py-0.2 rounded bg-success/10 text-success font-mono text-[9px] font-bold uppercase">
-                      {doc.status}
-                    </span>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-success/10 text-success flex items-center justify-center shrink-0">
+                    <Icon name="verified_user" size={18} />
                   </div>
-                  <p className="text-[11px] text-ink-muted mt-0.5">{doc.type}</p>
-                  <p className="text-[11px] font-mono text-ink mt-1">Reg: {doc.number}</p>
+                  <div>
+                    <span className="text-sm font-bold text-ink block">Credit and terms</span>
+                    <span className="text-xs text-ink-muted block">Revolving limit &amp; payment days</span>
+                  </div>
                 </div>
-              </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono font-bold text-success">
+                    {formatINR(financials.availableCredit)} available
+                  </span>
+                  <Icon
+                    name={expandedSection === "credit" ? "keyboard_arrow_up" : "keyboard_arrow_down"}
+                    size={20}
+                    className="text-ink-muted"
+                  />
+                </div>
+              </button>
 
-              <div className="flex flex-col gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleDownloadDoc(doc.name)}
-                  disabled={downloadingDoc === doc.name}
-                  className="px-2.5 py-1 rounded-lg bg-surface hover:bg-surface-raised text-ink text-[11px] font-semibold border border-border transition-colors flex items-center gap-1"
-                >
-                  <Icon name={downloadingDoc === doc.name ? "sync" : "download"} size={14} />
-                  <span>{downloadingDoc === doc.name ? "Fetching..." : "Download"}</span>
-                </button>
-              </div>
+              {expandedSection === "credit" && (
+                <div className="p-4 bg-surface-raised/40 border-t border-border space-y-4 animate-in fade-in duration-150">
+                  <CreditMeter
+                    totalOutstanding={financials.totalOutstanding}
+                    availableCredit={financials.availableCredit}
+                    creditLimit={financials.creditLimit}
+                    usedCreditPercent={financials.usedCreditPercent}
+                    availableCreditPercent={financials.availableCreditPercent}
+                  />
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+                    <div className="p-2.5 rounded-lg bg-surface border border-border">
+                      <span className="text-[10px] text-ink-muted block">Credit limit</span>
+                      <strong className="text-xs font-mono font-bold text-ink">{formatINR(financials.creditLimit)}</strong>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-surface border border-border">
+                      <span className="text-[10px] text-ink-muted block">Payment terms</span>
+                      <strong className="text-xs font-semibold text-ink">{RETAILER_PROFILE.creditTermsDays} days</strong>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-surface border border-border">
+                      <span className="text-[10px] text-ink-muted block">Outstanding</span>
+                      <strong className="text-xs font-mono font-bold text-ink">{formatINR(financials.totalOutstanding)}</strong>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-surface border border-border">
+                      <span className="text-[10px] text-ink-muted block">Overdue</span>
+                      <strong className="text-xs font-mono font-bold text-danger">{formatINR(financials.overdueAmount)}</strong>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRequestType("credit_limit");
+                        setReqLimit("200000");
+                        setReqReason("");
+                        setIsRaiseRequestOpen(true);
+                      }}
+                      className="px-3.5 py-1.5 rounded-lg bg-surface hover:bg-surface-raised border border-border text-ink font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-soft-xs"
+                    >
+                      <Icon name="trending_up" size={15} className="text-primary" />
+                      <span>Request limit increase</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* 7. Preferences & Session */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-xs font-bold text-ink block">Portal Language / భాష / மொழி</span>
-          <p className="text-[11px] text-ink-muted mt-0.5">Select preferred regional language for invoices and catalogues</p>
-        </div>
+            {/* ROW 3: Delivery */}
+            <div>
+              <button
+                type="button"
+                onClick={() => toggleSection("delivery")}
+                className="w-full min-h-[52px] px-4 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Icon name="local_shipping" size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-ink block">Delivery</span>
+                    <span className="text-xs text-ink-muted block">Preferred transport &amp; hub</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-ink font-medium hidden sm:inline">{profile.preferredTransporter}</span>
+                  <Icon
+                    name={expandedSection === "delivery" ? "keyboard_arrow_up" : "keyboard_arrow_down"}
+                    size={20}
+                    className="text-ink-muted"
+                  />
+                </div>
+              </button>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-surface-raised p-1 rounded-md border border-border">
-            <button
-              type="button"
-              onClick={() => setSelectedLanguage("en")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "en" ? "bg-surface text-primary shadow-soft-sm" : "text-ink-muted hover:text-ink"}`}
-            >
-              English
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedLanguage("te")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "te" ? "bg-surface text-primary shadow-soft-sm" : "text-ink-muted hover:text-ink"}`}
-            >
-              తెలుగు
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedLanguage("ta")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "ta" ? "bg-surface text-primary shadow-soft-sm" : "text-ink-muted hover:text-ink"}`}
-            >
-              தமிழ்
-            </button>
+              {expandedSection === "delivery" && (
+                <div className="p-4 bg-surface-raised/40 border-t border-border space-y-3 animate-in fade-in duration-150 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">Primary transporter</span>
+                      <strong className="text-ink font-semibold">{profile.preferredTransporter}</strong>
+                      <span className="text-[11px] text-ink-muted block mt-0.5">Direct daily parcel service to Siddipet town</span>
+                    </div>
+                    <div>
+                      <span className="text-ink-muted block text-[11px]">Fulfillment hub</span>
+                      <strong className="text-ink font-semibold">{RETAILER_PROFILE.dispatchHub}</strong>
+                      <span className="text-[11px] text-ink-muted block mt-0.5">Secunderabad wholesale dispatch desk</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRequestType("address_change");
+                        setReqAddress(profile.address);
+                        setReqTown(RETAILER_PROFILE.town);
+                        setReqPincode("502103");
+                        setIsRaiseRequestOpen(true);
+                      }}
+                      className="px-3.5 py-1.5 rounded-lg bg-surface hover:bg-surface-raised border border-border text-ink font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-soft-xs"
+                    >
+                      <Icon name="pin_drop" size={15} className="text-primary" />
+                      <span>Change delivery address</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ROW 4: Contacts */}
+            <div>
+              <button
+                type="button"
+                onClick={() => toggleSection("contacts")}
+                className="w-full min-h-[52px] px-4 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Icon name="group" size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-ink block">Contacts</span>
+                    <span className="text-xs text-ink-muted block">Authorized staff &amp; purchasers</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-ink-muted font-medium">{contacts.length} registered</span>
+                  <Icon
+                    name={expandedSection === "contacts" ? "keyboard_arrow_up" : "keyboard_arrow_down"}
+                    size={20}
+                    className="text-ink-muted"
+                  />
+                </div>
+              </button>
+
+              {expandedSection === "contacts" && (
+                <div className="p-4 bg-surface-raised/40 border-t border-border space-y-3 animate-in fade-in duration-150">
+                  <div className="divide-y divide-border">
+                    {contacts.map(c => (
+                      <div key={c.id} className="py-2.5 flex items-center justify-between text-xs first:pt-0 last:pb-0">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <strong className="text-ink font-semibold">{c.name}</strong>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface border border-border text-ink-muted font-medium">
+                              {c.role}
+                            </span>
+                            {c.isPrimary && (
+                              <span className="text-[10px] text-success font-semibold">Primary</span>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-mono text-ink-muted mt-0.5 block">{c.phone}</span>
+                        </div>
+                        {!c.isPrimary && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveContact(c.id)}
+                            className="p-1.5 rounded text-ink-muted hover:text-danger hover:bg-danger/10 cursor-pointer transition-colors"
+                            title="Remove contact"
+                          >
+                            <Icon name="delete" size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddContactOpen(true)}
+                      className="px-3.5 py-1.5 rounded-lg bg-surface hover:bg-surface-raised border border-border text-ink font-semibold text-xs flex items-center gap-1.5 cursor-pointer shadow-soft-xs"
+                    >
+                      <Icon name="person_add" size={15} className="text-primary" />
+                      <span>Add contact</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ROW 5: Notifications */}
+            <div>
+              <button
+                type="button"
+                onClick={() => toggleSection("notifications")}
+                className="w-full min-h-[52px] px-4 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Icon name="notifications" size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-ink block">Notifications</span>
+                    <span className="text-xs text-ink-muted block">Order alerts &amp; billing updates</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-ink-muted font-medium">Active</span>
+                  <Icon
+                    name={expandedSection === "notifications" ? "keyboard_arrow_up" : "keyboard_arrow_down"}
+                    size={20}
+                    className="text-ink-muted"
+                  />
+                </div>
+              </button>
+
+              {expandedSection === "notifications" && (
+                <div className="p-4 bg-surface-raised/40 border-t border-border space-y-3 animate-in fade-in duration-150 text-xs">
+                  <div className="space-y-2.5">
+                    <label className="flex items-center justify-between cursor-pointer">
+                      <div>
+                        <span className="text-ink font-semibold block">WhatsApp dispatch updates</span>
+                        <span className="text-[11px] text-ink-muted">Receive LR receipts and lorry dispatch notices on WhatsApp</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={notificationPrefs.whatsappDispatch}
+                        onChange={e => setNotificationPrefs(p => ({ ...p, whatsappDispatch: e.target.checked }))}
+                        className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between cursor-pointer pt-2 border-t border-border">
+                      <div>
+                        <span className="text-ink font-semibold block">SMS payment reminders</span>
+                        <span className="text-[11px] text-ink-muted">Due date reminders 3 days before credit term expiration</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={notificationPrefs.smsDueReminders}
+                        onChange={e => setNotificationPrefs(p => ({ ...p, smsDueReminders: e.target.checked }))}
+                        className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between cursor-pointer pt-2 border-t border-border">
+                      <div>
+                        <span className="text-ink font-semibold block">Weekly statement emails</span>
+                        <span className="text-[11px] text-ink-muted">PDF ledger statement delivered every Sunday morning</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={notificationPrefs.emailStatements}
+                        onChange={e => setNotificationPrefs(p => ({ ...p, emailStatements: e.target.checked }))}
+                        className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ROW 6: Documents */}
+            <div>
+              <button
+                type="button"
+                onClick={() => toggleSection("documents")}
+                className="w-full min-h-[52px] px-4 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Icon name="description" size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-ink block">Documents</span>
+                    <span className="text-xs text-ink-muted block">GST certificate &amp; ledger statements</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-ink-muted font-medium">3 verified</span>
+                  <Icon
+                    name={expandedSection === "documents" ? "keyboard_arrow_up" : "keyboard_arrow_down"}
+                    size={20}
+                    className="text-ink-muted"
+                  />
+                </div>
+              </button>
+
+              {expandedSection === "documents" && (
+                <div className="p-4 bg-surface-raised/40 border-t border-border space-y-2.5 animate-in fade-in duration-150 text-xs">
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <Icon name="picture_as_pdf" size={18} className="text-danger" />
+                      <div>
+                        <strong className="text-ink font-semibold block">GST registration certificate (REG-06)</strong>
+                        <span className="text-[11px] font-mono text-ink-muted">{profile.gstin} • Verified</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadDoc("GST_Certificate_RET0001.pdf")}
+                      className="px-2.5 py-1 rounded bg-surface hover:bg-surface-raised border border-border text-xs font-medium cursor-pointer"
+                    >
+                      Download
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-2 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <Icon name="picture_as_pdf" size={18} className="text-danger" />
+                      <div>
+                        <strong className="text-ink font-semibold block">Annual account confirmation (FY 2025-26)</strong>
+                        <span className="text-[11px] text-ink-muted">Signed ledger balance confirmation</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadDoc("Ledger_Confirmation_FY25.pdf")}
+                      className="px-2.5 py-1 rounded bg-surface hover:bg-surface-raised border border-border text-xs font-medium cursor-pointer"
+                    >
+                      Download
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-2">
+                      <Icon name="article" size={18} className="text-primary" />
+                      <div>
+                        <strong className="text-ink font-semibold block">Credit facility terms agreement</strong>
+                        <span className="text-[11px] text-ink-muted">Authorized revolving terms letter</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadDoc("Credit_Facility_Agreement.pdf")}
+                      className="px-2.5 py-1 rounded bg-surface hover:bg-surface-raised border border-border text-xs font-medium cursor-pointer"
+                    >
+                      Download
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ROW 7: Language and theme */}
+            <div>
+              <button
+                type="button"
+                onClick={() => toggleSection("preferences")}
+                className="w-full min-h-[52px] px-4 py-3 flex items-center justify-between text-left hover:bg-surface-raised transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Icon name="palette" size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-ink block">Language and theme</span>
+                    <span className="text-xs text-ink-muted block">Display appearance &amp; dialect</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-ink">
+                    {selectedLanguage === "en" ? "English" : selectedLanguage === "te" ? "తెలుగు" : "தமிழ்"}
+                  </span>
+                  <Icon
+                    name={expandedSection === "preferences" ? "keyboard_arrow_up" : "keyboard_arrow_down"}
+                    size={20}
+                    className="text-ink-muted"
+                  />
+                </div>
+              </button>
+
+              {expandedSection === "preferences" && (
+                <div className="p-4 bg-surface-raised/40 border-t border-border space-y-4 animate-in fade-in duration-150 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-ink font-semibold block">Application theme</span>
+                      <span className="text-[11px] text-ink-muted">Toggle light or dark interface</span>
+                    </div>
+                    <ThemeToggle />
+                  </div>
+
+                  <div className="pt-3 border-t border-border flex items-center justify-between">
+                    <div>
+                      <span className="text-ink font-semibold block">App language</span>
+                      <span className="text-[11px] text-ink-muted">Preferred regional dialect</span>
+                    </div>
+                    <div className="flex gap-1.5 bg-surface border border-border p-1 rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLanguage("en")}
+                        className={`px-2.5 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                          selectedLanguage === "en" ? "bg-primary text-white" : "text-ink-muted hover:text-ink"
+                        }`}
+                      >
+                        English
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLanguage("te")}
+                        className={`px-2.5 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                          selectedLanguage === "te" ? "bg-primary text-white" : "text-ink-muted hover:text-ink"
+                        }`}
+                      >
+                        తెలుగు
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLanguage("ta")}
+                        className={`px-2.5 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                          selectedLanguage === "ta" ? "bg-primary text-white" : "text-ink-muted hover:text-ink"
+                        }`}
+                      >
+                        தமிழ்
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ROW 8: Sign out */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setIsSignOutModalOpen(true)}
+                className="w-full min-h-[52px] px-4 py-3 flex items-center justify-between text-left hover:bg-danger/10 transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-danger/10 text-danger flex items-center justify-center shrink-0 group-hover:bg-danger/20">
+                    <Icon name="logout" size={18} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-danger block">Sign out</span>
+                    <span className="text-xs text-ink-muted block">End current store owner session</span>
+                  </div>
+                </div>
+                <Icon name="arrow_forward" size={18} className="text-danger/60 group-hover:text-danger" />
+              </button>
+            </div>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setIsSignOutModalOpen(true)}
-            className="px-4 py-2 rounded-md bg-danger/10 hover:bg-danger/20 text-danger font-bold text-xs transition-colors flex items-center gap-1.5 border border-danger/30"
-          >
-            <Icon name="logout" size={16} />
-            <span>Sign Out</span>
-          </button>
         </div>
-      </div>
-      </>
       )}
 
       {/* MODAL: Edit Business Profile */}
