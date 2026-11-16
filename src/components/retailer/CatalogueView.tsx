@@ -16,23 +16,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { getRetailerString } from "@/lib/i18n/retailer";
 import { useEntityImages } from "@/lib/storage/imageStore";
 
-function CatalogueProductImage({
-  product,
-}: {
-  product: { id: string; title: string; image: string };
-}) {
-  const { primaryUrl } = useEntityImages("style", product.id);
-  const display = primaryUrl || product.image;
-
-  return (
-    <img
-      src={display}
-      alt={product.title}
-      loading="lazy"
-      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-out"
-    />
-  );
-}
+import { ProductTile } from "./ProductTile";
 
 function AnimatedCounter({ value }: { value: number }) {
   const [display, setDisplay] = useState(value);
@@ -211,9 +195,9 @@ export default function CatalogueView() {
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                className={`min-h-[44px] px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   selectedCategory === cat
-                    ? "bg-accent/15 text-accent border border-accent/40 shadow-[0_0_8px_rgba(34,229,255,0.2)] font-bold"
+                    ? "bg-primary text-white shadow-soft-xs font-bold"
                     : "bg-surface border border-border text-ink-muted hover:text-ink hover:bg-background"
                 }`}
               >
@@ -276,12 +260,9 @@ export default function CatalogueView() {
             }}
           />
         ) : (
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {filteredProducts.map(product => {
               const pieces = product.piecesPerUnit || 10;
-              const pricePerPiece = product.pricePerUnit / pieces;
-              const unitShort = getUnitShort(product.unitLabel);
-
               const productCartItems = cartItems.filter(item => item.productId === product.id);
               const totalBoxesInCart = productCartItems.reduce((sum, item) => sum + item.units, 0);
               const isInDraftPO = totalBoxesInCart > 0;
@@ -289,86 +270,58 @@ export default function CatalogueView() {
               return (
                 <div
                   key={product.id}
-                  className="flex flex-col justify-between bg-surface rounded-xl sm:rounded-2xl p-2.5 sm:p-4 shadow-soft-sm hover:shadow-soft-md transition-all duration-200 border border-border group"
+                  className="flex flex-col justify-between bg-surface rounded-2xl p-3 sm:p-4 shadow-soft-sm hover:shadow-soft-md transition-all duration-200 border border-border group"
                 >
-                  {/* Top Imagery Container */}
-                  <div>
-                    <div className="relative w-full aspect-square sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden bg-background mb-2 sm:mb-3 border border-border">
-                      <CatalogueProductImage product={product} />
-                      {/* Top Badges */}
-                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 flex flex-col gap-1">
-                        <span className="bg-surface/90 backdrop-blur-md text-ink text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-soft-sm border border-border">
-                          {product.brand}
-                        </span>
-                        {product.pricePending && (
-                          <span className="bg-warning/20 border border-warning/40 text-warning text-[9px] px-1.5 py-0.5 rounded font-bold font-mono uppercase shadow-soft-sm">
-                            {getRetailerString(language, "pricePending")}
-                          </span>
-                        )}
-                      </div>
+                  {/* Top Imagery Container & Details (Tapping opens detail sheet) */}
+                  <div
+                    onClick={() => openMatrixModal(product)}
+                    className="cursor-pointer"
+                  >
+                    <ProductTile
+                      productId={product.id}
+                      brand={product.brand}
+                      category={product.category}
+                      title={product.title}
+                      pcsPerBox={pieces}
+                      aspectRatio="aspect-square"
+                    />
 
-                      {/* Stock LED Badge */}
-                      <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-surface/90 backdrop-blur-md px-1.5 py-0.5 rounded flex items-center gap-1.5 shadow-soft-sm border border-border">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-success shadow-[0_0_6px_rgba(47,208,138,0.9)]" />
-                        </span>
-                        <span className="text-[10px] text-success font-bold font-mono num">
-                          {product.stockUnits.toLocaleString("en-IN")} pcs
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Article Info */}
-                    <div>
-                      <div className="flex items-center justify-between gap-1 text-[9px] text-ink-muted font-mono uppercase tracking-wider num">
-                        <span>ART #{product.artNumber}</span>
-                        <span>{product.category}</span>
-                      </div>
-                      <h3 className="font-bold text-ink text-xs sm:text-sm mt-0.5 leading-snug line-clamp-1 group-hover:text-accent transition-colors">
+                    {/* Article Info: Name, Price per box, Box of N */}
+                    <div className="mt-2.5">
+                      <h3 className="font-bold text-ink text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                         {product.title}
                       </h3>
-                      <p className="text-[10px] sm:text-xs text-ink-muted mt-0.5 line-clamp-1">
-                        {product.description}
-                      </p>
 
-                      {/* Pricing in Mono + Pack Info */}
-                      <div className="mt-2 p-2 sm:p-2.5 bg-background rounded-lg border border-border">
+                      {/* Pricing per box + Pack line */}
+                      <div className="mt-1.5 flex flex-col gap-0.5">
                         {product.pricePending ? (
-                          <div className="text-[11px] sm:text-xs font-bold text-warning font-mono flex items-center gap-1">
+                          <div className="text-xs font-bold text-warning font-mono flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
                             <span>{getRetailerString(language, "pricePending")}</span>
                           </div>
                         ) : (
-                          <div className="flex items-baseline justify-between gap-1 flex-wrap">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-xs sm:text-base font-bold text-ink font-mono num">
-                                {formatINR(product.pricePerUnit)}
-                              </span>
-                              <span className="text-[10px] text-ink-muted font-mono">/{unitShort}</span>
-                            </div>
-                            <span className="text-[10px] sm:text-[11px] font-semibold text-ink-muted font-mono num">
-                              {formatINR(pricePerPiece)}/{getRetailerString(language, "perPiece")}
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-sm sm:text-base font-bold text-ink font-mono num">
+                              {formatINR(product.pricePerUnit)}
                             </span>
+                            <span className="text-xs text-ink-muted">/ box</span>
                           </div>
                         )}
-
-                        <div className="mt-1 pt-1 border-t border-border flex items-center justify-between text-[10px] text-ink-muted font-mono">
-                          <span>{getRetailerString(language, "boxOf")} {pieces} {getRetailerString(language, "pcs")}</span>
-                          <span className="font-medium">Min: {product.minOrderUnits || 5}</span>
-                        </div>
+                        <span className="text-xs text-ink-muted">
+                          Box of {pieces} pcs
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Button: 48px Tap Target */}
-                  <div className="mt-2.5 pt-1">
+                  <div className="mt-3 pt-1">
                     {isInDraftPO ? (
-                      <div className="w-full min-h-[44px] flex items-center bg-success/15 border border-success/30 rounded-xl overflow-hidden shadow-soft-sm">
+                      <div className="w-full min-h-[48px] h-12 flex items-center bg-primary/10 border border-primary/30 rounded-xl overflow-hidden shadow-soft-xs">
                         <button
                           type="button"
                           onClick={() => handleStepQuantity(product.id, -1)}
-                          className="w-11 min-h-[44px] flex items-center justify-center text-success hover:bg-success/20 active:bg-success/30 transition-colors cursor-pointer"
+                          className="w-12 min-h-[48px] h-12 flex items-center justify-center text-primary hover:bg-primary/20 active:bg-primary/30 transition-colors cursor-pointer text-lg font-bold"
                           aria-label={`Decrease ${product.title} by 1 box`}
                         >
                           <Icon name="remove" size={18} />
@@ -377,15 +330,15 @@ export default function CatalogueView() {
                         <button
                           type="button"
                           onClick={() => openMatrixModal(product)}
-                          className="flex-1 min-h-[44px] px-1 flex items-center justify-center gap-1 text-success font-bold text-xs cursor-pointer num"
+                          className="flex-1 min-h-[48px] h-12 px-1 flex items-center justify-center gap-1 text-primary font-bold text-xs sm:text-sm cursor-pointer num"
                         >
-                          <span>{totalBoxesInCart} {getRetailerString(language, "boxes")}</span>
+                          <span>{totalBoxesInCart} {totalBoxesInCart === 1 ? "box" : "boxes"}</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleStepQuantity(product.id, 1)}
-                          className="w-11 min-h-[44px] flex items-center justify-center text-success hover:bg-success/20 active:bg-success/30 transition-colors cursor-pointer"
+                          className="w-12 min-h-[48px] h-12 flex items-center justify-center text-primary hover:bg-primary/20 active:bg-primary/30 transition-colors cursor-pointer text-lg font-bold"
                           aria-label={`Increase ${product.title} by 1 box`}
                         >
                           <Icon name="add" size={18} />
@@ -395,19 +348,19 @@ export default function CatalogueView() {
                       <button
                         type="button"
                         onClick={() => openMatrixModal(product)}
-                        className="w-full min-h-[44px] px-2 rounded-xl bg-surface border border-warning/30 text-warning text-xs font-bold hover:bg-warning/10 flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-sm"
+                        className="w-full min-h-[48px] h-12 px-3 rounded-xl bg-surface border border-warning/30 text-warning text-xs font-bold hover:bg-warning/10 flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-xs"
                       >
                         <Icon name="visibility" size={16} />
-                        <span>{getRetailerString(language, "previewVariants")}</span>
+                        <span>Preview sizes</span>
                       </button>
                     ) : (
                       <button
                         type="button"
                         onClick={() => openMatrixModal(product)}
-                        className="w-full min-h-[44px] px-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 active:scale-98 transition-transform flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-sm"
+                        className="w-full min-h-[48px] h-12 px-3 rounded-xl bg-primary text-white text-xs sm:text-sm font-bold hover:bg-primary/90 active:scale-[0.98] transition-transform flex items-center justify-center gap-1.5 cursor-pointer shadow-soft-xs"
                       >
-                        <Icon name="add_circle" size={16} />
-                        <span>{getRetailerString(language, "selectSizes")}</span>
+                        <Icon name="add" size={18} />
+                        <span>Add to order</span>
                       </button>
                     )}
                   </div>

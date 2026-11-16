@@ -6,6 +6,7 @@ import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { RETAILER_PROFILE, formatINR, getRetailerFinancials } from "@/lib/mock/retailer";
 import { getRetailerString } from "@/lib/i18n/retailer";
+import { ProductTile } from "./ProductTile";
 
 export default function ReviewOrderModal() {
   const {
@@ -147,13 +148,15 @@ export default function ReviewOrderModal() {
                           className="p-3 sm:p-4 rounded-md bg-surface border border-border shadow-soft-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            {(item.image || item.imageUrl) && (
-                              <img
-                                src={item.image || item.imageUrl}
-                                alt={item.productTitle || item.productName || "Product"}
-                                className="w-14 h-14 rounded-md object-cover bg-surface-raised shrink-0 border border-border"
+                            <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-border">
+                              <ProductTile
+                                productId={item.productId}
+                                brand={(item as any).brand || brandName}
+                                category=""
+                                title={item.productTitle || item.productName || "Product"}
+                                aspectRatio="aspect-square"
                               />
-                            )}
+                            </div>
                             <div className="min-w-0">
                               <h4 className="font-semibold text-ink text-sm truncate">
                                 {item.productTitle || item.productName}

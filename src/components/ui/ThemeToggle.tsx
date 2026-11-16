@@ -14,8 +14,8 @@ export function ThemeToggle({
   className = "",
   showLabels = false,
 }: ThemeToggleProps) {
-  // Brand spec: Dark theme is DEFAULT unless explicitly chosen otherwise
-  const [theme, setTheme] = useState<ThemeMode>("dark");
+  // Brand spec: Light theme is DEFAULT unless explicitly chosen otherwise
+  const [theme, setTheme] = useState<ThemeMode>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -24,8 +24,8 @@ export function ThemeToggle({
       if (stored === "light" || stored === "dark" || stored === "system") {
         setTheme(stored);
       } else {
-        setTheme("dark");
-        document.documentElement.setAttribute("data-theme", "dark");
+        setTheme("light");
+        document.documentElement.setAttribute("data-theme", "light");
       }
     } catch {
       // localStorage may fail in restricted/private modes

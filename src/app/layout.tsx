@@ -56,7 +56,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="light"){document.documentElement.setAttribute("data-theme","light");}else if(t==="system"){var m=window.matchMedia("(prefers-color-scheme: light)").matches;document.documentElement.setAttribute("data-theme",m?"light":"dark");}else{document.documentElement.setAttribute("data-theme","dark");}}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");}else if(t==="system"){var m=window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.setAttribute("data-theme",m?"dark":"light");}else{document.documentElement.setAttribute("data-theme","light");}}catch(e){document.documentElement.setAttribute("data-theme","light");}})();`,
           }}
         />
         <script

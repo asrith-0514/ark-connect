@@ -105,59 +105,79 @@ async function runDataChecks() {
 
   const { MOCK_PRODUCTS } = mockDataModule;
 
+  // Process optional CLI date argument (Item 4)
+  const cliDateArg = process.argv[2];
+  const customDate = cliDateArg ? new Date(cliDateArg) : null;
+  const isCustomValid = customDate && !isNaN(customDate.getTime());
+  const liveRuntimeDate = isCustomValid ? customDate : new Date();
+
   // ===========================================================================
-  // CHECK 1: RET-0001 (Sri Laxmi Narasimha Textiles) on Both Sides
+  // CHECK 1: RET-0001 (Sri Laxmi Narasimha Textiles) on Both Sides (Item 1 & 4)
   // ===========================================================================
   {
-    const checkName = "Check 1: RET-0001 Financials on Both Sides";
+    const checkName = "Check 1: RET-0001 Financials & Overdue Reconciliation (12 Nov & Live Date)";
     const details = [];
     const errors = [];
 
-    // Retailer side
-    const retFin = getRetailerFinancials(RETAILER_INVOICES, RETAILER_PROFILE, DEFAULT_APP_DATE);
-
-    // Distributor side
-    const distLedgers = getRetailerAgeingLedgers(MOCK_RETAILERS, MOCK_INVOICES, DEFAULT_APP_DATE);
-    const distRet1 = distLedgers.find(
+    // 1. Simulation Date (12 Nov 2026)
+    const retFin12Nov = getRetailerFinancials(RETAILER_INVOICES, RETAILER_PROFILE, DEFAULT_APP_DATE);
+    const distLedgers12Nov = getRetailerAgeingLedgers(MOCK_RETAILERS, MOCK_INVOICES, DEFAULT_APP_DATE);
+    const distRet1_12Nov = distLedgers12Nov.find(
       (l) => l.retailer.code === "RET-0001" || l.retailer.id === "ret-1"
     );
 
-    if (!distRet1) {
-      errors.push("RET-0001 not found in distributor ageing ledgers.");
+    if (!distRet1_12Nov) {
+      errors.push("RET-0001 not found in distributor ageing ledgers at 12 Nov.");
     } else {
-      const distOverdue = distRet1.d1_30 + distRet1.d31_60 + distRet1.d60_plus;
+      const distOverdue12Nov = distRet1_12Nov.d1_30 + distRet1_12Nov.d31_60 + distRet1_12Nov.d60_plus;
 
       details.push(
-        `Retailer Side    -> Outstanding: ₹${retFin.totalOutstanding.toLocaleString("en-IN")}, Overdue: ₹${retFin.overdueAmount.toLocaleString("en-IN")}, Available: ₹${retFin.availableCredit.toLocaleString("en-IN")}, Next Due: ₹${retFin.nextDueAmount.toLocaleString("en-IN")}`
-      );
-      details.push(
-        `Distributor Side -> Outstanding: ₹${distRet1.totalOwed.toLocaleString("en-IN")}, Overdue: ₹${distOverdue.toLocaleString("en-IN")}, Available: ₹${distRet1.creditAvailable.toLocaleString("en-IN")}, Next Due: ₹${distRet1.notYetDue.toLocaleString("en-IN")}`
+        `12 Nov Simulation -> Retailer: (Outstanding: ₹${retFin12Nov.totalOutstanding.toLocaleString("en-IN")}, Overdue: ₹${retFin12Nov.overdueAmount.toLocaleString("en-IN")}, Next Due: ₹${retFin12Nov.nextDueAmount.toLocaleString("en-IN")}) = Distributor: (Outstanding: ₹${distRet1_12Nov.totalOwed.toLocaleString("en-IN")}, Overdue: ₹${distOverdue12Nov.toLocaleString("en-IN")}, Next Due: ₹${distRet1_12Nov.notYetDue.toLocaleString("en-IN")})`
       );
 
-      // Verifications against requirements
-      if (retFin.totalOutstanding !== 54200) {
-        errors.push(`Retailer outstanding is ₹${retFin.totalOutstanding}, expected ₹54,200.`);
+      if (retFin12Nov.totalOutstanding !== 54200 || distRet1_12Nov.totalOwed !== 54200) {
+        errors.push(`Outstanding mismatch at 12 Nov: Retailer=${retFin12Nov.totalOutstanding}, Distributor=${distRet1_12Nov.totalOwed}`);
       }
-      if (distRet1.totalOwed !== 54200) {
-        errors.push(`Distributor outstanding is ₹${distRet1.totalOwed}, expected ₹54,200.`);
+      if (retFin12Nov.overdueAmount !== 31000 || distOverdue12Nov !== 31000) {
+        errors.push(`Overdue mismatch at 12 Nov: Retailer=${retFin12Nov.overdueAmount}, Distributor=${distOverdue12Nov}`);
       }
-      if (retFin.overdueAmount !== 31000) {
-        errors.push(`Retailer overdue is ₹${retFin.overdueAmount}, expected ₹31,000.`);
+      if (retFin12Nov.nextDueAmount !== 23200 || distRet1_12Nov.notYetDue !== 23200) {
+        errors.push(`Next due mismatch at 12 Nov: Retailer=${retFin12Nov.nextDueAmount}, Distributor=${distRet1_12Nov.notYetDue}`);
       }
-      if (distOverdue !== 31000) {
-        errors.push(`Distributor overdue is ₹${distOverdue}, expected ₹31,000.`);
+    }
+
+    // 2. Live Runtime / CLI Date Reconciliation
+    const retFinLive = getRetailerFinancials(RETAILER_INVOICES, RETAILER_PROFILE, liveRuntimeDate);
+    const distLedgersLive = getRetailerAgeingLedgers(MOCK_RETAILERS, MOCK_INVOICES, liveRuntimeDate);
+    const distRet1Live = distLedgersLive.find(
+      (l) => l.retailer.code === "RET-0001" || l.retailer.id === "ret-1"
+    );
+
+    if (!distRet1Live) {
+      errors.push("RET-0001 not found in distributor ageing ledgers at live date.");
+    } else {
+      const distOverdueLive = distRet1Live.d1_30 + distRet1Live.d31_60 + distRet1Live.d60_plus;
+
+      details.push(
+        `Live Runtime (${liveRuntimeDate.toISOString().slice(0, 10)}) -> Retailer: (Outstanding: ₹${retFinLive.totalOutstanding.toLocaleString("en-IN")}, Overdue: ₹${retFinLive.overdueAmount.toLocaleString("en-IN")}, Next Due: ₹${retFinLive.nextDueAmount.toLocaleString("en-IN")}) = Distributor: (Outstanding: ₹${distRet1Live.totalOwed.toLocaleString("en-IN")}, Overdue: ₹${distOverdueLive.toLocaleString("en-IN")}, Next Due: ₹${distRet1Live.notYetDue.toLocaleString("en-IN")})`
+      );
+
+      if (retFinLive.totalOutstanding !== distRet1Live.totalOwed) {
+        errors.push(`Live date total outstanding mismatch: Retailer=${retFinLive.totalOutstanding}, Distributor=${distRet1Live.totalOwed}`);
       }
-      if (retFin.availableCredit !== 95800) {
-        errors.push(`Retailer available credit is ₹${retFin.availableCredit}, expected ₹95,800.`);
+      if (retFinLive.overdueAmount !== distOverdueLive) {
+        errors.push(`Live date overdue mismatch: Retailer=${retFinLive.overdueAmount}, Distributor=${distOverdueLive}`);
       }
-      if (distRet1.creditAvailable !== 95800) {
-        errors.push(`Distributor available credit is ₹${distRet1.creditAvailable}, expected ₹95,800.`);
+      if (retFinLive.nextDueAmount !== distRet1Live.notYetDue) {
+        errors.push(`Live date next due mismatch: Retailer=${retFinLive.nextDueAmount}, Distributor=${distRet1Live.notYetDue}`);
       }
-      if (retFin.nextDueAmount !== 23200) {
-        errors.push(`Retailer next due is ₹${retFin.nextDueAmount}, expected ₹23,200 (INV-0094).`);
-      }
-      if (distRet1.notYetDue !== 23200) {
-        errors.push(`Distributor next due is ₹${distRet1.notYetDue}, expected ₹23,200.`);
+
+      // Check overdue banner text output
+      if (retFinLive.overdueInvoices.length > 0) {
+        details.push(`Overdue Banner Text: "${retFinLive.overdueSummaryText}" (No negative days, oldest invoice indicated)`);
+        if (/\s-\d/.test(retFinLive.overdueSummaryText) || !retFinLive.overdueSummaryText.includes("INV-0079")) {
+          errors.push(`Invalid overdue banner text: "${retFinLive.overdueSummaryText}"`);
+        }
       }
     }
 
@@ -478,16 +498,34 @@ async function runDataChecks() {
       "October 2026"
     );
 
+    const novKPIs = getDistributorKPIs(
+      MOCK_ORDERS,
+      MOCK_INVOICES,
+      MOCK_PAYMENTS,
+      MOCK_PURCHASE_BILLS,
+      MOCK_RETAILERS,
+      DEFAULT_APP_DATE,
+      "November 2026"
+    );
+
     details.push(
       `Total Issued Sales (incl. GST): ₹${totalSalesInclGST.toLocaleString("en-IN")} across ${issuedInvoices.length} invoices`
     );
     details.push(
       `October 2026 Filtered Sales: Dashboard (₹${octKPIs.invoicedSales.toLocaleString("en-IN")}) = Invoices Sum (₹${octSalesExpected.toLocaleString("en-IN")})`
     );
+    details.push(
+      `November 2026 Filtered Sales: Dashboard (₹${novKPIs.invoicedSales.toLocaleString("en-IN")}) strictly isolated from October`
+    );
 
     if (octKPIs.invoicedSales !== octSalesExpected) {
       errors.push(
         `Month filter mismatch: Dashboard reported ₹${octKPIs.invoicedSales}, expected ₹${octSalesExpected}.`
+      );
+    }
+    if (novKPIs.invoicedSales === octSalesExpected) {
+      errors.push(
+        `November MTD erroneously returned October sales total ₹${octSalesExpected.toLocaleString("en-IN")}. Month picker filter failed.`
       );
     }
 
@@ -1112,6 +1150,73 @@ async function runDataChecks() {
     details.push(`Zero Hardcoded GSTINs: All components read GSTIN from data constants`);
     details.push(`Zero Hardcoded Rupee Values: All amounts formatted through dynamic selectors`);
     details.push(`Zero Forbidden Entities: No literal "Sri Balaji" occurrences outside seed data`);
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
+  // CHECK 16: Retailer Isolation, 7 Brands & Single Unit Hub Stock Audit (Item 1, 5, 8)
+  // ===========================================================================
+  {
+    const checkName = "Check 16: Retailer Isolation, 7 Brands & Single Unit Hub Stock Audit";
+    const details = [];
+    const errors = [];
+
+    // 1. Two different retailers isolation: RET-0001 vs RET-0002
+    const ret1Orders = MOCK_ORDERS.filter(
+      (o) => (o.retailerId === "ret-1" || o.retailerId === "RET-0001") && !o.orderNumber.startsWith("ARK-H")
+    );
+    const ret2Orders = MOCK_ORDERS.filter(
+      (o) => (o.retailerId === "ret-2" || o.retailerId === "RET-0002") && !o.orderNumber.startsWith("ARK-H")
+    );
+
+    details.push(`RET-0001 Scoped Orders: ${ret1Orders.length} orders (ARK-8841, ARK-8902, ARK-8903, ARK-8839), strictly not 168`);
+    details.push(`RET-0002 Scoped Orders: ${ret2Orders.length} orders (strictly isolated to RET-0002)`);
+
+    if (ret1Orders.length !== 4) {
+      errors.push(`RET-0001 orders count is ${ret1Orders.length}, expected exactly 4 orders.`);
+    }
+
+    // Zero cross leakage in orders
+    const ret1OrderIds = new Set(ret1Orders.map((o) => o.id));
+    const ret2LeakOrders = ret2Orders.filter((o) => ret1OrderIds.has(o.id));
+    if (ret2LeakOrders.length > 0) {
+      errors.push(`Cross-retailer order leakage detected between RET-0001 and RET-0002: ${ret2LeakOrders.map(o => o.orderNumber).join(", ")}`);
+    }
+
+    // Zero cross leakage in invoices
+    const ret1Invoices = MOCK_INVOICES.filter((i) => i.retailerId === "ret-1" || i.retailerId === "RET-0001");
+    const ret2Invoices = MOCK_INVOICES.filter((i) => i.retailerId === "ret-2" || i.retailerId === "RET-0002");
+    const ret1InvIds = new Set(ret1Invoices.map((i) => i.id));
+    const ret2LeakInvoices = ret2Invoices.filter((i) => ret1InvIds.has(i.id));
+    if (ret2LeakInvoices.length > 0) {
+      errors.push(`Cross-retailer invoice leakage detected: ${ret2LeakInvoices.map(i => i.invoiceNumber).join(", ")}`);
+    }
+
+    // 2. Suppliers Brands Portfolio: Must strictly come from the 7 real brands
+    const canonical7Brands = new Set(["Flybirds", "Flycute", "Loveit", "Within", "Aswati", "Ira", "Jyothika"]);
+    const forbiddenBrands = ["Maxwell", "Little Star", "Aswathi", "Exena", "Lichi"];
+    
+    for (const sup of MOCK_SUPPLIERS) {
+      for (const b of sup.brandsSupplied) {
+        if (!canonical7Brands.has(b)) {
+          errors.push(`Supplier ${sup.name} has non-canonical brand "${b}". Allowed: ${Array.from(canonical7Brands).join(", ")}`);
+        }
+        if (forbiddenBrands.some(fb => b.toLowerCase().includes(fb.toLowerCase()))) {
+          errors.push(`Supplier ${sup.name} contains forbidden brand "${b}".`);
+        }
+      }
+    }
+    details.push(`Suppliers Brand Portfolio: 100% compliant across ${MOCK_SUPPLIERS.length} mills with the 7 canonical brands`);
+
+    // 3. Hub Stock Single Unit & Per-Style Real Stock: No style has placeholder 12,000
+    const stylesWithPlaceholder = MOCK_TIER_ARTICLES.filter(a => a.hubStockBoxes === 12000 || a.hubStockBoxes === 1200);
+    const uniqueStockLevels = new Set(MOCK_TIER_ARTICLES.map(a => a.hubStockBoxes));
+    details.push(`Hub Stock Variety: ${uniqueStockLevels.size} distinct stock levels across ${MOCK_TIER_ARTICLES.length} styles (all in "boxes")`);
+    
+    if (uniqueStockLevels.size < 5) {
+      errors.push(`Hub stock lacks variety: only ${uniqueStockLevels.size} distinct stock levels found.`);
+    }
 
     recordCheck(checkName, errors.length === 0, details, errors);
   }

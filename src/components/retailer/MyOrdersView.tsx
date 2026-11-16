@@ -1,8 +1,9 @@
 "use client";
 import { Icon } from "@/components/ui/Icon";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import { Order } from "@/data/mockData";
 import { formatINR, isDemoModeEnabled, RETAILER_PROFILE } from "@/lib/mock/retailer";
 import { Badge, StatusChip } from "@/components/ui/Badge";
@@ -23,6 +24,7 @@ export default function MyOrdersView() {
     addToCart,
     setIsReviewOrderOpen,
   } = useApp();
+  const { user } = useAuth();
 
   const [activeTab, setActiveTab] = useState<string>(orderTabFilter || "all");
   const [demoState, setDemoState] = useState<"orders" | "empty" | "skeleton">("orders");
@@ -32,6 +34,18 @@ export default function MyOrdersView() {
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [copiedLR, setCopiedLR] = useState<boolean>(false);
   const [isDemo, setIsDemo] = useState(false);
+
+  const activeRetailerId = user?.type === "retailer" ? (user.retailerId || "ret-1") : "ret-1";
+  const activeRetailerCode = user?.type === "retailer" ? (user.retailerCode || "RET-0001") : "RET-0001";
+
+  // Retailer isolation: logged-in retailer only sees their own non-historical orders
+  const retailerOrders = useMemo(() => {
+    return orders.filter(
+      o =>
+        (o.retailerId === activeRetailerId || o.retailerId === activeRetailerCode) &&
+        !o.orderNumber.startsWith("ARK-H")
+    );
+  }, [orders, activeRetailerId, activeRetailerCode]);
 
   useEffect(() => {
     if (orderTabFilter) {
@@ -48,18 +62,18 @@ export default function MyOrdersView() {
     }
   }, []);
 
-  // Requirement 5: Counts derived matching Home metrics
-  const draftCount = orders.filter(o => o.status === "Draft").length;
-  const inReviewCount = orders.filter(o =>
+  // Counts derived strictly from isolated retailer orders
+  const draftCount = retailerOrders.filter(o => o.status === "Draft").length;
+  const inReviewCount = retailerOrders.filter(o =>
     ["Submitted", "Approved", "Confirmed", "Processing"].includes(o.status)
   ).length;
-  const dispatchedCount = orders.filter(o => o.status === "Dispatched").length;
-  const deliveredCount = orders.filter(o => o.status === "Delivered").length;
+  const dispatchedCount = retailerOrders.filter(o => o.status === "Dispatched").length;
+  const deliveredCount = retailerOrders.filter(o => o.status === "Delivered").length;
   const activePipelineCount = inReviewCount + dispatchedCount;
-  const closedCount = deliveredCount + orders.filter(o => o.status === "Cancelled").length;
+  const closedCount = deliveredCount + retailerOrders.filter(o => o.status === "Cancelled").length;
 
   // Filter orders by tab, PO search, and date range
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = retailerOrders.filter(order => {
     // 1. Tab filter
     if (activeTab === "in-review") {
       if (!["Submitted", "Approved", "Confirmed", "Processing"].includes(order.status)) return false;
@@ -203,7 +217,7 @@ export default function MyOrdersView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="font-page-title text-2xl sm:text-3xl text-ink font-normal">
-            Wholesale Purchase Orders
+            Orders
           </h1>
           <p className="text-xs text-ink-muted mt-0.5">
             Real-time status updates from ARK Distributors, Secunderabad Hub
@@ -246,6 +260,69 @@ export default function MyOrdersView() {
           </div>
         )}
       </div>
+
+      {/* Active Dispatched Delivery: 3-Stage Progress Tracker */}
+      {(() => {
+        const dispatchedOrder = orders.find(o => o.status === "Dispatched");
+        if (!dispatchedOrder) return null;
+        return (
+          <section className="w-full bg-surface rounded-2xl p-4 sm:p-5 border border-border shadow-soft-sm flex flex-col gap-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
+                <h2 className="text-sm font-bold text-ink">Active delivery</h2>
+                <span className="font-mono text-xs text-primary font-bold">
+                  PO #{dispatchedOrder.orderNumber}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTrackingOrder(dispatchedOrder)}
+                className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span>Track delivery</span>
+                <Icon name="open_in_new" size={14} />
+              </button>
+            </div>
+
+            <div className="bg-background rounded-xl p-3 sm:p-4 border border-border flex flex-col gap-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-ink">
+                  {dispatchedOrder.transporter || "Navata Road Transport"}
+                </span>
+                <span className="font-mono font-bold text-primary">
+                  LR: {dispatchedOrder.lrNumber || "NRT-77492-SDP"}
+                </span>
+              </div>
+
+              {/* 3-Stage Visual Bar */}
+              <div className="w-full flex items-center gap-2">
+                <div className="flex-1 h-2 rounded-full bg-success" />
+                <div className="flex-1 h-2 rounded-full bg-success animate-pulse" />
+                <div className="flex-1 h-2 rounded-full bg-border" />
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-ink-muted">
+                <span className="text-success font-semibold">Dispatched</span>
+                <span className="text-primary font-bold">In transit</span>
+                <span>Expected tomorrow</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-xs text-ink-muted">
+              <span>{dispatchedOrder.totalBoxes} boxes • {formatINR(dispatchedOrder.grandTotal)}</span>
+              <button
+                type="button"
+                onClick={() => setTrackingOrder(dispatchedOrder)}
+                className="min-h-[48px] h-12 w-full sm:w-auto px-5 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-soft-xs hover:bg-primary/90"
+              >
+                <Icon name="local_shipping" size={18} />
+                <span>Track delivery</span>
+              </button>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Requirement 4: Search Box for PO number and Date-Range Filter */}
       <div className="bg-surface rounded-md p-3.5 sm:p-4 border border-border shadow-soft-sm flex flex-col sm:flex-row items-center gap-3">

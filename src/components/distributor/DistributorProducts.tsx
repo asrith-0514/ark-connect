@@ -360,7 +360,7 @@ export const DistributorProducts: React.FC = () => {
             {tierArticles.reduce((s, a) => s + (a.hubStockBoxes || 0), 0).toLocaleString("en-IN")}
           </div>
           <span className="text-[11px] text-ink-muted mt-1 block">
-            Master Boxes in Warehouse
+            Boxes in Warehouse
           </span>
         </div>
       </div>
@@ -650,8 +650,7 @@ export const DistributorProducts: React.FC = () => {
 
                         {/* Hub Stock */}
                         <td className="py-2.5 sm:py-3 px-3 text-right font-mono num text-ink">
-                          <span className="font-semibold">{art.hubStock.toLocaleString("en-IN")} pcs</span>
-                          <span className="text-[10px] text-ink-muted block font-mono">({art.hubStockBoxes} bx)</span>
+                          <span className="font-semibold">{art.hubStockBoxes.toLocaleString("en-IN")} boxes</span>
                         </td>
 
                         {/* Variants Breakdown Trigger */}

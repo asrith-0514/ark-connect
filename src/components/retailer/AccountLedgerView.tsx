@@ -3,6 +3,7 @@ import { Icon } from "@/components/ui/Icon";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   RETAILER_PROFILE,
   RETAILER_INVOICES,
@@ -18,16 +19,22 @@ import CreditMeter from "@/components/retailer/CreditMeter";
 
 export default function AccountLedgerView() {
   const { setRetailerNav, orders, invoices, payments, currentDate, retailers } = useApp();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"invoices" | "payments">("invoices");
   const [showEmptyState, setShowEmptyState] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState(false);
 
+  const activeRetailerId = user?.type === "retailer" ? (user.retailerId || "ret-1") : "ret-1";
+  const activeRetailerCode = user?.type === "retailer" ? (user.retailerCode || "RET-0001") : "RET-0001";
+
   const currentRetailerRecord = useMemo(() => {
-    return retailers.find(
-      r => r.code === RETAILER_PROFILE.code || r.id === RETAILER_PROFILE.id || r.name.toLowerCase().includes(RETAILER_PROFILE.name.toLowerCase())
+    return (
+      retailers.find(
+        r => r.code === activeRetailerCode || r.id === activeRetailerId
+      ) || retailers.find(r => r.id === "ret-1")
     );
-  }, [retailers]);
+  }, [retailers, activeRetailerId, activeRetailerCode]);
 
   const isCreditHeld = !!currentRetailerRecord?.creditHold;
 
@@ -43,13 +50,13 @@ export default function AccountLedgerView() {
   const retailerInvoices = useMemo(() => {
     const list = invoices.filter(
       i =>
-        (i.retailerId === "ret-1" ||
-          i.retailerId === RETAILER_PROFILE.code ||
-          i.retailerName.toLowerCase().includes(RETAILER_PROFILE.name.toLowerCase())) &&
+        (i.retailerId === activeRetailerId ||
+          i.retailerId === activeRetailerCode ||
+          (currentRetailerRecord && i.retailerName.toLowerCase() === currentRetailerRecord.name.toLowerCase())) &&
         i.status !== "Draft"
     );
 
-    if (list.length === 0) return RETAILER_INVOICES;
+    if (list.length === 0 && activeRetailerId === "ret-1") return RETAILER_INVOICES;
 
     return list.map(i => ({
       id: i.id,
@@ -67,18 +74,18 @@ export default function AccountLedgerView() {
       taxRatePercent: i.taxRatePercent || 5,
       itemsCount: i.items?.length || 1,
     }));
-  }, [invoices]);
+  }, [invoices, activeRetailerId, activeRetailerCode, currentRetailerRecord]);
 
   // Filter dynamic payments for this retailer
   const retailerPayments = useMemo(() => {
     const list = payments.filter(
       p =>
-        p.retailerId === "ret-1" ||
-        p.retailerId === RETAILER_PROFILE.code ||
-        p.retailerName.toLowerCase().includes(RETAILER_PROFILE.name.toLowerCase())
+        p.retailerId === activeRetailerId ||
+        p.retailerId === activeRetailerCode ||
+        (currentRetailerRecord && p.retailerName.toLowerCase() === currentRetailerRecord.name.toLowerCase())
     );
 
-    if (list.length === 0) return RETAILER_PAYMENTS;
+    if (list.length === 0 && activeRetailerId === "ret-1") return RETAILER_PAYMENTS;
 
     return list.map(p => ({
       id: p.id,
@@ -91,7 +98,7 @@ export default function AccountLedgerView() {
       referenceId: p.referenceId,
       reconciled: p.reconciled ?? true,
     }));
-  }, [payments]);
+  }, [payments, activeRetailerId, activeRetailerCode, currentRetailerRecord]);
 
   const financials = getRetailerFinancials(retailerInvoices, undefined, currentDate);
   const orderMetrics = getRetailerOrderMetrics(orders);
@@ -260,7 +267,7 @@ export default function AccountLedgerView() {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-md bg-[#25D366] hover:bg-[#1ebd59] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-soft-sm transition-all shrink-0 cursor-pointer active:scale-98"
+            className="w-full sm:w-auto min-h-[48px] h-12 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebd59] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-soft-sm transition-all shrink-0 cursor-pointer active:scale-98"
           >
             <span>Contact ARK Backoffice</span>
           </a>
@@ -283,11 +290,11 @@ export default function AccountLedgerView() {
                   Payment Overdue
                 </span>
                 <span className="text-xs text-danger font-mono font-semibold num">
-                  {primaryOverdue.invoiceNumber}
+                  {financials.oldestOverdue ? `Oldest: ${financials.oldestOverdue.invoiceNumber}` : primaryOverdue.invoiceNumber}
                 </span>
               </div>
               <p className="text-sm sm:text-base font-bold text-danger mt-1">
-                {formatINR(financials.overdueAmount)} overdue on {primaryOverdue.invoiceNumber}. Please settle to avoid order holds.
+                {financials.overdueSummaryText || `${formatINR(financials.overdueAmount)} overdue on ${primaryOverdue.invoiceNumber}. Please settle to avoid order holds.`}
               </p>
               <p className="text-xs text-danger/80 mt-0.5">
                 Past payment due date. Upload your bank deposit or UPI slip to clear dispatches.
@@ -300,7 +307,7 @@ export default function AccountLedgerView() {
             href={buildWhatsAppLink(primaryOverdue.invoiceNumber, financials.overdueAmount)}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-md bg-[#25D366] hover:bg-[#1ebd59] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-soft-sm transition-all shrink-0 cursor-pointer active:scale-98"
+            className="w-full sm:w-auto min-h-[48px] h-12 px-6 rounded-xl bg-[#25D366] hover:bg-[#1ebd59] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-soft-sm transition-all shrink-0 cursor-pointer active:scale-98"
           >
             <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
               <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
@@ -384,17 +391,26 @@ export default function AccountLedgerView() {
               </span>
             </div>
 
-            {/* Next Due */}
+            {/* Next Due (Not Yet Due) */}
             <div className="bg-background p-5 rounded-lg border border-border shadow-soft-sm flex flex-col justify-between">
               <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider">
-                Next Due Payment
+                {financials.hasUpcomingDue ? "Next Due (Not Yet Due)" : "Next Due"}
               </span>
-              <span className="text-3xl font-bold text-ink font-mono num mt-1">
-                {formatINR(financials.nextDueAmount)}
-              </span>
-              <span className="text-xs text-warning font-medium mt-1 num">
-                Due: {financials.nextDueDate} (in {financials.nextDueDays} day)
-              </span>
+              {financials.hasUpcomingDue ? (
+                <>
+                  <span className="text-3xl font-bold text-ink font-mono num mt-1">
+                    {formatINR(financials.nextDueAmount)}
+                  </span>
+                  <span className="text-xs text-warning font-medium mt-1 num">
+                    Due: {financials.nextDueDate} (in {financials.nextDueDays} {financials.nextDueDays === 1 ? "day" : "days"})
+                  </span>
+                </>
+              ) : (
+                <div className="mt-2">
+                  <span className="text-sm font-semibold text-ink-muted">No upcoming dues</span>
+                  <span className="text-xs text-success block mt-1">All current invoices settled</span>
+                </div>
+              )}
             </div>
           </div>
 

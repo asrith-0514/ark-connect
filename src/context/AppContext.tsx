@@ -168,10 +168,12 @@ export function AppProvider({
   children,
   initialMode: propInitialMode,
   initialDistributorNav: propInitialDistributorNav,
+  initialRetailerNav: propInitialRetailerNav,
 }: {
   children: React.ReactNode;
   initialMode?: "retailer" | "distributor";
   initialDistributorNav?: string;
+  initialRetailerNav?: string;
 }) {
   const currentDate = useCurrentDate();
   const searchParams = useSearchParams();
@@ -195,8 +197,19 @@ export function AppProvider({
              normalized === "analytics" ? "reports" : normalized;
     })();
 
+  const normalizedRetailerNav = (() => {
+    if (propInitialRetailerNav) return propInitialRetailerNav;
+    const tab = searchParams?.get("tab") || searchParams?.get("view");
+    if (!tab) return "home";
+    const t = tab.trim().toLowerCase();
+    return t === "shop" || t === "catalog" || t === "products" ? "catalogue" :
+           t === "orders" || t === "order" ? "orders" :
+           t === "dues" || t === "ledger" || t === "payments" ? "dues" :
+           t === "account" || t === "profile" ? "account" : "home";
+  })();
+
   const [portalMode, setPortalMode] = useState<"retailer" | "distributor">(initialMode);
-  const [retailerNav, setRetailerNav] = useState<string>("home");
+  const [retailerNav, setRetailerNav] = useState<string>(normalizedRetailerNav);
   const [distributorNav, setDistributorNav] = useState<string>(initialDistributorNav);
 
   // Initial cart populated with Draft PO #ARK-8902 items from design

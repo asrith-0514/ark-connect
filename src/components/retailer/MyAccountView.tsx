@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { RetailerRequestType, ComplaintType } from "@/lib/mock";
 import CreditMeter from "@/components/retailer/CreditMeter";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function MyAccountView() {
   const {
@@ -942,46 +943,56 @@ export default function MyAccountView() {
         </div>
       </div>
 
-      {/* 7. Preferences & Session */}
-      <div className="bg-surface rounded-lg p-5 sm:p-6 shadow-soft-sm border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <span className="text-xs font-bold text-ink block">Portal Language / భాష / மொழி</span>
-          <p className="text-[11px] text-ink-muted mt-0.5">Select preferred regional language for invoices and catalogues</p>
+      {/* 7. Appearance & Preferences */}
+      <div className="bg-surface rounded-2xl p-5 sm:p-6 shadow-soft-sm border border-border flex flex-col gap-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
+          <div>
+            <span className="text-sm font-bold text-ink block">Theme & Appearance</span>
+            <p className="text-xs text-ink-muted mt-0.5">Toggle light or dark theme (remembered across sessions)</p>
+          </div>
+          <ThemeToggle showLabels />
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-surface-raised p-1 rounded-md border border-border">
-            <button
-              type="button"
-              onClick={() => setSelectedLanguage("en")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "en" ? "bg-surface text-primary shadow-soft-sm" : "text-ink-muted hover:text-ink"}`}
-            >
-              English
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedLanguage("te")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "te" ? "bg-surface text-primary shadow-soft-sm" : "text-ink-muted hover:text-ink"}`}
-            >
-              తెలుగు
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedLanguage("ta")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "ta" ? "bg-surface text-primary shadow-soft-sm" : "text-ink-muted hover:text-ink"}`}
-            >
-              தமிழ்
-            </button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-sm font-bold text-ink block">Portal Language / భాష / மொழி</span>
+            <p className="text-xs text-ink-muted mt-0.5">Select preferred regional language for invoices and catalogues</p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsSignOutModalOpen(true)}
-            className="px-4 py-2 rounded-md bg-danger/10 hover:bg-danger/20 text-danger font-bold text-xs transition-colors flex items-center gap-1.5 border border-danger/30"
-          >
-            <Icon name="logout" size={16} />
-            <span>Sign Out</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-surface-raised p-1 rounded-xl border border-border">
+              <button
+                type="button"
+                onClick={() => setSelectedLanguage("en")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "en" ? "bg-surface text-primary shadow-soft-xs" : "text-ink-muted hover:text-ink"}`}
+              >
+                English
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedLanguage("te")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "te" ? "bg-surface text-primary shadow-soft-xs" : "text-ink-muted hover:text-ink"}`}
+              >
+                తెలుగు
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedLanguage("ta")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selectedLanguage === "ta" ? "bg-surface text-primary shadow-soft-xs" : "text-ink-muted hover:text-ink"}`}
+              >
+                தமிழ்
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsSignOutModalOpen(true)}
+              className="min-h-[44px] px-4 py-2 rounded-xl bg-danger/10 hover:bg-danger/20 text-danger font-bold text-xs transition-colors flex items-center gap-1.5 border border-danger/30 cursor-pointer"
+            >
+              <Icon name="logout" size={16} />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
       </div>
       </>

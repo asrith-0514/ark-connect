@@ -16,6 +16,7 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
     loginWithPassword,
     sendOtp,
     verifyOtp,
+    quickDemoLogin,
     rateLimitSeconds,
   } = useAuth();
 
@@ -83,21 +84,17 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
     }
   };
 
-  const handleRoleQuickSelect = (role: DistributorRole) => {
+  const handleRoleQuickSelect = async (role: DistributorRole) => {
     setSelectedRolePreview(role);
     setErrorMsg(null);
-    const meta = DISTRIBUTOR_ROLES_METADATA[role];
-    setIdentifier(meta.defaultEmail);
-    setPhone(meta.defaultPhone.replace(/\D/g, "").slice(-10));
-    const passMap: Record<DistributorRole, string> = {
-      owner: "ark@owner123",
-      accountant: "ark@acc123",
-      godown_staff: "ark@godown123",
-      salesman: "ark@sales123",
-    };
-    setPassword(passMap[role]);
-    setOtpSent(false);
-    setOtpCode("");
+    setIsSubmitting(true);
+    try {
+      await quickDemoLogin(role);
+    } catch {
+      setErrorMsg("Failed to login with demo role.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -288,7 +285,7 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
           <div className="mt-6 pt-5 border-t border-border flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-semibold text-ink-muted uppercase tracking-wider">
-                Select Staff Role to Test RBAC:
+                Select Staff Role (1-Click Instant Login):
               </span>
               <Badge variant="primary" size="sm">
                 4 Roles Mapped
@@ -324,17 +321,6 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
           </div>
         )}
       </Card>
-
-      {/* Switch to Retailer Portal Login */}
-      <div className="text-center">
-        <button
-          type="button"
-          onClick={onSwitchToRetailer}
-          className="text-xs sm:text-sm text-ink-muted hover:text-primary font-medium transition-colors cursor-pointer"
-        >
-          ← Return to Retailer Ordering Portal (ARK Connect)
-        </button>
-      </div>
     </div>
   );
 }

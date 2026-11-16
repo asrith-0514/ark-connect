@@ -1718,7 +1718,7 @@ export const MOCK_SUPPLIERS: Supplier[] = [
     bankName: "State Bank of India, Tiruppur Main Branch",
     accountNumber: "301928410294",
     ifscCode: "SBIN0000938",
-    brandsSupplied: ["Flybirds", "Maxwell"],
+    brandsSupplied: ["Flybirds", "Loveit"],
     bankDetails: {
       accountName: "Sri Meenakshi Mills",
       accountNumber: "301928410294",
@@ -1742,7 +1742,7 @@ export const MOCK_SUPPLIERS: Supplier[] = [
     bankName: "HDFC Bank, Kumaran Road, Tiruppur",
     accountNumber: "50200014892019",
     ifscCode: "HDFC0000281",
-    brandsSupplied: ["Sleepy Panda", "Within"],
+    brandsSupplied: ["Within", "Ira"],
     bankDetails: {
       accountName: "Karpagam Spinning Mills",
       accountNumber: "50200014892019",
@@ -1766,7 +1766,7 @@ export const MOCK_SUPPLIERS: Supplier[] = [
     bankName: "Canara Bank, Rayapuram Branch, Tiruppur",
     accountNumber: "11890200001452",
     ifscCode: "CNRB0001189",
-    brandsSupplied: ["Flycute", "Little Star"],
+    brandsSupplied: ["Flycute", "Jyothika"],
     bankDetails: {
       accountName: "Murugan Knits",
       accountNumber: "11890200001452",
@@ -1790,7 +1790,7 @@ export const MOCK_SUPPLIERS: Supplier[] = [
     bankName: "Indian Overseas Bank, Tiruppur Town",
     accountNumber: "014202000008492",
     ifscCode: "IOBA0000142",
-    brandsSupplied: ["Aswathi", "Exena", "Lichi Intimates"],
+    brandsSupplied: ["Aswati"],
     bankDetails: {
       accountName: "Tiruppur Cotton Tex",
       accountNumber: "014202000008492",
@@ -1898,7 +1898,43 @@ export const MOCK_PURCHASE_BILLS: PurchaseBill[] = [
   },
 ];
 
+// Deterministic per-style hub stock distribution (Boxes and Pieces)
+const STYLE_STOCK_BOXES: Record<string, number> = {
+  "FB-LEG-ANKLE": 520,
+  "FB-LEG-FULL": 480,
+  "FB-LEG-SHIM": 210,
+  "FB-LEG-SAREE": 340,
+  "FB-LEG-KURTI": 460,
+  "AS-BRA-KARISHMA": 650,
+  "AS-BRA-SWEETY": 580,
+  "AS-BRA-SUMO": 390,
+  "WT-BRA-CLARA": 420,
+  "WT-BRA-DEEPA": 310,
+  "FC-TSH-POLO": 280,
+  "FC-KID-SET": 350,
+  "JY-BRA-COTTON": 240,
+  "IR-BRA-DAILY": 190,
+  "LV-CAM-SLIP": 330,
+};
+
 // ============================================================================
-// 7. TIER PRICING ARTICLES (All 9 Brands with A++ <= A+ <= A)
+// 7. TIER PRICING ARTICLES (All 7 Flowchart Brands with A++ <= A+ <= A)
 // ============================================================================
-export const MOCK_TIER_ARTICLES: TierPricingArticle[] = (catalogueSeed as any).styles;
+export const MOCK_TIER_ARTICLES: TierPricingArticle[] = (catalogueSeed as any).styles.map(
+  (s: any, idx: number) => {
+    const pcsPerBox = s.pcsPerBox || s.piecesPerPack || 10;
+    // Real per-style stock: high-runners have 300-650 boxes, others have 60-280 boxes
+    const baseBoxes =
+      STYLE_STOCK_BOXES[s.artNumber] ||
+      (s.pricePending ? 40 + ((idx * 17) % 80) : 120 + ((idx * 31) % 250));
+    const hubStockPieces = baseBoxes * pcsPerBox;
+    return {
+      ...s,
+      pcsPerBox,
+      piecesPerPack: pcsPerBox,
+      hubStockBoxes: baseBoxes,
+      hubStock: hubStockPieces,
+      hubStockPieces: hubStockPieces,
+    };
+  }
+);

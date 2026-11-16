@@ -34,6 +34,7 @@ import { DistributorInvoices } from "@/components/distributor/DistributorInvoice
 import DistributorInvoiceModal from "@/components/distributor/DistributorInvoiceModal";
 import { DistributorSuppliers } from "@/components/distributor/DistributorSuppliers";
 import { DistributorPurchaseBills } from "@/components/distributor/DistributorPurchaseBills";
+import { DistributorSuppliersAndBills } from "@/components/distributor/DistributorSuppliersAndBills";
 import { DistributorReports } from "@/components/distributor/DistributorReports";
 import { DistributorFollowUps } from "@/components/distributor/DistributorFollowUps";
 import { DistributorSegments } from "@/components/distributor/DistributorSegments";
@@ -299,14 +300,9 @@ function MainApp() {
                         <DistributorInvoices />
                       </ErrorBoundary>
                     )}
-                    {distributorNav === "suppliers" && hasPermission("canViewSuppliers") && (
-                      <ErrorBoundary name="Suppliers">
-                        <DistributorSuppliers />
-                      </ErrorBoundary>
-                    )}
-                    {distributorNav === "purchase-bills" && hasPermission("canViewPurchaseBills") && (
-                      <ErrorBoundary name="Purchase Bills">
-                        <DistributorPurchaseBills />
+                    {(distributorNav === "suppliers" || distributorNav === "purchase-bills" || distributorNav === "suppliers-bills") && hasPermission("canViewSuppliers") && (
+                      <ErrorBoundary name="Suppliers & Bills">
+                        <DistributorSuppliersAndBills />
                       </ErrorBoundary>
                     )}
                     {distributorNav === "reports" && hasPermission("canViewReports") && (
@@ -368,11 +364,13 @@ function MainApp() {
 export function ClientApp({
   initialMode,
   initialDistributorNav,
+  initialRetailerNav,
   initialUser = null,
   isDemo = false,
 }: {
   initialMode?: "retailer" | "distributor" | "auth";
   initialDistributorNav?: string;
+  initialRetailerNav?: string;
   initialUser?: AuthUser | null;
   isDemo?: boolean;
 }) {
@@ -380,7 +378,11 @@ export function ClientApp({
 
   return (
     <AuthProvider initialUser={initialUser}>
-      <AppProvider initialMode={effectiveMode} initialDistributorNav={initialDistributorNav}>
+      <AppProvider
+        initialMode={effectiveMode}
+        initialDistributorNav={initialDistributorNav}
+        initialRetailerNav={initialRetailerNav}
+      >
         <MainApp />
       </AppProvider>
     </AuthProvider>
