@@ -14,6 +14,7 @@ export interface BrandConfig {
   minOrder: string;
   accentColor: string;
   image: string;
+  logo?: string;
   badge: string;
   colorConfig: {
     bgTint: string;
@@ -28,6 +29,8 @@ export const CATEGORIES_CONFIG = [
   "Petticoats",
   "Bras",
   "Panties",
+  "Pants",
+  "T-shirts",
 ] as const;
 
 export type ProductCategory = (typeof CATEGORIES_CONFIG)[number];
@@ -43,7 +46,8 @@ export const BRANDS_CONFIG: Record<string, BrandConfig> = {
     stockPercentage: "99% In Stock",
     minOrder: "1 Master Case (60 pcs)",
     accentColor: "bg-primary text-primary-foreground",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBLBi96Ov1PZTKzqz4dFnc06-tbXn2rSmLproCF4Q4i4VpnHU3aLcq_KMQ2bCLoupHW9MmOBK6Uw4EobnaSJq4Vs5b4vg-WIf5e1A5nzMl8k_nj-sdQSPoSIZeqGJO7AntQF1exVxf3XpgiD-ztpycDxIxBBK4XfihyyizsefA55rjBZu_vvhQE7V5Qioy6PtBoAMMdWVhqAmUdlaXZPVnVi9UHb_ChlAb5Etayt1c6",
+    image: "/brands/flybirds.png",
+    logo: "/brands/flybirds.png",
     badge: "Bestseller: 4-Way Stretch Leggings",
     colorConfig: {
       bgTint: "bg-[#3B3BF5]/5 dark:bg-[#7C7CFF]/10",
@@ -62,7 +66,8 @@ export const BRANDS_CONFIG: Record<string, BrandConfig> = {
     stockPercentage: "95% In Stock",
     minOrder: "2 Cartons (48 pcs)",
     accentColor: "bg-accent text-white",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDy0Ns6Kj1Z8Dg_k17JRDxQ-A1DQR6PMVWli1AftKmKumT4IT_z1UXTry2LzH-Jc3SfjAM6sJOHy113S0HGUUkWrZIhDhlXNondfgjT-lMLMD3Acl_O5Fc3a4eUbqpi_xBv_sSFUu7oSHomx0BE8KErBViZsXSb3BxzzUujU4APFolHL5TzvyMeBayabTRyMpRrQxWbgEfYkf7_XTiWY8-27yP2gzkl4TrNpKk4e0Ug",
+    image: "/brands/flycute.png",
+    logo: "/brands/flycute.png",
     badge: "Fast Moving: Shimmer & Ankle Leggings",
     colorConfig: {
       bgTint: "bg-[#FF6A3D]/5 dark:bg-[#FF8A63]/10",
@@ -81,7 +86,8 @@ export const BRANDS_CONFIG: Record<string, BrandConfig> = {
     stockPercentage: "94% In Stock",
     minOrder: "1 Box (24 pcs)",
     accentColor: "bg-pink-600 text-white",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAekMAHlmbovaLUy1WMuTECSKqKxxfUehYd_WizCHWu7hBc0aadRwqSltwDUEbqgL4RqoOdp8JGovxtJ3AuFuIY6UcifABH8nKub5xer2JuFhzz80eIF5qBf-JzbglS8fscD3BCmiCNHggl84Nvmit0KJ9CAdvRiqkRZJ-w7UXjajTeQV4wF18td3qJhKnwSuULUFWzRfnLc0C5fCwOZGEzZPVhCT6yUW2GJBVcNlsB",
+    image: "/brands/loveit.png",
+    logo: "/brands/loveit.png",
     badge: "Trending: Kurti Pants & Bio-Wash Leggings",
     colorConfig: {
       bgTint: "bg-[#BE185D]/5 dark:bg-[#F472B6]/10",
@@ -100,7 +106,8 @@ export const BRANDS_CONFIG: Record<string, BrandConfig> = {
     stockPercentage: "97% In Stock",
     minOrder: "1 Inner Pack (12 pcs)",
     accentColor: "bg-purple-600 text-white",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDce7_hUWwSU8gpC-P3IBbizrBO_Py60IS50wOvHGp-EDYw6_TDgzKKrPyp9EjGjePJ1XB8fMBbD61KNOqGtOGjezUOvlh1aGrChyvbBT6ZycApf0OxZn0GRMFCgyEhyIib9we5ZXeioUyiScUldvWDiZ5BvYZlDZqUqzS5ILAwYnKxQSaWwXsE8WhALaxwGjVF1oQGoNl4iockOxqhk9XQavETUnwJd_h64w6CD5C5",
+    image: "/brands/within.png",
+    logo: "/brands/within.png",
     badge: "Comprehensive Range: 21 Bra Fits & Modal Panties",
     colorConfig: {
       bgTint: "bg-[#7C3AED]/5 dark:bg-[#A78BFA]/10",
@@ -119,7 +126,8 @@ export const BRANDS_CONFIG: Record<string, BrandConfig> = {
     stockPercentage: "96% In Stock",
     minOrder: "1 Bundle (12 boxes)",
     accentColor: "bg-emerald-600 text-white",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDPJtzH6tZ8RjHvM40kStllYoqIyqO76mnH5Ta0ouxHXP6lWvcTzT8CoLPMr09jE-KwsXICzDBSSyRdMk5cmNcI3sUQrB7ZJbaktU-66GTNoKl8TIna09S4kag1obGbZ9bAERHeb8xWSStCE7L1lco537hqgmfH4TWvStlOfLIdRntE-Wr6Oukn6Xnemn1uEjzCBEKCeiReoo-mpIXvnwYa7rFBHBuSwQJE9MIv2wiU",
+    image: "/brands/aswati.png",
+    logo: "/brands/aswati.png",
     badge: "High Turnover: Karishma & Sweety Adj",
     colorConfig: {
       bgTint: "bg-[#12805C]/5 dark:bg-[#22C55E]/10",
@@ -164,6 +172,26 @@ export const BRANDS_CONFIG: Record<string, BrandConfig> = {
       borderTint: "border-[#0284C7]/20 dark:border-[#38BDF8]/25",
       textCol: "text-[#0284C7] dark:text-[#38BDF8]",
       accentBadge: "bg-[#0284C7]/15 text-[#0284C7] dark:text-[#38BDF8]",
+    },
+  },
+  rr: {
+    id: "rr",
+    name: "RR",
+    shortCode: "RR",
+    tagline: "Performance Lowers & Casual T-Shirts",
+    description: "Ankle length, comfort fit, pencil fit lowers, pocket shorts, and combed roundneck t-shirts.",
+    categories: ["Pants", "T-shirts"],
+    stockPercentage: "98% In Stock",
+    minOrder: "1 Box (5 pcs)",
+    accentColor: "bg-indigo-600 text-white",
+    image: "/brands/rr.png",
+    logo: "/brands/rr.png",
+    badge: "New Brand: Comfort Lowers & T-Shirts",
+    colorConfig: {
+      bgTint: "bg-[#4F46E5]/5 dark:bg-[#6366F1]/10",
+      borderTint: "border-[#4F46E5]/20 dark:border-[#6366F1]/25",
+      textCol: "text-[#4F46E5] dark:text-[#6366F1]",
+      accentBadge: "bg-[#4F46E5]/15 text-[#4F46E5] dark:text-[#6366F1]",
     },
   },
 };

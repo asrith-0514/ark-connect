@@ -164,6 +164,14 @@ export interface Retailer {
   // Derived / computed properties (default 0)
   outstanding: number;
   overdue: number;
+
+  // Tally & Compliance Fields
+  tallyLedgerName?: string;
+  gstinStatus?: "valid_format" | "unregistered" | "invalid_format";
+  taxType?: "IGST" | "CGST+SGST";
+  duplicateGroup?: string;
+  notes?: string;
+  preferredTransporter?: string;
 }
 
 export interface InvoiceItem {

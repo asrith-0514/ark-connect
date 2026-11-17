@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
@@ -70,15 +71,28 @@ export default function CatalogueView() {
     cartGrandTotal,
     cartItems,
     updateCartItemQty,
+    retailerSelectedBrand,
+    setRetailerSelectedBrand,
   } = useApp();
 
   const { language } = useAuth();
 
+  const searchParams = useSearchParams();
+  const urlBrand = searchParams?.get("brand");
+
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [selectedBrand, setSelectedBrand] = useState<string>("All");
+  const [selectedBrand, setSelectedBrand] = useState<string>(urlBrand || retailerSelectedBrand || "All");
   const [searchQuery, setSearchQuery] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
+  useEffect(() => {
+    if (urlBrand) {
+      setSelectedBrand(urlBrand);
+    } else if (retailerSelectedBrand) {
+      setSelectedBrand(retailerSelectedBrand);
+    }
+  }, [urlBrand, retailerSelectedBrand]);
 
   const categories = SHARED_PRODUCT_CATEGORIES;
   const brands = ["All", ...MOCK_BRANDS.map(b => b.name)];
@@ -155,7 +169,7 @@ export default function CatalogueView() {
 
           {/* Horizontal Category Chips Bar */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-            {categories.map(cat => (
+            {categories.map((cat: string) => (
               <button
                 key={cat}
                 type="button"
@@ -175,7 +189,10 @@ export default function CatalogueView() {
           <div className="hidden md:flex items-center gap-2 shrink-0 ml-auto">
             <select
               value={selectedBrand}
-              onChange={e => setSelectedBrand(e.target.value)}
+              onChange={e => {
+                setSelectedBrand(e.target.value);
+                setRetailerSelectedBrand(e.target.value);
+              }}
               className="h-9 px-3 rounded-lg bg-surface border border-border text-xs font-semibold text-ink outline-none cursor-pointer focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-soft-xs"
             >
               {brands.map(b => (
@@ -220,6 +237,7 @@ export default function CatalogueView() {
             onAction={() => {
               setSelectedCategory("All");
               setSelectedBrand("All");
+              setRetailerSelectedBrand("All");
               setSearchQuery("");
               setInStockOnly(false);
             }}
@@ -456,7 +474,7 @@ export default function CatalogueView() {
                   Category
                 </span>
                 <div className="grid grid-cols-2 gap-2">
-                  {categories.map(cat => (
+                  {categories.map((cat: string) => (
                     <button
                       key={cat}
                       type="button"
@@ -483,7 +501,10 @@ export default function CatalogueView() {
                     <button
                       key={brand}
                       type="button"
-                      onClick={() => setSelectedBrand(brand)}
+                      onClick={() => {
+                        setSelectedBrand(brand);
+                        setRetailerSelectedBrand(brand);
+                      }}
                       className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer border ${
                         selectedBrand === brand
                           ? "bg-primary text-primary-foreground border-primary"
@@ -522,6 +543,7 @@ export default function CatalogueView() {
                 onClick={() => {
                   setSelectedCategory("All");
                   setSelectedBrand("All");
+                  setRetailerSelectedBrand("All");
                   setInStockOnly(false);
                 }}
                 className="flex-1 min-h-[44px] rounded-xl bg-background border border-border text-xs font-semibold text-ink hover:bg-surface cursor-pointer"

@@ -54,6 +54,8 @@ interface AppContextType {
   setRetailerNav: (nav: string) => void;
   distributorNav: string;
   setDistributorNav: (nav: string) => void;
+  retailerSelectedBrand: string;
+  setRetailerSelectedBrand: (brand: string) => void;
 
   // Cart & Order Matrix
   cartItems: OrderItem[];
@@ -212,6 +214,7 @@ export function AppProvider({
   const [portalMode, setPortalMode] = useState<"retailer" | "distributor">(initialMode);
   const [retailerNav, setRetailerNav] = useState<string>(normalizedRetailerNav);
   const [distributorNav, setDistributorNav] = useState<string>(initialDistributorNav);
+  const [retailerSelectedBrand, setRetailerSelectedBrand] = useState<string>("All");
 
   const { user } = useAuth();
 
@@ -255,7 +258,7 @@ export function AppProvider({
   // Data states: Persistent across route changes, refreshes, tabs, and server
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
 
-  // Hydrate orders from localStorage and sync with server API
+  // Hydrate orders from localStorage, sync with server API and broadcast across tabs
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -272,33 +275,71 @@ export function AppProvider({
       console.error("Error reading ark_orders_v1 on mount", e);
     }
 
-    // 2. Fetch authoritative orders from /api/orders
+    // 2. Fetch authoritative orders from /api/orders (no-store, change-detection guarded)
+    let lastOrdersSignature = "";
     const syncServerOrders = async () => {
       try {
-        const res = await fetch("/api/orders");
+        const res = await fetch("/api/orders", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           if (data?.orders && Array.isArray(data.orders) && data.orders.length > 0) {
-            setOrders(prev => {
-              const serverIds = new Set(data.orders.map((o: Order) => o.id));
-              const localUnsynced = prev.filter(o => !serverIds.has(o.id) && o.orderNumber !== "ARK-8902");
-              const merged = [...localUnsynced, ...data.orders];
-              try {
-                localStorage.setItem("ark_orders_v1", JSON.stringify(merged));
-              } catch {}
-              return merged;
-            });
+            const currentSignature = data.orders.map((o: Order) => `${o.id}:${o.status}:${o.totalBoxes}`).join("|");
+            if (currentSignature !== lastOrdersSignature) {
+              lastOrdersSignature = currentSignature;
+              setOrders(prev => {
+                const serverIds = new Set(data.orders.map((o: Order) => o.id));
+                const localUnsynced = prev.filter(o => !serverIds.has(o.id) && o.orderNumber !== "ARK-8902");
+                const merged = [...localUnsynced, ...data.orders];
+                try {
+                  localStorage.setItem("ark_orders_v1", JSON.stringify(merged));
+                } catch {}
+                return merged;
+              });
+            }
           }
         }
       } catch (err) {
-        console.error("Error syncing orders from API:", err);
+        // network silent retry
       }
     };
 
     syncServerOrders();
-    const interval = setInterval(syncServerOrders, 3000);
+    const interval = setInterval(syncServerOrders, 4000);
+    window.addEventListener("focus", syncServerOrders);
 
-    // 3. Listen to cross-tab storage changes
+    // 3. Instant multi-tab synchronization via BroadcastChannel
+    let broadcastChannel: BroadcastChannel | null = null;
+    try {
+      if ("BroadcastChannel" in window) {
+        broadcastChannel = new BroadcastChannel("ark_orders_channel");
+        broadcastChannel.onmessage = (event) => {
+          if (!event.data) return;
+          if (event.data.type === "NEW_ORDER" && event.data.order) {
+            const newOrd = event.data.order as Order;
+            setOrders(prev => {
+              if (prev.some(o => o.id === newOrd.id || o.orderNumber === newOrd.orderNumber)) return prev;
+              const updated = [newOrd, ...prev.filter(o => o.orderNumber !== "ARK-8902")];
+              try { localStorage.setItem("ark_orders_v1", JSON.stringify(updated)); } catch {}
+              return updated;
+            });
+          } else if (event.data.type === "UPDATE_STATUS") {
+            const { orderId, status, extra } = event.data;
+            setOrders(prev => {
+              const updated = prev.map(o => {
+                if (o.id === orderId || o.orderNumber === orderId) {
+                  return { ...o, status: status || o.status, ...(extra || {}) };
+                }
+                return o;
+              });
+              try { localStorage.setItem("ark_orders_v1", JSON.stringify(updated)); } catch {}
+              return updated;
+            });
+          }
+        };
+      }
+    } catch {}
+
+    // 4. Listen to cross-tab storage changes (fallback)
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "ark_orders_v1" && e.newValue) {
         try {
@@ -313,7 +354,11 @@ export function AppProvider({
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener("focus", syncServerOrders);
       window.removeEventListener("storage", handleStorage);
+      if (broadcastChannel) {
+        broadcastChannel.close();
+      }
     };
   }, []);
 
@@ -704,7 +749,7 @@ export function AppProvider({
       retailerId: retId,
       retailerName: retName,
       retailerTown: retTown,
-      date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+      date: currentDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
       status: "Submitted",
       totalBoxes: cartTotalBoxes,
       totalPieces: cartTotalPieces,
@@ -728,7 +773,18 @@ export function AppProvider({
     setLastSubmittedOrder(newOrder);
     setCartItems([]);
 
-    // Sync new order to server
+    // Multi-tab instant sync via BroadcastChannel
+    if (typeof window !== "undefined") {
+      try {
+        if ("BroadcastChannel" in window) {
+          const bc = new BroadcastChannel("ark_orders_channel");
+          bc.postMessage({ type: "NEW_ORDER", order: newOrder });
+          bc.close();
+        }
+      } catch {}
+    }
+
+    // Sync new order to server (authoritative disk persistence)
     if (typeof window !== "undefined") {
       fetch("/api/orders", {
         method: "POST",
@@ -782,6 +838,17 @@ export function AppProvider({
       }
       return updated;
     });
+
+    // Multi-tab instant sync via BroadcastChannel
+    if (typeof window !== "undefined") {
+      try {
+        if ("BroadcastChannel" in window) {
+          const bc = new BroadcastChannel("ark_orders_channel");
+          bc.postMessage({ type: "UPDATE_STATUS", orderId, status, extra });
+          bc.close();
+        }
+      } catch {}
+    }
 
     // Sync order update to server
     if (typeof window !== "undefined") {
@@ -1021,6 +1088,8 @@ export function AppProvider({
         setRetailerNav,
         distributorNav,
         setDistributorNav,
+        retailerSelectedBrand,
+        setRetailerSelectedBrand,
 
         cartItems,
         cartTotalBoxes,

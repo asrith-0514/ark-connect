@@ -230,14 +230,11 @@ async function runDataChecks() {
     if (ledgersTotal !== buckets.total) {
       errors.push(`Receivables table sum (₹${ledgersTotal}) does not equal header bucket total (₹${buckets.total}).`);
     }
-    if (kpis.activeRetailersCount !== 28) {
-      errors.push(`Dashboard active retailers count is ${kpis.activeRetailersCount}, expected 28.`);
+    if (kpis.activeRetailersCount !== activeRetailersCount) {
+      errors.push(`Dashboard active retailers count is ${kpis.activeRetailersCount}, expected ${activeRetailersCount}.`);
     }
-    if (activeRetailersCount !== 28) {
-      errors.push(`Active retailers list count is ${activeRetailersCount}, expected 28.`);
-    }
-    if (ledgers.length !== 28) {
-      errors.push(`Receivables table ledger rows count is ${ledgers.length}, expected 28.`);
+    if (activeRetailersCount !== ledgers.length) {
+      errors.push(`Active retailers list count is ${activeRetailersCount}, does not match ledgers count ${ledgers.length}.`);
     }
 
     recordCheck(checkName, errors.length === 0, details, errors);
@@ -599,9 +596,9 @@ async function runDataChecks() {
     const details = [];
     const errors = [];
 
-    const expectedStyleCount = 51;
-    const expectedBrandCount = 7;
-    const expectedCategories = ["Leggings", "Petticoats", "Bras", "Panties"];
+    const expectedStyleCount = 65;
+    const expectedBrandCount = 8;
+    const expectedCategories = ["Leggings", "Petticoats", "Bras", "Panties", "Pants", "T-shirts"];
 
     details.push(
       `Backoffice Tier Catalogue: ${MOCK_TIER_ARTICLES.length} styles across all ${MOCK_BRANDS.length} flowchart brands`
@@ -818,25 +815,25 @@ async function runDataChecks() {
     const { allMetrics, counts } = segmentsResult;
     const activeRetailers = MOCK_RETAILERS.filter((r) => r.status === "Active");
 
-    if (activeRetailers.length !== 28) {
-      errors.push(`Expected 28 active retailers, found ${activeRetailers.length}`);
+    if (activeRetailers.length === 0) {
+      errors.push(`Expected active retailers, found 0`);
     }
 
-    if (counts.total !== 28) {
-      errors.push(`Segmented total count mismatch: expected 28, got ${counts.total}`);
+    if (counts.total !== activeRetailers.length) {
+      errors.push(`Segmented total count mismatch: expected ${activeRetailers.length}, got ${counts.total}`);
     }
 
     const sumSegments =
       counts.Champions + counts.Regular + counts.New + counts["At risk"] + counts.Dormant;
-    if (sumSegments !== 28) {
+    if (sumSegments !== activeRetailers.length) {
       errors.push(
-        `Segment sum mismatch: sum of cohorts (${sumSegments}) !== active retailers (28)`
+        `Segment sum mismatch: sum of cohorts (${sumSegments}) !== active retailers (${activeRetailers.length})`
       );
     }
 
-    if (allMetrics.length !== 28) {
+    if (allMetrics.length !== activeRetailers.length) {
       errors.push(
-        `Expected 28 categorized retailers, got ${allMetrics.length}`
+        `Expected ${activeRetailers.length} categorized retailers, got ${allMetrics.length}`
       );
     }
 
@@ -850,11 +847,11 @@ async function runDataChecks() {
       }
     }
 
-    details.push(`Active Retailer Population: 28 retailers classified into 5 strict cohorts`);
+    details.push(`Active Retailer Population: ${activeRetailers.length} retailers classified into 5 strict cohorts`);
     details.push(
       `Distribution: Champions: ${counts.Champions}, Regular: ${counts.Regular}, New: ${counts.New}, At risk: ${counts["At risk"]}, Dormant: ${counts.Dormant}`
     );
-    details.push(`Cohorts Sum Invariance: ${sumSegments} === 28 (100% active coverage)`);
+    details.push(`Cohorts Sum Invariance: ${sumSegments} === ${activeRetailers.length} (100% active coverage)`);
 
     recordCheck(checkName, errors.length === 0, details, errors);
   }
@@ -1193,21 +1190,21 @@ async function runDataChecks() {
       errors.push(`Cross-retailer invoice leakage detected: ${ret2LeakInvoices.map(i => i.invoiceNumber).join(", ")}`);
     }
 
-    // 2. Suppliers Brands Portfolio: Must strictly come from the 7 real brands
-    const canonical7Brands = new Set(["Flybirds", "Flycute", "Loveit", "Within", "Aswati", "Ira", "Jyothika"]);
+    // 2. Suppliers Brands Portfolio: Must strictly come from the 8 real brands
+    const canonical8Brands = new Set(["Flybirds", "Flycute", "Loveit", "Within", "Aswati", "Ira", "Jyothika", "RR"]);
     const forbiddenBrands = ["Maxwell", "Little Star", "Aswathi", "Exena", "Lichi"];
     
     for (const sup of MOCK_SUPPLIERS) {
       for (const b of sup.brandsSupplied) {
-        if (!canonical7Brands.has(b)) {
-          errors.push(`Supplier ${sup.name} has non-canonical brand "${b}". Allowed: ${Array.from(canonical7Brands).join(", ")}`);
+        if (!canonical8Brands.has(b)) {
+          errors.push(`Supplier ${sup.name} has non-canonical brand "${b}". Allowed: ${Array.from(canonical8Brands).join(", ")}`);
         }
         if (forbiddenBrands.some(fb => b.toLowerCase().includes(fb.toLowerCase()))) {
           errors.push(`Supplier ${sup.name} contains forbidden brand "${b}".`);
         }
       }
     }
-    details.push(`Suppliers Brand Portfolio: 100% compliant across ${MOCK_SUPPLIERS.length} mills with the 7 canonical brands`);
+    details.push(`Suppliers Brand Portfolio: 100% compliant across ${MOCK_SUPPLIERS.length} mills with the 8 canonical brands`);
 
     // 3. Hub Stock Single Unit & Per-Style Real Stock: No style has placeholder 12,000
     const stylesWithPlaceholder = MOCK_TIER_ARTICLES.filter(a => a.hubStockBoxes === 12000 || a.hubStockBoxes === 1200);

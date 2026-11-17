@@ -193,9 +193,9 @@ export default function DistributorSidebar() {
               alert: overdueRetailersCount > 0,
             })}
 
-          {/* 6. Products */}
+          {/* 6. Inventory */}
           {hasPermission("canViewProducts") &&
-            navItem("products-pricing", "Products", "layers")}
+            navItem("products-pricing", "Inventory", "inventory_2")}
 
           {/* 7. Suppliers and bills */}
           {hasPermission("canViewSuppliers") &&
@@ -395,8 +395,8 @@ export default function DistributorSidebar() {
                 onClick={() => { setDistributorNav("products-pricing"); setIsMobileMoreOpen(false); }}
                 className="p-3 rounded-xl bg-background border border-border flex items-center gap-2 text-xs font-semibold text-ink"
               >
-                <Icon name="layers" size={16} className="text-primary" />
-                <span>Products</span>
+                <Icon name="inventory_2" size={16} className="text-primary" />
+                <span>Inventory</span>
               </button>
 
               <button

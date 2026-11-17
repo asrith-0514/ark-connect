@@ -14,6 +14,8 @@ import {
   getCurrentDate,
   Invoice,
   formatLocation,
+  downloadOrderPDF,
+  printOrder,
 } from "@/lib/mock";
 import { Badge, StatusChip } from "@/components/ui/Badge";
 
@@ -460,7 +462,7 @@ export default function DistributorOrders() {
     <div className="w-full space-y-6 pb-24">
       {/* Toast Notification */}
       {actionToast && (
-        <div className="fixed top-20 right-6 z-50 bg-ink text-surface px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 border border-border animate-in fade-in slide-in-from-top-4">
+        <div className="fixed top-20 right-6 z-[100] bg-ink text-surface px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 border border-border animate-in fade-in slide-in-from-top-4">
           <Icon name="check_circle" size={20} className="text-success" />
           <span className="text-xs font-semibold">{actionToast}</span>
         </div>
@@ -760,6 +762,34 @@ export default function DistributorOrders() {
                           View
                         </button>
 
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const ret = retailers.find(r => r.id === order.retailerId || r.name === order.retailerName);
+                            downloadOrderPDF(order, ret as any);
+                            showToast(`PO #${order.orderNumber} PDF downloaded.`);
+                          }}
+                          className="w-7 h-7 rounded-md bg-surface-raised hover:bg-surface text-ink-muted hover:text-primary border border-border flex items-center justify-center transition-colors cursor-pointer"
+                          title={`Download PDF for PO #${order.orderNumber}`}
+                        >
+                          <Icon name="download" size={14} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const ret = retailers.find(r => r.id === order.retailerId || r.name === order.retailerName);
+                            printOrder(order, ret as any);
+                            showToast(`Opening print dialog for PO #${order.orderNumber}...`);
+                          }}
+                          className="w-7 h-7 rounded-md bg-surface-raised hover:bg-surface text-ink-muted hover:text-ink border border-border flex items-center justify-center transition-colors cursor-pointer"
+                          title={`Print PO #${order.orderNumber}`}
+                        >
+                          <Icon name="print" size={14} />
+                        </button>
+
                         {/* Stage 1: Submitted -> Approve PO */}
                         {order.status === "Submitted" && (
                           <button
@@ -932,13 +962,42 @@ export default function DistributorOrders() {
                   <span className="font-mono num text-ink-muted">{viewDrawerOrder.date}</span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setViewDrawerOrder(null)}
-                className="w-8 h-8 rounded-md bg-surface border border-border text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer shadow-soft-sm"
-              >
-                <Icon name="close" size={18} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ret = retailers.find(r => r.id === viewDrawerOrder.retailerId || r.name === viewDrawerOrder.retailerName);
+                    downloadOrderPDF(viewDrawerOrder, ret as any);
+                    showToast(`PO #${viewDrawerOrder.orderNumber} PDF downloaded.`);
+                  }}
+                  className="h-8 px-2.5 rounded-md bg-surface border border-border hover:bg-surface-raised text-ink text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-soft-sm transition-colors"
+                  title="Download Order PDF"
+                >
+                  <Icon name="download" size={16} className="text-primary" />
+                  <span className="hidden sm:inline">Download PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ret = retailers.find(r => r.id === viewDrawerOrder.retailerId || r.name === viewDrawerOrder.retailerName);
+                    printOrder(viewDrawerOrder, ret as any);
+                    showToast(`Opening print dialog for PO #${viewDrawerOrder.orderNumber}...`);
+                  }}
+                  className="h-8 px-2.5 rounded-md bg-surface border border-border hover:bg-surface-raised text-ink text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-soft-sm transition-colors"
+                  title="Print Order Voucher"
+                >
+                  <Icon name="print" size={16} className="text-ink-muted" />
+                  <span className="hidden sm:inline">Print</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewDrawerOrder(null)}
+                  className="w-8 h-8 rounded-md bg-surface border border-border text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer shadow-soft-sm transition-colors"
+                  title="Close drawer"
+                >
+                  <Icon name="close" size={18} />
+                </button>
+              </div>
             </div>
 
             <div className="p-5 space-y-6 flex-1">
@@ -1172,9 +1231,37 @@ export default function DistributorOrders() {
               <button
                 type="button"
                 onClick={() => setViewDrawerOrder(null)}
-                className="flex-1 h-11 rounded-md bg-surface-raised hover:bg-surface-raised text-ink font-semibold text-xs cursor-pointer transition-colors"
+                className="px-4 h-11 rounded-md bg-surface-raised hover:bg-surface text-ink font-semibold text-xs cursor-pointer transition-colors border border-border"
               >
-                Close Drawer
+                Close
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const ret = retailers.find(r => r.id === viewDrawerOrder.retailerId || r.name === viewDrawerOrder.retailerName);
+                  downloadOrderPDF(viewDrawerOrder, ret as any);
+                  showToast(`PO #${viewDrawerOrder.orderNumber} PDF downloaded.`);
+                }}
+                className="px-3.5 h-11 rounded-md bg-surface-raised hover:bg-surface text-ink font-semibold text-xs cursor-pointer border border-border flex items-center gap-1.5 transition-colors"
+                title="Download Order PDF"
+              >
+                <Icon name="download" size={16} className="text-primary" />
+                <span>PDF</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const ret = retailers.find(r => r.id === viewDrawerOrder.retailerId || r.name === viewDrawerOrder.retailerName);
+                  printOrder(viewDrawerOrder, ret as any);
+                  showToast(`Opening print dialog for PO #${viewDrawerOrder.orderNumber}...`);
+                }}
+                className="px-3.5 h-11 rounded-md bg-surface-raised hover:bg-surface text-ink font-semibold text-xs cursor-pointer border border-border flex items-center gap-1.5 transition-colors"
+                title="Print Order Voucher"
+              >
+                <Icon name="print" size={16} />
+                <span>Print</span>
               </button>
 
               {viewDrawerOrder.status === "Submitted" && (

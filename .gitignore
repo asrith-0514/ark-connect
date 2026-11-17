@@ -45,3 +45,8 @@ next-env.d.ts
 
 scratch/
 
+
+.edge-temp-*/
+scripts/capture-*.js
+scripts/test-*.js
+src/data/submitted_orders.json

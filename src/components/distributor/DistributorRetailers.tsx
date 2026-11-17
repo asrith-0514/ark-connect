@@ -19,6 +19,7 @@ type SortField =
   | "code"
   | "name"
   | "town"
+  | "gstin"
   | "pricingTier"
   | "creditLimit"
   | "outstanding"
@@ -73,15 +74,22 @@ export const DistributorRetailers: React.FC = () => {
   } = useApp();
 
   // Tab navigation
-  const [activeTab, setActiveTab] = useState<"pending" | "active" | "deactivated" | "all">("pending");
+  const [activeTab, setActiveTab] = useState<"pending" | "active" | "deactivated" | "all">("all");
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedGstinStatus, setSelectedGstinStatus] = useState("");
+  const [selectedDuplicateOnly, setSelectedDuplicateOnly] = useState(false);
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedTier, setSelectedTier] = useState("");
 
+  // Pagination states
+  const [pageSize, setPageSize] = useState<number>(50);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
   // Sort states
-  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortField, setSortField] = useState<SortField>("code");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
 
   // Selection states (for bulk operations)
@@ -128,6 +136,14 @@ export const DistributorRetailers: React.FC = () => {
   const activeCount = useMemo(() => retailers.filter(r => r.status === "Active").length, [retailers]);
   const deactivatedCount = useMemo(() => retailers.filter(r => r.status === "Deactivated").length, [retailers]);
 
+  // Master Breakdown Counts
+  const apCount = useMemo(() => retailers.filter(r => r.state === "Andhra Pradesh").length, [retailers]);
+  const tgCount = useMemo(() => retailers.filter(r => r.state === "Telangana").length, [retailers]);
+  const validGstinCount = useMemo(() => retailers.filter(r => r.gstinStatus === "valid_format").length, [retailers]);
+  const unregGstinCount = useMemo(() => retailers.filter(r => r.gstinStatus === "unregistered").length, [retailers]);
+  const invalidGstinCount = useMemo(() => retailers.filter(r => r.gstinStatus === "invalid_format").length, [retailers]);
+  const duplicateGroupCount = useMemo(() => retailers.filter(r => Boolean(r.duplicateGroup)).length, [retailers]);
+
   // Unique list of districts for filter dropdown
   const districtList = useMemo(() => {
     const set = new Set<string>();
@@ -145,11 +161,27 @@ export const DistributorRetailers: React.FC = () => {
       if (activeTab === "active" && r.status !== "Active") return false;
       if (activeTab === "deactivated" && r.status !== "Deactivated") return false;
 
+      // State filter
+      if (selectedState && r.state !== selectedState) {
+        return false;
+      }
+
+      // GSTIN Status filter
+      if (selectedGstinStatus && r.gstinStatus !== selectedGstinStatus) {
+        return false;
+      }
+
+      // Duplicate Group filter
+      if (selectedDuplicateOnly && !r.duplicateGroup) {
+        return false;
+      }
+
       // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matches =
           r.name.toLowerCase().includes(q) ||
+          (r.tallyLedgerName && r.tallyLedgerName.toLowerCase().includes(q)) ||
           r.ownerName.toLowerCase().includes(q) ||
           r.town.toLowerCase().includes(q) ||
           r.district.toLowerCase().includes(q) ||
@@ -171,7 +203,7 @@ export const DistributorRetailers: React.FC = () => {
 
       return true;
     });
-  }, [retailers, activeTab, searchQuery, selectedDistrict, selectedTier]);
+  }, [retailers, activeTab, searchQuery, selectedState, selectedGstinStatus, selectedDuplicateOnly, selectedDistrict, selectedTier]);
 
   // Sorted Retailers
   const sortedRetailers = useMemo(() => {
@@ -194,6 +226,14 @@ export const DistributorRetailers: React.FC = () => {
     });
     return list;
   }, [filteredRetailers, sortField, sortOrder]);
+
+  // Paginated Retailers
+  const totalPages = Math.max(1, Math.ceil(sortedRetailers.length / pageSize));
+  const paginatedRetailers = useMemo(() => {
+    if (pageSize >= sortedRetailers.length) return sortedRetailers;
+    const start = (currentPage - 1) * pageSize;
+    return sortedRetailers.slice(start, start + pageSize);
+  }, [sortedRetailers, currentPage, pageSize]);
 
   // Sort click handler
   const handleSort = (field: SortField) => {
@@ -395,7 +435,7 @@ export const DistributorRetailers: React.FC = () => {
           <span className="text-ink font-bold">Retailers</span>
         </div>
         <div className="text-xs text-ink-muted font-mono">
-          28 Active · 3 Awaiting Approval
+          {retailers.length} Registered · {apCount} AP (IGST) · {tgCount} TS (CGST+SGST)
         </div>
       </div>
 
@@ -535,10 +575,62 @@ export const DistributorRetailers: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* State Filter */}
+          <select
+            value={selectedState}
+            onChange={e => {
+              setSelectedState(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="h-10 px-3 bg-surface-raised border border-border hover:bg-surface-raised rounded-xl text-xs font-medium text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+          >
+            <option value="">State: All ({retailers.length})</option>
+            <option value="Andhra Pradesh">Andhra Pradesh ({apCount})</option>
+            <option value="Telangana">Telangana ({tgCount})</option>
+          </select>
+
+          {/* GSTIN Compliance Filter */}
+          <select
+            value={selectedGstinStatus}
+            onChange={e => {
+              setSelectedGstinStatus(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="h-10 px-3 bg-surface-raised border border-border hover:bg-surface-raised rounded-xl text-xs font-medium text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+          >
+            <option value="">GSTIN: All</option>
+            <option value="valid_format">Valid Format ({validGstinCount})</option>
+            <option value="unregistered">Unregistered ({unregGstinCount})</option>
+            <option value="invalid_format">Review Required ({invalidGstinCount})</option>
+          </select>
+
+          {/* Duplicate GSTIN Toggle */}
+          {duplicateGroupCount > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedDuplicateOnly(prev => !prev);
+                setCurrentPage(1);
+              }}
+              className={`h-10 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                selectedDuplicateOnly
+                  ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/40 shadow-soft-xs"
+                  : "bg-surface-raised border-border text-ink-muted hover:text-ink"
+              }`}
+              title="Show stores sharing identical GSTINs"
+            >
+              <Icon name="content_copy" size={14} className={selectedDuplicateOnly ? "text-amber-500" : ""} />
+              <span>Shared GSTIN ({duplicateGroupCount})</span>
+            </button>
+          )}
+
           {/* District Filter */}
           <select
             value={selectedDistrict}
-            onChange={e => setSelectedDistrict(e.target.value)}
+            onChange={e => {
+              setSelectedDistrict(e.target.value);
+              setCurrentPage(1);
+            }}
             className="h-10 px-3 bg-surface-raised border border-border hover:bg-surface-raised rounded-xl text-xs font-medium text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
           >
             <option value="">District: All ({districtList.length})</option>
@@ -553,7 +645,10 @@ export const DistributorRetailers: React.FC = () => {
           {activeTab !== "pending" && (
             <select
               value={selectedTier}
-              onChange={e => setSelectedTier(e.target.value)}
+              onChange={e => {
+                setSelectedTier(e.target.value);
+                setCurrentPage(1);
+              }}
               className="h-10 px-3 bg-surface-raised border border-border hover:bg-surface-raised rounded-xl text-xs font-medium text-ink focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
             >
               <option value="">Tier: All</option>
@@ -563,12 +658,16 @@ export const DistributorRetailers: React.FC = () => {
             </select>
           )}
 
-          {(searchQuery || selectedDistrict || selectedTier) && (
+          {(searchQuery || selectedDistrict || selectedTier || selectedState || selectedGstinStatus || selectedDuplicateOnly) && (
             <button
               onClick={() => {
                 setSearchQuery("");
                 setSelectedDistrict("");
                 setSelectedTier("");
+                setSelectedState("");
+                setSelectedGstinStatus("");
+                setSelectedDuplicateOnly(false);
+                setCurrentPage(1);
               }}
               className="h-10 px-3 rounded-md text-xs font-semibold text-danger hover:bg-danger/10 transition-colors cursor-pointer"
               type="button"
@@ -617,19 +716,17 @@ export const DistributorRetailers: React.FC = () => {
                     />
                   </th>
 
-                  {activeTab !== "pending" && (
-                    <th
-                      className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
-                      onClick={() => handleSort("code")}
-                    >
-                      <div className="flex items-center gap-1">
-                        <span>Code</span>
-                        {sortField === "code" && (
-                          <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
-                        )}
-                      </div>
-                    </th>
-                  )}
+                  <th
+                    className="py-3.5 px-3 whitespace-nowrap cursor-pointer hover:text-ink"
+                    onClick={() => handleSort("code")}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>Code</span>
+                      {sortField === "code" && (
+                        <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
+                      )}
+                    </div>
+                  </th>
 
                   <th
                     className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-ink"
@@ -651,6 +748,19 @@ export const DistributorRetailers: React.FC = () => {
                     <div className="flex items-center gap-1">
                       <span>Town / Station</span>
                       {sortField === "town" && (
+                        <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* GSTIN & Compliance */}
+                  <th
+                    className="py-3.5 px-4 whitespace-nowrap cursor-pointer hover:text-ink"
+                    onClick={() => handleSort("gstin")}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>GSTIN &amp; Compliance</span>
+                      {sortField === "gstin" && (
                         <Icon name={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"} size={14} />
                       )}
                     </div>
@@ -724,9 +834,9 @@ export const DistributorRetailers: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-sm text-ink">
-                {sortedRetailers.map(retailer => {
+                {paginatedRetailers.map(retailer => {
                   const isPending = retailer.status === "Needs Approval";
-                  const isDuplicate = Boolean(retailer.flags?.includes("Possible duplicate"));
+                  const isDuplicate = Boolean(retailer.flags?.includes("Possible duplicate") || retailer.duplicateGroup);
                   const isSelected = selectedIds.has(retailer.id);
                   const isReviewOpen = selectedPendingRetailer?.id === retailer.id;
                   const isProfileOpen = selectedActiveRetailer?.id === retailer.id;
@@ -768,11 +878,9 @@ export const DistributorRetailers: React.FC = () => {
                       </td>
 
                       {/* Code */}
-                      {activeTab !== "pending" && (
-                        <td className="py-2.5 sm:py-3 px-3 font-mono num text-xs font-bold text-primary whitespace-nowrap">
-                          {retailer.code}
-                        </td>
-                      )}
+                      <td className="py-2.5 sm:py-3 px-3 font-mono num text-xs font-bold text-primary whitespace-nowrap">
+                        {retailer.code}
+                      </td>
 
                       {/* Shop & Proprietor */}
                       <td className="py-2.5 sm:py-3 px-4 min-w-[220px]">
@@ -793,6 +901,44 @@ export const DistributorRetailers: React.FC = () => {
                         {townInfo.secondary && (
                           <span className="text-xs text-ink-muted block">{townInfo.secondary}</span>
                         )}
+                      </td>
+
+                      {/* GSTIN & Compliance */}
+                      <td className="py-2.5 sm:py-3 px-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1.5">
+                            {retailer.gstin ? (
+                              <span className="font-mono num text-xs font-medium text-ink">
+                                {retailer.gstin}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-ink-muted italic">Unregistered</span>
+                            )}
+                            {retailer.gstinStatus === "valid_format" ? (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                                <Icon name="check" size={10} /> Valid
+                              </span>
+                            ) : retailer.gstinStatus === "invalid_format" ? (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse" title={retailer.flags}>
+                                <Icon name="warning" size={10} /> Check char 14
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                                Composite
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[11px] text-ink-muted">
+                            <span className="font-mono">
+                              {retailer.taxType || (retailer.state === "Telangana" ? "CGST+SGST" : "IGST")}
+                            </span>
+                            {retailer.duplicateGroup && (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30" title={`Duplicate group: ${retailer.duplicateGroup}`}>
+                                <Icon name="content_copy" size={10} /> Shared
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </td>
 
                       {/* Pricing Tier */}
@@ -902,13 +1048,68 @@ export const DistributorRetailers: React.FC = () => {
                       <EmptyState
                         icon={<Icon name="store" size={28} />}
                         title="No retailers found"
-                        description="Try adjusting your search query, district filter, or status tab."
+                        description="Try adjusting your search query, state, district, or compliance status filter."
                       />
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Bar */}
+        {sortedRetailers.length > 0 && (
+          <div className="p-4 border-t border-border bg-surface-raised/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-muted select-none">
+            <div className="flex items-center gap-3">
+              <span>
+                Showing <strong className="text-ink font-mono">{Math.min(sortedRetailers.length, (currentPage - 1) * pageSize + 1)}</strong> to{" "}
+                <strong className="text-ink font-mono">{Math.min(sortedRetailers.length, currentPage * pageSize)}</strong> of{" "}
+                <strong className="text-ink font-mono">{sortedRetailers.length}</strong> retailers
+              </span>
+              <div className="flex items-center gap-1.5 ml-2">
+                <span>Per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={e => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="h-7 px-2 bg-surface border border-border rounded-lg text-xs font-mono text-ink focus:outline-none cursor-pointer"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={250}>All (200)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage <= 1}
+                className="h-8 px-3 rounded-lg border border-border bg-surface text-ink hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1 font-semibold cursor-pointer"
+              >
+                <Icon name="chevron_left" size={16} />
+                <span>Previous</span>
+              </button>
+
+              <span className="px-3 font-mono font-medium text-ink">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                className="h-8 px-3 rounded-lg border border-border bg-surface text-ink hover:bg-surface-raised disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1 font-semibold cursor-pointer"
+              >
+                <span>Next</span>
+                <Icon name="chevron_right" size={16} />
+              </button>
+            </div>
           </div>
         )}
       </div>

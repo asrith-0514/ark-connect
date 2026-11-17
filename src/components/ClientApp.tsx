@@ -250,9 +250,7 @@ function MainApp() {
           <footer className="hidden sm:block mt-auto border-t border-border bg-surface py-8 px-4 text-center text-sm text-ink-muted">
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded bg-primary text-white font-bold flex items-center justify-center text-xs">
-                  A
-                </span>
+                <ArkMonogram size={24} />
                 <span className="font-semibold text-ink">ARK Connect</span>
                 <span className="text-ink-muted text-xs">
                   • {RETAILER_PROFILE.footerCredit}
