@@ -1,15 +1,80 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
-import { TierPricingArticle, MOCK_BRANDS, Brand } from "@/data/mockData";
+import { TierPricingArticle, MOCK_BRANDS, Brand, MOCK_PRODUCTS } from "@/data/mockData";
 import { CATEGORIES_CONFIG } from "@/lib/mock/catalogueConfig";
 import { imageStore, useEntityImages } from "@/lib/storage/imageStore";
 import { BrandLogoUploadModal } from "@/components/distributor/BrandLogoUploadModal";
 import { ProductImageUploadModal } from "@/components/distributor/ProductImageUploadModal";
+import { ColorSizeStockMatrix } from "@/components/distributor/ColorSizeStockMatrix";
+
+export function getBrandCategory(art: TierPricingArticle): string {
+  const brand = art.brand.toLowerCase();
+  const artNum = art.artNumber.toUpperCase();
+  const title = art.title.toLowerCase();
+
+  if (brand.includes("flybirds")) {
+    if (artNum.includes("ANKLE") || title.includes("ankle")) return "Ankle leggings";
+    if (artNum.includes("FULL") || title.includes("full length")) return "Full length leggings";
+    if (artNum.includes("SHIM") || title.includes("shimmer")) return "Shimmer leggings";
+    if (artNum.includes("SAREE") || title.includes("saree")) return "Saree shaper";
+    if (artNum.includes("KURTI") || title.includes("kurti")) return "Kurti pant";
+    if (artNum.includes("JR") || title.includes("junior")) return "Junior leggings";
+    return "Leggings";
+  }
+
+  if (brand.includes("flycute")) {
+    if (artNum.includes("ANKLE") || title.includes("ankle")) return "Ankle leggings";
+    if (artNum.includes("FULL") || title.includes("full length")) return "Full length leggings";
+    if (artNum.includes("SHIM") || title.includes("shimmer")) return "Shimmer leggings";
+    if (artNum.includes("KURTI") || title.includes("kurti")) return "Kurti pants";
+    return "Leggings";
+  }
+
+  if (brand.includes("loveit")) {
+    if (artNum.includes("ANKLE") || title.includes("ankle")) return "Ankle leggings";
+    if (artNum.includes("FULL") || title.includes("full length")) return "Full length leggings";
+    if (artNum.includes("SHIM") || title.includes("shimmer")) return "Shimmer leggings";
+    if (artNum.includes("KURTI") || title.includes("kurti")) return "Kurti pants";
+    return "Leggings";
+  }
+
+  if (brand.includes("ira") || brand.includes("jyothika")) {
+    if (artNum.includes("PLAIN") || title.includes("plain")) return "Plain Petticoat";
+    if (artNum.includes("BRA") || title.includes("bra")) return "Bra Petticoat";
+    return "Petticoats";
+  }
+
+  if (brand.includes("within") || brand.includes("aswati")) {
+    if (art.category === "Bras" || title.includes("bra")) return "Bras";
+    if (art.category === "Panties" || title.includes("pantie") || title.includes("panty")) return "Panties";
+    return art.category;
+  }
+
+  if (brand.includes("rr")) {
+    if (art.category === "T-shirts" || artNum.includes("RNT") || title.includes("t shirt") || title.includes("t-shirt")) return "T-shirts";
+    return "Pants";
+  }
+
+  return art.category;
+}
+
+function getCategoryIcon(catName: string): string {
+  const c = catName.toLowerCase();
+  if (c.includes("shimmer")) return "auto_awesome";
+  if (c.includes("ankle") || c.includes("full") || c.includes("legging") || c.includes("pant") || c.includes("short")) {
+    return "checkroom";
+  }
+  if (c.includes("saree") || c.includes("petticoat")) return "styler";
+  if (c.includes("bra") || c.includes("pantie")) return "favorite";
+  if (c.includes("t-shirt") || c.includes("shirt")) return "apparel";
+  return "category";
+}
 
 function StyleThumbnailCell({
   article,
@@ -65,16 +130,38 @@ function StyleThumbnailCell({
   );
 }
 
-function BrandLogoChip({ brand, onClick }: { brand: Brand; onClick: () => void }) {
+function BrandLogoChip({
+  brand,
+  isSelected,
+  onSelectBrand,
+  onUploadLogo,
+}: {
+  brand: Brand;
+  isSelected: boolean;
+  onSelectBrand: () => void;
+  onUploadLogo: () => void;
+}) {
   const { primaryUrl } = useEntityImages("brand", brand.id);
   const displayImage = primaryUrl || brand.logo || brand.image;
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="p-1.5 pr-3 rounded-full bg-surface hover:bg-surface-raised border border-border flex items-center gap-2 shadow-soft-xs hover:border-primary/40 transition-all cursor-pointer group shrink-0"
-      title={`Upload or manage logo for ${brand.name}`}
+    <div
+      role="button"
+      tabIndex={0}
+      data-brand-name={brand.name}
+      onClick={onSelectBrand}
+      onKeyDown={e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelectBrand();
+        }
+      }}
+      className={`p-1.5 pr-2.5 rounded-full border flex items-center gap-2 shadow-soft-xs transition-all cursor-pointer group shrink-0 select-none ${
+        isSelected
+          ? "bg-primary/10 border-primary ring-2 ring-primary/30 text-primary font-bold shadow-soft-sm"
+          : "bg-surface hover:bg-surface-raised border-border text-ink hover:border-primary/40"
+      }`}
+      title={`Open ${brand.name} inventory`}
     >
       <div
         className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-white font-bold text-[10px] shadow-soft-xs shrink-0"
@@ -85,14 +172,24 @@ function BrandLogoChip({ brand, onClick }: { brand: Brand; onClick: () => void }
         }}
       >
         {displayImage ? (
-          <img src={displayImage} alt={brand.name} className="w-full h-full object-cover rounded-full" />
+          <img src={displayImage} alt={brand.name} className="w-full h-full object-contain rounded-full bg-white p-0.5" />
         ) : (
           <span>{brand.name.substring(0, 2).toUpperCase()}</span>
         )}
       </div>
-      <span className="text-xs font-bold text-ink">{brand.name}</span>
-      <Icon name="camera_alt" size={14} className="text-ink-muted group-hover:text-primary" />
-    </button>
+      <span className="text-xs font-semibold">{brand.name}</span>
+      <button
+        type="button"
+        onClick={e => {
+          e.stopPropagation();
+          onUploadLogo();
+        }}
+        className="p-1 rounded-full hover:bg-surface-raised text-ink-muted hover:text-primary transition-colors cursor-pointer"
+        title={`Change logo for ${brand.name}`}
+      >
+        <Icon name="camera_alt" size={13} />
+      </button>
+    </div>
   );
 }
 
@@ -102,12 +199,87 @@ export const DistributorProducts: React.FC = () => {
   const canViewTierPricing = hasPermission("canViewTierPricing");
   const canEditTierPricing = hasPermission("canEditTierPricing");
 
+  const searchParams = useSearchParams();
+  const urlBrand = searchParams?.get("brand");
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState("all");
+  const [selectedBrand, setSelectedBrand] = useState(urlBrand || "all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedBrandCategory, setSelectedBrandCategory] = useState("all");
   const [filterWithoutPhotos, setFilterWithoutPhotos] = useState(false);
   const [stylesWithPhotos, setStylesWithPhotos] = useState<Set<string>>(new Set());
   const [expandedArticleId, setExpandedArticleId] = useState<string | null>(null);
+  const [stockMatrixArticle, setStockMatrixArticle] = useState<TierPricingArticle | null>(null);
+  const [inventoryViewMode, setInventoryViewMode] = useState<"catalog" | "stock_tracker">("catalog");
+  const [stockTrackerSelectedStyleId, setStockTrackerSelectedStyleId] = useState<string>("");
+
+  useEffect(() => {
+    if (urlBrand) {
+      setSelectedBrand(urlBrand);
+    }
+  }, [urlBrand]);
+
+  // Active brand object if a specific brand is selected
+  const currentBrandObj = useMemo(() => {
+    if (selectedBrand === "all") return null;
+    return MOCK_BRANDS.find(b => b.name.toLowerCase() === selectedBrand.toLowerCase()) || null;
+  }, [selectedBrand]);
+
+  // Articles belonging to the selected brand
+  const brandArticles = useMemo(() => {
+    if (selectedBrand === "all") return [];
+    return tierArticles.filter(a => a.brand.toLowerCase() === selectedBrand.toLowerCase());
+  }, [tierArticles, selectedBrand]);
+
+  // Unique categories for the selected brand
+  const brandCategories = useMemo(() => {
+    if (selectedBrand === "all") return [];
+    const set = new Set<string>();
+    brandArticles.forEach(a => set.add(getBrandCategory(a)));
+    return Array.from(set);
+  }, [selectedBrand, brandArticles]);
+
+  const getCategorySummary = (catName: string, arts: TierPricingArticle[]) => {
+    const catArticles = arts.filter(a => getBrandCategory(a) === catName);
+    const totalBoxes = catArticles.reduce((s, a) => s + (a.hubStockBoxes || 0), 0);
+    const totalPcs = catArticles.reduce((s, a) => s + (a.hubStock || 0), 0);
+    const activeCount = catArticles.filter(a => a.isActive).length;
+
+    let totalShades = 0;
+    let sizesList: string[] = [];
+    const firstArt = catArticles[0];
+    const packDetails = firstArt?.packSize || "Box of 6";
+    const piecesPerPack = firstArt?.piecesPerPack || (firstArt as any)?.pcsPerBox || 6;
+
+    catArticles.forEach(a => {
+      const prod = MOCK_PRODUCTS.find(p => p.id === a.id || p.artNumber === a.artNumber);
+      if (prod) {
+        if (prod.shades && prod.shades.length > totalShades) {
+          totalShades = prod.shades.length;
+        }
+        if (prod.sizes && prod.sizes.length > 0) {
+          sizesList = prod.sizes;
+        }
+      }
+    });
+
+    const prices = catArticles.filter(a => !a.pricePending && a.tierAppPrice).map(a => a.tierAppPrice);
+    const minA = prices.length > 0 ? Math.min(...prices) : 0;
+    const maxA = prices.length > 0 ? Math.max(...prices) : 0;
+
+    return {
+      catName,
+      articles: catArticles,
+      articleCount: catArticles.length,
+      totalBoxes,
+      totalPcs,
+      activeCount,
+      totalShades,
+      sizes: sizesList.length > 0 ? `${sizesList[0]} to ${sizesList[sizesList.length - 1]}` : "M to 3XL",
+      packDetails: `${piecesPerPack} pcs/pack (${packDetails})`,
+      priceRange: minA > 0 ? (minA === maxA ? `₹${minA}` : `₹${minA} – ₹${maxA}`) : "Confirmation awaited",
+    };
+  };
 
   // Modals
   const [selectedBrandForLogo, setSelectedBrandForLogo] = useState<Brand | null>(null);
@@ -148,8 +320,14 @@ export const DistributorProducts: React.FC = () => {
     if (selectedBrand !== "all" && art.brand.toLowerCase() !== selectedBrand.toLowerCase()) {
       return false;
     }
-    if (selectedCategory !== "all" && art.category !== selectedCategory) {
-      return false;
+    if (selectedBrand !== "all") {
+      if (selectedBrandCategory !== "all" && getBrandCategory(art) !== selectedBrandCategory) {
+        return false;
+      }
+    } else {
+      if (selectedCategory !== "all" && art.category !== selectedCategory) {
+        return false;
+      }
     }
     if (filterWithoutPhotos && stylesWithPhotos.has(art.id.toLowerCase())) {
       return false;
@@ -160,11 +338,20 @@ export const DistributorProducts: React.FC = () => {
         art.artNumber.toLowerCase().includes(q) ||
         art.title.toLowerCase().includes(q) ||
         art.brand.toLowerCase().includes(q) ||
-        art.category.toLowerCase().includes(q);
+        art.category.toLowerCase().includes(q) ||
+        getBrandCategory(art).toLowerCase().includes(q);
       if (!match) return false;
     }
     return true;
   });
+
+  const activeStockTrackerArticle = useMemo(() => {
+    if (stockTrackerSelectedStyleId) {
+      const found = tierArticles.find(a => a.id === stockTrackerSelectedStyleId);
+      if (found) return found;
+    }
+    return filteredArticles[0] || tierArticles[0] || null;
+  }, [stockTrackerSelectedStyleId, tierArticles, filteredArticles]);
 
   const missingPhotosCount = tierArticles.filter(
     a => !stylesWithPhotos.has(a.id.toLowerCase())
@@ -296,25 +483,127 @@ export const DistributorProducts: React.FC = () => {
     <div className="w-full flex flex-col gap-6 pb-16">
       {/* Top Header Strip */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
-            <span>Catalogue</span>
-            <Icon name="chevron_right" size={14} />
-            <span className="text-ink font-bold">Products &amp; Pricing</span>
+        {selectedBrand === "all" ? (
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
+              <span>Catalogue</span>
+              <Icon name="chevron_right" size={14} />
+              <span className="text-ink font-bold">Inventory &amp; Stock</span>
+            </div>
+            <h1 className="text-2xl font-bold text-ink tracking-tight mt-1">
+              Inventory &amp; Stock Management
+            </h1>
+            <p className="text-xs text-ink-muted mt-0.5">
+              Real product inventory across all 8 mill brands. Every item is box-packed with Tier A++ &le; Tier A+ &le; Tier A pricing.
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-ink tracking-tight mt-1">
-            Products &amp; Pricing
-          </h1>
-          <p className="text-xs text-ink-muted mt-0.5">
-            Real product catalogue across all 7 mill brands. Every item is box-packed with Tier A++ &le; Tier A+ &le; Tier A pricing.
-          </p>
-        </div>
+        ) : (
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedBrand("all");
+                  setSelectedBrandCategory("all");
+                }}
+                className="hover:text-primary transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <span>Inventory</span>
+              </button>
+              <Icon name="chevron_right" size={14} />
+              <span className="text-ink font-bold">{currentBrandObj?.name || selectedBrand}</span>
+            </div>
+            <div className="flex items-center gap-3 mt-1.5">
+              <div
+                className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center text-white font-bold text-xs shadow-soft-xs shrink-0"
+                style={{
+                  backgroundColor: currentBrandObj?.colorHex || currentBrandObj?.accentColor || "#2F6BFF",
+                }}
+              >
+                {currentBrandObj?.logo || currentBrandObj?.image ? (
+                  <img src={currentBrandObj.logo || currentBrandObj.image} alt={selectedBrand} className="w-full h-full object-contain p-1 bg-white" />
+                ) : (
+                  <span>{selectedBrand.substring(0, 2).toUpperCase()}</span>
+                )}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-ink tracking-tight flex items-center gap-2">
+                  <span>{currentBrandObj?.name || selectedBrand}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-mono font-semibold">
+                    {currentBrandObj?.shortCode || "BRAND"}
+                  </span>
+                </h1>
+                <p className="text-xs text-ink-muted mt-0.5">
+                  Category-wise inventory, pack configurations &amp; warehouse stock for {currentBrandObj?.name || selectedBrand}.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
+          {selectedBrand !== "all" && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedBrand("all");
+                  setSelectedBrandCategory("all");
+                }}
+                className="px-3 py-2 rounded-lg bg-surface hover:bg-surface-raised text-ink font-semibold text-xs transition-colors flex items-center gap-1.5 border border-border shadow-soft-sm cursor-pointer"
+              >
+                <Icon name="arrow_back" size={15} />
+                <span>All Brands</span>
+              </button>
+              {currentBrandObj && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedBrandForLogo(currentBrandObj)}
+                  className="px-3 py-2 rounded-lg bg-surface hover:bg-surface-raised text-ink font-semibold text-xs transition-colors flex items-center gap-1.5 border border-border shadow-soft-sm cursor-pointer"
+                >
+                  <Icon name="camera_alt" size={15} />
+                  <span>Logo</span>
+                </button>
+              )}
+            </>
+          )}
+          {/* View Mode Switcher: Catalog & Pricing vs Color & Size Stock Tracker */}
+          <div className="flex items-center bg-surface border border-border rounded-lg p-0.5 shadow-soft-xs">
+            <button
+              type="button"
+              onClick={() => setInventoryViewMode("catalog")}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                inventoryViewMode === "catalog"
+                  ? "bg-primary text-white shadow-soft-xs"
+                  : "text-ink hover:text-primary"
+              }`}
+            >
+              <Icon name="table_rows" size={15} />
+              <span>Catalog &amp; Pricing</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setInventoryViewMode("stock_tracker");
+                if (!stockTrackerSelectedStyleId && filteredArticles.length > 0) {
+                  setStockTrackerSelectedStyleId(filteredArticles[0].id);
+                }
+              }}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                inventoryViewMode === "stock_tracker"
+                  ? "bg-primary text-white shadow-soft-xs"
+                  : "text-ink hover:text-primary"
+              }`}
+            >
+              <Icon name="palette" size={15} />
+              <span>Color &amp; Size Tracker</span>
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={exportCSV}
-            className="px-3.5 py-2 rounded-md bg-surface hover:bg-surface-raised text-ink font-semibold text-xs transition-colors flex items-center gap-1.5 border border-border shadow-soft-sm cursor-pointer"
+            className="px-3.5 py-2 rounded-lg bg-surface hover:bg-surface-raised text-ink font-semibold text-xs transition-colors flex items-center gap-1.5 border border-border shadow-soft-sm cursor-pointer"
           >
             <Icon name="download" size={16} />
             <span>Export CSV</span>
@@ -322,99 +611,319 @@ export const DistributorProducts: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards: Catalog Summary */}
+      {/* KPI Cards: Inventory Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-surface rounded-md border border-border shadow-soft-sm">
-          <span className="text-xs font-semibold text-ink-muted">Total Styles</span>
-          <div className="text-2xl font-bold font-mono num text-ink mt-1">
-            {tierArticles.length}
-          </div>
-          <span className="text-[11px] text-ink-muted mt-1 block">
-            Across {MOCK_BRANDS.length} Mill Brands
-          </span>
-        </div>
+        {selectedBrand === "all" ? (
+          <>
+            <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm">
+              <span className="text-xs font-semibold text-ink-muted">Total Styles</span>
+              <div className="text-2xl font-bold font-mono num text-ink mt-1">
+                {tierArticles.length}
+              </div>
+              <span className="text-[11px] text-ink-muted mt-1 block">
+                Across {MOCK_BRANDS.length} Mill Brands
+              </span>
+            </div>
 
-        <div className="p-4 bg-surface rounded-md border border-border shadow-soft-sm">
-          <span className="text-xs font-semibold text-ink-muted">Active in Catalogue</span>
-          <div className="text-2xl font-bold font-mono num text-success mt-1">
-            {activeCount}
-          </div>
-          <span className="text-[11px] text-ink-muted mt-1 block">
-            Retailer Portal Enabled
-          </span>
-        </div>
+            <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm">
+              <span className="text-xs font-semibold text-ink-muted">Active in Catalogue</span>
+              <div className="text-2xl font-bold font-mono num text-success mt-1">
+                {activeCount}
+              </div>
+              <span className="text-[11px] text-ink-muted mt-1 block">
+                Retailer Portal Enabled
+              </span>
+            </div>
 
-        <div className="p-4 bg-surface rounded-md border border-border shadow-soft-sm">
-          <span className="text-xs font-semibold text-ink-muted">Price Pending</span>
-          <div className="text-2xl font-bold font-mono num text-warning mt-1">
-            {pendingCount}
-          </div>
-          <span className="text-[11px] text-warning mt-1 block font-semibold">
-            Rate confirmation awaited
-          </span>
-        </div>
+            <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm">
+              <span className="text-xs font-semibold text-ink-muted">Price Pending</span>
+              <div className="text-2xl font-bold font-mono num text-warning mt-1">
+                {pendingCount}
+              </div>
+              <span className="text-[11px] text-warning mt-1 block font-semibold">
+                Rate confirmation awaited
+              </span>
+            </div>
 
-        <div className="p-4 bg-surface rounded-md border border-border shadow-soft-sm">
-          <span className="text-xs font-semibold text-ink-muted">Total Hub Stock</span>
-          <div className="text-2xl font-bold font-mono num text-primary mt-1">
-            {tierArticles.reduce((s, a) => s + (a.hubStockBoxes || 0), 0).toLocaleString("en-IN")}
-          </div>
-          <span className="text-[11px] text-ink-muted mt-1 block">
-            Boxes in Warehouse
-          </span>
-        </div>
+            <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm">
+              <span className="text-xs font-semibold text-ink-muted">Total Hub Stock</span>
+              <div className="text-2xl font-bold font-mono num text-primary mt-1">
+                {tierArticles.reduce((s, a) => s + (a.hubStockBoxes || 0), 0).toLocaleString("en-IN")}
+              </div>
+              <span className="text-[11px] text-ink-muted mt-1 block">
+                Boxes in Warehouse
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm">
+              <span className="text-xs font-semibold text-ink-muted">Brand Categories</span>
+              <div className="text-2xl font-bold font-mono num text-ink mt-1">
+                {brandCategories.length}
+              </div>
+              <span className="text-[11px] text-ink-muted mt-1 block">
+                Product Lines in {currentBrandObj?.name || selectedBrand}
+              </span>
+            </div>
+
+            <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm">
+              <span className="text-xs font-semibold text-ink-muted">Active Styles</span>
+              <div className="text-2xl font-bold font-mono num text-success mt-1">
+                {brandArticles.filter(a => a.isActive).length} / {brandArticles.length}
+              </div>
+              <span className="text-[11px] text-ink-muted mt-1 block">
+                Live on Retailer Portal
+              </span>
+            </div>
+
+            <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm">
+              <span className="text-xs font-semibold text-ink-muted">Brand Hub Stock</span>
+              <div className="text-2xl font-bold font-mono num text-primary mt-1">
+                {brandArticles.reduce((s, a) => s + (a.hubStockBoxes || 0), 0).toLocaleString("en-IN")}
+              </div>
+              <span className="text-[11px] text-ink-muted mt-1 block">
+                Boxes in Secunderabad Hub
+              </span>
+            </div>
+
+            <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm">
+              <span className="text-xs font-semibold text-ink-muted">Rate Confirmation</span>
+              <div className="text-2xl font-bold font-mono num text-ink mt-1">
+                {brandArticles.some(a => a.pricePending) ? (
+                  <span className="text-warning">Pending</span>
+                ) : (
+                  <span className="text-success">Active</span>
+                )}
+              </div>
+              <span className="text-[11px] text-ink-muted mt-1 block">
+                {brandArticles.some(a => a.pricePending)
+                  ? `${brandArticles.filter(a => a.pricePending).length} rates awaited`
+                  : "All Tier Rates confirmed"}
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Brand Logos Management Strip */}
+      {/* Brand Selector Strip */}
       <div className="p-3 bg-surface rounded-xl border border-border shadow-soft-sm flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-1.5 shrink-0 pl-1">
           <Icon name="verified" size={17} className="text-primary" />
           <span className="text-xs font-bold text-ink uppercase tracking-wider">
-            Brand Logos:
+            Brands:
           </span>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+          {/* All Brands Chip */}
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedBrand("all");
+              setSelectedBrandCategory("all");
+            }}
+            className={`p-1.5 px-3 rounded-full border flex items-center gap-1.5 shadow-soft-xs transition-all cursor-pointer shrink-0 text-xs font-bold ${
+              selectedBrand === "all"
+                ? "bg-primary text-primary-foreground border-primary shadow-soft-sm"
+                : "bg-surface hover:bg-surface-raised border-border text-ink hover:border-primary/40"
+            }`}
+          >
+            <Icon name="apps" size={14} />
+            <span>All Brands</span>
+          </button>
+
+          {/* Individual Brand Chips */}
           {MOCK_BRANDS.map((brand: Brand) => (
             <BrandLogoChip
               key={brand.id}
               brand={brand}
-              onClick={() => setSelectedBrandForLogo(brand)}
+              isSelected={selectedBrand.toLowerCase() === brand.name.toLowerCase()}
+              onSelectBrand={() => {
+                if (selectedBrand.toLowerCase() === brand.name.toLowerCase()) {
+                  setSelectedBrand("all");
+                  setSelectedBrandCategory("all");
+                } else {
+                  setSelectedBrand(brand.name);
+                  setSelectedBrandCategory("all");
+                }
+              }}
+              onUploadLogo={() => setSelectedBrandForLogo(brand)}
             />
           ))}
         </div>
       </div>
 
+      {/* Brand Category Cards Grid (Visible when a specific brand is selected) */}
+      {selectedBrand !== "all" && brandCategories.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Icon name="category" size={18} className="text-primary" />
+              <h3 className="text-sm font-bold text-ink">
+                {currentBrandObj?.name || selectedBrand} Categories ({brandCategories.length})
+              </h3>
+            </div>
+            {selectedBrandCategory !== "all" && (
+              <button
+                type="button"
+                onClick={() => setSelectedBrandCategory("all")}
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <Icon name="close" size={13} />
+                <span>Show All Categories</span>
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+            {brandCategories.map(catName => {
+              const summary = getCategorySummary(catName, brandArticles);
+              const isSelected = selectedBrandCategory === catName;
+              const icon = getCategoryIcon(catName);
+
+              return (
+                <div
+                  key={catName}
+                  onClick={() => setSelectedBrandCategory(isSelected ? "all" : catName)}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-3 group relative overflow-hidden ${
+                    isSelected
+                      ? "bg-primary/10 border-primary ring-2 ring-primary/30 shadow-soft-sm"
+                      : "bg-surface hover:bg-surface-raised border-border hover:border-primary/40 shadow-soft-xs"
+                  }`}
+                >
+                  {/* Top row */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                          isSelected
+                            ? "bg-primary text-white"
+                            : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors"
+                        }`}
+                      >
+                        <Icon name={icon} size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-ink group-hover:text-primary transition-colors">
+                          {catName}
+                        </h4>
+                        <span className="text-[11px] text-ink-muted">
+                          {summary.articleCount} {summary.articleCount === 1 ? "style" : "styles"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {isSelected ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary text-white shadow-soft-xs shrink-0">
+                        Selected
+                      </span>
+                    ) : summary.totalShades > 0 ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-raised border border-border text-ink-muted shrink-0">
+                        {summary.totalShades} shades
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {/* Middle specs */}
+                  <div className="space-y-1 text-xs text-ink-muted bg-background/50 p-2.5 rounded-lg border border-border/50">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-ink-muted">Packing:</span>
+                      <span className="font-semibold text-ink font-mono">{summary.packDetails}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-ink-muted">Sizes:</span>
+                      <span className="font-semibold text-ink">{summary.sizes}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-ink-muted">Hub Stock:</span>
+                      <span className="font-bold text-primary font-mono">{summary.totalBoxes.toLocaleString("en-IN")} boxes</span>
+                    </div>
+                  </div>
+
+                  {/* Bottom pricing */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/60">
+                    <span className="text-[11px] text-ink-muted">Tier A++ (Net):</span>
+                    <span className="text-xs font-bold font-mono text-ink num">
+                      {summary.priceRange}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Category Tree Navigation / Filter Pills */}
-      <div className="flex flex-wrap items-center gap-2 p-2 bg-surface rounded-md border border-border shadow-soft-sm">
-        <button
-          type="button"
-          onClick={() => setSelectedCategory("all")}
-          className={`px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer ${
-            selectedCategory === "all"
-              ? "bg-primary text-primary-foreground shadow-soft-xs"
-              : "bg-surface-raised hover:bg-surface text-ink"
-          }`}
-        >
-          All Categories ({tierArticles.length})
-        </button>
-        {CATEGORIES_CONFIG.map(cat => {
-          const count = tierArticles.filter(a => a.category === cat).length;
-          return (
+      <div className="flex flex-wrap items-center gap-2 p-2 bg-surface rounded-xl border border-border shadow-soft-sm">
+        {selectedBrand === "all" ? (
+          <>
             <button
-              key={cat}
               type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-sm text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === cat
+              onClick={() => setSelectedCategory("all")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                selectedCategory === "all"
                   ? "bg-primary text-primary-foreground shadow-soft-xs"
                   : "bg-surface-raised hover:bg-surface text-ink"
               }`}
             >
-              <span>{cat}</span>
-              <span className="text-[10px] font-mono opacity-80 num">({count})</span>
+              All Categories ({tierArticles.length})
             </button>
-          );
-        })}
+            {CATEGORIES_CONFIG.map(cat => {
+              const count = tierArticles.filter(a => a.category === cat).length;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === cat
+                      ? "bg-primary text-primary-foreground shadow-soft-xs"
+                      : "bg-surface-raised hover:bg-surface text-ink"
+                  }`}
+                >
+                  <span>{cat}</span>
+                  <span className="text-[10px] font-mono opacity-80 num">({count})</span>
+                </button>
+              );
+            })}
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => setSelectedBrandCategory("all")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedBrandCategory === "all"
+                  ? "bg-primary text-primary-foreground shadow-soft-xs"
+                  : "bg-surface-raised hover:bg-surface text-ink"
+              }`}
+            >
+              <Icon name="apps" size={14} />
+              <span>All {currentBrandObj?.name || selectedBrand} Categories</span>
+              <span className="text-[10px] font-mono opacity-80 num">({brandArticles.length})</span>
+            </button>
+            {brandCategories.map(catName => {
+              const count = brandArticles.filter(a => getBrandCategory(a) === catName).length;
+              return (
+                <button
+                  key={catName}
+                  type="button"
+                  onClick={() => setSelectedBrandCategory(catName)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedBrandCategory === catName
+                      ? "bg-primary text-primary-foreground shadow-soft-xs"
+                      : "bg-surface-raised hover:bg-surface text-ink"
+                  }`}
+                >
+                  <Icon name={getCategoryIcon(catName)} size={14} />
+                  <span>{catName}</span>
+                  <span className="text-[10px] font-mono opacity-80 num">({count})</span>
+                </button>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* Filters Toolbar */}
@@ -435,7 +944,10 @@ export const DistributorProducts: React.FC = () => {
           {/* Brand Filter */}
           <select
             value={selectedBrand}
-            onChange={e => setSelectedBrand(e.target.value)}
+            onChange={e => {
+              setSelectedBrand(e.target.value);
+              setSelectedBrandCategory("all");
+            }}
             className="h-10 px-3 text-xs bg-surface-raised border border-border rounded-md focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-ink font-medium cursor-pointer"
           >
             <option value="all">All {MOCK_BRANDS.length} Brands</option>
@@ -476,8 +988,58 @@ export const DistributorProducts: React.FC = () => {
         </div>
       )}
 
-      {/* Products & Tier Pricing Table */}
-      <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
+      {/* Products & Tier Pricing Table OR Color & Size Stock Tracker */}
+      {inventoryViewMode === "stock_tracker" ? (
+        <div className="flex flex-col gap-4">
+          {/* Style Selector Toolbar */}
+          <div className="p-4 bg-surface rounded-xl border border-border shadow-soft-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Icon name="palette" size={18} className="text-primary" />
+                <span className="text-xs font-bold text-ink whitespace-nowrap">
+                  Select Article to Track:
+                </span>
+              </div>
+              <select
+                value={activeStockTrackerArticle?.id || ""}
+                onChange={e => setStockTrackerSelectedStyleId(e.target.value)}
+                className="flex-1 max-w-xl h-10 px-3 text-xs bg-surface-raised border border-border rounded-md text-ink font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer"
+              >
+                {filteredArticles.map(art => (
+                  <option key={art.id} value={art.id}>
+                    {art.artNumber} - {art.title} ({art.brand}) · {art.hubStockBoxes.toLocaleString("en-IN")} boxes
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-ink-muted">
+              <span>Showing {filteredArticles.length} matching styles in active filters</span>
+            </div>
+          </div>
+
+          {activeStockTrackerArticle ? (
+            <ColorSizeStockMatrix
+              article={activeStockTrackerArticle}
+              onSave={(updatedVariants, newTotalBoxes, newTotalPieces) => {
+                updateTierArticle(activeStockTrackerArticle.id, {
+                  variants: updatedVariants,
+                  hubStockBoxes: newTotalBoxes,
+                  hubStock: newTotalPieces,
+                });
+                setSaveSuccessMsg(`Stock updated for ${activeStockTrackerArticle.title}: ${newTotalBoxes.toLocaleString("en-IN")} boxes (${newTotalPieces.toLocaleString("en-IN")} pcs)`);
+                setTimeout(() => setSaveSuccessMsg(null), 3500);
+              }}
+            />
+          ) : (
+            <div className="p-12 bg-surface rounded-xl border border-border text-center text-ink-muted">
+              <Icon name="inventory_2" size={32} className="mx-auto mb-2 opacity-50" />
+              <p className="font-semibold text-sm">No styles match your brand or category filter.</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-surface rounded-md shadow-soft-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1100px]">
             <thead className="sticky top-0 z-10 bg-surface-raised border-b border-border select-none">
@@ -505,7 +1067,7 @@ export const DistributorProducts: React.FC = () => {
                   </th>
                 )}
                 <th className="py-2.5 px-3 text-right">Hub Stock</th>
-                <th className="py-2.5 px-3 text-center">Variants</th>
+                <th className="py-2.5 px-3 text-center min-w-[130px]">Color &amp; Size Stock</th>
                 <th className="py-2.5 px-3 text-center">Active</th>
                 <th className="py-2.5 px-4 text-right">Action</th>
               </tr>
@@ -564,7 +1126,8 @@ export const DistributorProducts: React.FC = () => {
 
                         {/* Category */}
                         <td className="py-2.5 sm:py-3 px-3 text-ink-muted whitespace-nowrap">
-                          {art.category}
+                          <span className="font-semibold text-ink block">{getBrandCategory(art)}</span>
+                          <span className="text-[10px] text-ink-muted block">{art.category}</span>
                         </td>
 
                         {/* Packing */}
@@ -653,20 +1216,32 @@ export const DistributorProducts: React.FC = () => {
                           <span className="font-semibold">{art.hubStockBoxes.toLocaleString("en-IN")} boxes</span>
                         </td>
 
-                        {/* Variants Breakdown Trigger */}
+                        {/* Color & Size Stock Trigger */}
                         <td className="py-2.5 sm:py-3 px-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => setExpandedArticleId(isExpanded ? null : art.id)}
-                            className={`px-2 py-1 rounded-sm text-[11px] font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1 mx-auto ${
-                              isExpanded
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "bg-surface-raised hover:bg-surface text-ink border-border"
-                            }`}
-                          >
-                            <span>{variants.length || "View"}</span>
-                            <Icon name={isExpanded ? "expand_less" : "expand_more"} size={14} />
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setExpandedArticleId(isExpanded ? null : art.id)}
+                              className={`px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 shadow-soft-xs ${
+                                isExpanded
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "bg-surface-raised hover:bg-surface text-ink border-border hover:border-primary/40"
+                              }`}
+                              title={isExpanded ? "Collapse Color & Size Matrix" : "Expand Color & Size Stock Matrix"}
+                            >
+                              <Icon name="palette" size={13} className={isExpanded ? "text-white" : "text-primary"} />
+                              <span>Track Stock</span>
+                              <Icon name={isExpanded ? "expand_less" : "expand_more"} size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setStockMatrixArticle(art)}
+                              className="p-1 rounded-md bg-surface-raised hover:bg-primary/10 text-ink-muted hover:text-primary border border-border hover:border-primary/40 transition-colors cursor-pointer"
+                              title="Open Fullscreen Color & Size Stock Matrix"
+                            >
+                              <Icon name="open_in_full" size={13} />
+                            </button>
+                          </div>
                         </td>
 
                         {/* Active Toggle */}
@@ -724,47 +1299,19 @@ export const DistributorProducts: React.FC = () => {
                       {/* Expandable Stock Per Variant Drawer / Sub-Table */}
                       {isExpanded && (
                         <tr className="bg-surface-raised/40 border-b border-border">
-                          <td colSpan={12} className="p-4">
-                            <div className="bg-surface p-4 rounded-md border border-border shadow-soft-xs space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-xs text-ink uppercase tracking-wider flex items-center gap-1.5">
-                                  <Icon name="grid_view" size={16} className="text-primary" />
-                                  Stock Breakdown per Variant for {art.title}
-                                </span>
-                                <span className="text-xs text-ink-muted">
-                                  Total: <strong>{art.hubStockBoxes} boxes</strong> ({art.hubStock} pcs)
-                                </span>
-                              </div>
-
-                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 pt-2 border-t border-border">
-                                {variants.map((v: any) => (
-                                  <div
-                                    key={v.id}
-                                    className="p-2.5 rounded-sm bg-surface-raised border border-border flex flex-col justify-between text-xs"
-                                  >
-                                    <div className="flex items-center gap-1.5 mb-1">
-                                      <span
-                                        className="w-2.5 h-2.5 rounded-full shrink-0 border border-border"
-                                        style={{ backgroundColor: v.shade?.hex || "#5B677A" }}
-                                      />
-                                      <span className="font-semibold text-ink truncate text-[11px]">
-                                        {v.shade?.name}
-                                      </span>
-                                    </div>
-
-                                    <div className="flex items-baseline justify-between text-[11px] text-ink-muted">
-                                      <span>
-                                        {v.fit ? `${v.fit} Fit · ` : ""}
-                                        {v.size}
-                                      </span>
-                                      <span className="font-bold text-primary font-mono num">
-                                        {v.stockBoxes} bx
-                                      </span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
+                          <td colSpan={12} className="p-3 sm:p-4">
+                            <ColorSizeStockMatrix
+                              article={art}
+                              onSave={(updatedVariants, newTotalBoxes, newTotalPieces) => {
+                                updateTierArticle(art.id, {
+                                  variants: updatedVariants,
+                                  hubStockBoxes: newTotalBoxes,
+                                  hubStock: newTotalPieces,
+                                });
+                                setSaveSuccessMsg(`Stock updated for ${art.title}: ${newTotalBoxes.toLocaleString("en-IN")} boxes (${newTotalPieces.toLocaleString("en-IN")} pcs)`);
+                                setTimeout(() => setSaveSuccessMsg(null), 3500);
+                              }}
+                            />
                           </td>
                         </tr>
                       )}
@@ -787,6 +1334,43 @@ export const DistributorProducts: React.FC = () => {
           </div>
         )}
       </div>
+      )}
+
+      {/* Fullscreen Color & Size Stock Matrix Modal */}
+      {stockMatrixArticle && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in"
+          onClick={() => setStockMatrixArticle(null)}
+        >
+          <div
+            className="bg-surface rounded-2xl border border-border shadow-soft-xl w-full max-w-6xl max-h-[92vh] overflow-y-auto animate-in zoom-in-95"
+            onClick={e => e.stopPropagation()}
+          >
+            <ColorSizeStockMatrix
+              article={stockMatrixArticle}
+              isModal
+              onClose={() => setStockMatrixArticle(null)}
+              onSave={(updatedVariants, newTotalBoxes, newTotalPieces) => {
+                updateTierArticle(stockMatrixArticle.id, {
+                  variants: updatedVariants,
+                  hubStockBoxes: newTotalBoxes,
+                  hubStock: newTotalPieces,
+                });
+                setStockMatrixArticle(prev => prev ? {
+                  ...prev,
+                  variants: updatedVariants,
+                  hubStockBoxes: newTotalBoxes,
+                  hubStock: newTotalPieces,
+                } : null);
+                setSaveSuccessMsg(`Stock updated for ${stockMatrixArticle.title}: ${newTotalBoxes.toLocaleString("en-IN")} boxes (${newTotalPieces.toLocaleString("en-IN")} pcs)`);
+                setTimeout(() => setSaveSuccessMsg(null), 3500);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Brand Logo Upload Modal */}
       <BrandLogoUploadModal

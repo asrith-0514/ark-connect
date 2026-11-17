@@ -17,6 +17,7 @@ import { ProductTile, BrandMonogramCircle } from "./ProductTile";
 export function RetailerHome() {
   const {
     setRetailerNav,
+    setRetailerSelectedBrand,
     openMatrixModal,
     addToCart,
     orders,
@@ -199,7 +200,10 @@ export function RetailerHome() {
           <h2 className="text-sm font-bold text-ink">Brands</h2>
           <button
             type="button"
-            onClick={() => setRetailerNav("catalogue")}
+            onClick={() => {
+              setRetailerSelectedBrand("All");
+              setRetailerNav("catalogue");
+            }}
             className="text-xs text-primary font-semibold hover:underline"
           >
             View all
@@ -212,7 +216,10 @@ export function RetailerHome() {
               key={brand.id}
               brandName={brand.name}
               size={56}
-              onClick={() => setRetailerNav("catalogue")}
+              onClick={() => {
+                setRetailerSelectedBrand(brand.name);
+                setRetailerNav("catalogue");
+              }}
             />
           ))}
         </div>

@@ -35,6 +35,8 @@ import {
   TierPricingArticle,
   PricingTier,
 } from "./types";
+import { TALLY_MASTER_RETAILERS } from "./tallyMasterData";
+export { TALLY_MASTER_RETAILERS };
 
 export const DISTRIBUTOR_GSTIN = "36AAACR1421P1Z4";
 
@@ -58,6 +60,7 @@ export const MOCK_BRANDS: Brand[] = BRAND_LIST.map(b => ({
   minOrder: b.minOrder,
   accentColor: b.accentColor,
   image: b.image,
+  logo: b.logo || b.image,
   badge: b.badge,
 }));
 
@@ -170,30 +173,30 @@ const SEED_ACTIVE_TOWNS: Array<{
   owner: string;
   phone: string;
 }> = [
-  { name: "Karimnagar Textile Agencies", town: "Karimnagar", district: "Karimnagar", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 450000, owner: "M. Rajeshwar", phone: "+91 94401 55670" },
-  { name: "Khammam Fashion Mart", town: "Khammam", district: "Khammam", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 350000, owner: "S. Appa Rao", phone: "+91 98482 66781" },
-  { name: "Nalgonda Cotton Emporium", town: "Nalgonda", district: "Nalgonda", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 300000, owner: "K. Murali Mohan", phone: "+91 98660 77892" },
-  { name: "Nizamabad Wholesale Depot", town: "Nizamabad", district: "Nizamabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 400000, owner: "G. Sudhakar", phone: "+91 94403 88903" },
-  { name: "Mahbubnagar Garments Corner", town: "Mahbubnagar", district: "Mahbubnagar", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 250000, owner: "D. Srinivasulu", phone: "+91 94901 99014" },
-  { name: "Adilabad Hosiery Centre", town: "Adilabad", district: "Adilabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 200000, owner: "N. Ramana", phone: "+91 98491 10125" },
-  { name: "Suryapet Mega Textiles", town: "Suryapet", district: "Suryapet", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 280000, owner: "P. Venkanna", phone: "+91 98662 21236" },
-  { name: "Miryalaguda Matching Centre", town: "Miryalaguda", district: "Nalgonda", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 180000, owner: "Ch. Nagesh", phone: "+91 94404 32347" },
-  { name: "Jagtial Dailywear Depot", town: "Jagtial", district: "Jagtial", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 150000, owner: "T. Mallesh", phone: "+91 98483 43458" },
-  { name: "Kamareddy Family Stores", town: "Kamareddy", district: "Kamareddy", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 180000, owner: "B. Ravinder", phone: "+91 94903 54569" },
-  { name: "Mancherial Readymade Palace", town: "Mancherial", district: "Mancherial", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 320000, owner: "E. Suresh", phone: "+91 98664 65670" },
-  { name: "Kothagudem Mining Town Textiles", town: "Kothagudem", district: "Bhadradri Kothagudem", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 220000, owner: "R. Chandrasekhar", phone: "+91 94405 76781" },
-  { name: "Bodhan Commercial Agency", town: "Bodhan", district: "Nizamabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 160000, owner: "Md. Abdul Qadeer", phone: "+91 98485 87892" },
-  { name: "Nirmal Wooden Toys & Garments", town: "Nirmal", district: "Nirmal", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 140000, owner: "L. Kishan", phone: "+91 94905 98903" },
-  { name: "Wanaparthy Royal Textiles", town: "Wanaparthy", district: "Wanaparthy", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 175000, owner: "V. Raghavender", phone: "+91 98666 09014" },
-  { name: "Sircilla Weavers Mart", town: "Sircilla", district: "Rajanna Sircilla", state: "Telangana", gstinPrefix: "36", tier: "Tier A++", limit: 350000, owner: "G. Anjaneyulu", phone: "+91 94407 10125" },
-  { name: "Tandur Stone & Silk Emporium", town: "Tandur", district: "Vikarabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 150000, owner: "M. Veeresham", phone: "+91 98487 21236" },
-  { name: "Zaheerabad Highway Mart", town: "Zaheerabad", district: "Sangareddy", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 190000, owner: "P. Sharanappa", phone: "+91 94907 32347" },
-  { name: "Vikarabad Hills Garments", town: "Vikarabad", district: "Vikarabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 130000, owner: "K. Gopal", phone: "+91 98668 43458" },
-  { name: "Bhongir Fort Textiles", town: "Bhongir", district: "Yadadri Bhuvanagiri", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 240000, owner: "A. Srinivas Rao", phone: "+91 94409 54569" },
-  { name: "Vijayawada Krishna Hosiery", town: "Vijayawada", district: "NTR", state: "Andhra Pradesh", gstinPrefix: "37", tier: "Tier A++", limit: 600000, owner: "V. Samba Siva Rao", phone: "+91 98489 65670" },
-  { name: "Guntur Mirchi Cottons", town: "Guntur", district: "Guntur", state: "Andhra Pradesh", gstinPrefix: "37", tier: "Tier A+", limit: 400000, owner: "Y. Koteswara Rao", phone: "+91 94909 76781" },
-  { name: "Tirupati Balaji Textiles", town: "Tirupati", district: "Tirupati", state: "Andhra Pradesh", gstinPrefix: "37", tier: "Tier A", limit: 250000, owner: "T. Chengal Rao", phone: "+91 98669 87892" },
-];
+    { name: "Karimnagar Textile Agencies", town: "Karimnagar", district: "Karimnagar", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 450000, owner: "M. Rajeshwar", phone: "+91 94401 55670" },
+    { name: "Khammam Fashion Mart", town: "Khammam", district: "Khammam", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 350000, owner: "S. Appa Rao", phone: "+91 98482 66781" },
+    { name: "Nalgonda Cotton Emporium", town: "Nalgonda", district: "Nalgonda", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 300000, owner: "K. Murali Mohan", phone: "+91 98660 77892" },
+    { name: "Nizamabad Wholesale Depot", town: "Nizamabad", district: "Nizamabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 400000, owner: "G. Sudhakar", phone: "+91 94403 88903" },
+    { name: "Mahbubnagar Garments Corner", town: "Mahbubnagar", district: "Mahbubnagar", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 250000, owner: "D. Srinivasulu", phone: "+91 94901 99014" },
+    { name: "Adilabad Hosiery Centre", town: "Adilabad", district: "Adilabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 200000, owner: "N. Ramana", phone: "+91 98491 10125" },
+    { name: "Suryapet Mega Textiles", town: "Suryapet", district: "Suryapet", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 280000, owner: "P. Venkanna", phone: "+91 98662 21236" },
+    { name: "Miryalaguda Matching Centre", town: "Miryalaguda", district: "Nalgonda", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 180000, owner: "Ch. Nagesh", phone: "+91 94404 32347" },
+    { name: "Jagtial Dailywear Depot", town: "Jagtial", district: "Jagtial", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 150000, owner: "T. Mallesh", phone: "+91 98483 43458" },
+    { name: "Kamareddy Family Stores", town: "Kamareddy", district: "Kamareddy", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 180000, owner: "B. Ravinder", phone: "+91 94903 54569" },
+    { name: "Mancherial Readymade Palace", town: "Mancherial", district: "Mancherial", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 320000, owner: "E. Suresh", phone: "+91 98664 65670" },
+    { name: "Kothagudem Mining Town Textiles", town: "Kothagudem", district: "Bhadradri Kothagudem", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 220000, owner: "R. Chandrasekhar", phone: "+91 94405 76781" },
+    { name: "Bodhan Commercial Agency", town: "Bodhan", district: "Nizamabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 160000, owner: "Md. Abdul Qadeer", phone: "+91 98485 87892" },
+    { name: "Nirmal Wooden Toys & Garments", town: "Nirmal", district: "Nirmal", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 140000, owner: "L. Kishan", phone: "+91 94905 98903" },
+    { name: "Wanaparthy Royal Textiles", town: "Wanaparthy", district: "Wanaparthy", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 175000, owner: "V. Raghavender", phone: "+91 98666 09014" },
+    { name: "Sircilla Weavers Mart", town: "Sircilla", district: "Rajanna Sircilla", state: "Telangana", gstinPrefix: "36", tier: "Tier A++", limit: 350000, owner: "G. Anjaneyulu", phone: "+91 94407 10125" },
+    { name: "Tandur Stone & Silk Emporium", town: "Tandur", district: "Vikarabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 150000, owner: "M. Veeresham", phone: "+91 98487 21236" },
+    { name: "Zaheerabad Highway Mart", town: "Zaheerabad", district: "Sangareddy", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 190000, owner: "P. Sharanappa", phone: "+91 94907 32347" },
+    { name: "Vikarabad Hills Garments", town: "Vikarabad", district: "Vikarabad", state: "Telangana", gstinPrefix: "36", tier: "Tier A", limit: 130000, owner: "K. Gopal", phone: "+91 98668 43458" },
+    { name: "Bhongir Fort Textiles", town: "Bhongir", district: "Yadadri Bhuvanagiri", state: "Telangana", gstinPrefix: "36", tier: "Tier A+", limit: 240000, owner: "A. Srinivas Rao", phone: "+91 94409 54569" },
+    { name: "Vijayawada Krishna Hosiery", town: "Vijayawada", district: "NTR", state: "Andhra Pradesh", gstinPrefix: "37", tier: "Tier A++", limit: 600000, owner: "V. Samba Siva Rao", phone: "+91 98489 65670" },
+    { name: "Guntur Mirchi Cottons", town: "Guntur", district: "Guntur", state: "Andhra Pradesh", gstinPrefix: "37", tier: "Tier A+", limit: 400000, owner: "Y. Koteswara Rao", phone: "+91 94909 76781" },
+    { name: "Tirupati Balaji Textiles", town: "Tirupati", district: "Tirupati", state: "Andhra Pradesh", gstinPrefix: "37", tier: "Tier A", limit: 250000, owner: "T. Chengal Rao", phone: "+91 98669 87892" },
+  ];
 
 const GENERATED_ACTIVE_RETAILERS: Retailer[] = SEED_ACTIVE_TOWNS.map((t, i) => {
   const num = i + 6;
@@ -307,12 +310,8 @@ export const PENDING_RETAILERS: Retailer[] = [
   },
 ];
 
-// Combine into exactly 28 active + 3 pending = 31 retailers
-export const MOCK_RETAILERS: Retailer[] = [
-  ...CORE_RETAILERS,
-  ...GENERATED_ACTIVE_RETAILERS,
-  ...PENDING_RETAILERS,
-].map((r) => ({
+// Master dataset: 199 verified Tally ledger retail accounts
+export const MOCK_RETAILERS: Retailer[] = TALLY_MASTER_RETAILERS.map((r) => ({
   ...r,
   preferredLanguage: r.preferredLanguage || "te",
   phoneConsent: r.phoneConsent !== undefined ? r.phoneConsent : r.id !== "ret-14",
@@ -1718,7 +1717,7 @@ export const MOCK_SUPPLIERS: Supplier[] = [
     bankName: "State Bank of India, Tiruppur Main Branch",
     accountNumber: "301928410294",
     ifscCode: "SBIN0000938",
-    brandsSupplied: ["Flybirds", "Loveit"],
+    brandsSupplied: ["Flybirds", "Loveit", "RR"],
     bankDetails: {
       accountName: "Sri Meenakshi Mills",
       accountNumber: "301928410294",
@@ -1905,6 +1904,12 @@ const STYLE_STOCK_BOXES: Record<string, number> = {
   "FB-LEG-SHIM": 210,
   "FB-LEG-SAREE": 340,
   "FB-LEG-KURTI": 460,
+  "LV-LEG-ANKLE": 450,
+  "LV-LEG-FULL": 420,
+  "FC-LEG-ANKLE": 440,
+  "FC-LEG-FULL": 410,
+  "FC-LEG-SHIM": 280,
+  "FC-LEG-KURTI": 320,
   "AS-BRA-KARISHMA": 650,
   "AS-BRA-SWEETY": 580,
   "AS-BRA-SUMO": 390,

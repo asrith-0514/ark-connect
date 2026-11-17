@@ -24,6 +24,7 @@ export type {
 export { SHARED_PRODUCT_CATEGORIES };
 export type { SharedProductCategory };
 
+
 // Public alias for retailer component imports
 export type RetailerProfile = RetailerPublicProfile;
 

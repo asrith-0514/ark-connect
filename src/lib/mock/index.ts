@@ -6,4 +6,5 @@ export * from "./data";
 export * from "./selectors";
 export * from "./retailer";
 export * from "../pdf/generateInvoicePDF";
+export * from "../pdf/generateOrderPDF";
 

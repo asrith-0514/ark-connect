@@ -10,6 +10,7 @@ export interface BrandColorMeta {
   textLight: string;
   badge: string;
   monogram: string;
+  logoUrl?: string;
 }
 
 export const CANONICAL_BRAND_META: Record<string, BrandColorMeta> = {
@@ -19,6 +20,7 @@ export const CANONICAL_BRAND_META: Record<string, BrandColorMeta> = {
     textLight: "text-[#2F6BFF]",
     badge: "border-[#2F6BFF]/30 bg-[#2F6BFF]/10 text-[#2F6BFF]",
     monogram: "FB",
+    logoUrl: "/brands/flybirds.png",
   },
   flycute: {
     hex: "#E11D48",
@@ -26,6 +28,7 @@ export const CANONICAL_BRAND_META: Record<string, BrandColorMeta> = {
     textLight: "text-[#E11D48]",
     badge: "border-[#E11D48]/30 bg-[#E11D48]/10 text-[#E11D48]",
     monogram: "FC",
+    logoUrl: "/brands/flycute.png",
   },
   loveit: {
     hex: "#7C3AED",
@@ -33,6 +36,7 @@ export const CANONICAL_BRAND_META: Record<string, BrandColorMeta> = {
     textLight: "text-[#7C3AED]",
     badge: "border-[#7C3AED]/30 bg-[#7C3AED]/10 text-[#7C3AED]",
     monogram: "LV",
+    logoUrl: "/brands/loveit.png",
   },
   within: {
     hex: "#0D9488",
@@ -40,6 +44,7 @@ export const CANONICAL_BRAND_META: Record<string, BrandColorMeta> = {
     textLight: "text-[#0D9488]",
     badge: "border-[#0D9488]/30 bg-[#0D9488]/10 text-[#0D9488]",
     monogram: "WT",
+    logoUrl: "/brands/within.png",
   },
   aswati: {
     hex: "#D97706",
@@ -47,6 +52,7 @@ export const CANONICAL_BRAND_META: Record<string, BrandColorMeta> = {
     textLight: "text-[#D97706]",
     badge: "border-[#D97706]/30 bg-[#D97706]/10 text-[#D97706]",
     monogram: "AS",
+    logoUrl: "/brands/aswati.png",
   },
   ira: {
     hex: "#DB2777",
@@ -62,10 +68,19 @@ export const CANONICAL_BRAND_META: Record<string, BrandColorMeta> = {
     badge: "border-[#4F46E5]/30 bg-[#4F46E5]/10 text-[#4F46E5]",
     monogram: "JY",
   },
+  rr: {
+    hex: "#6366F1",
+    bgLight: "bg-[#6366F1]/10",
+    textLight: "text-[#6366F1]",
+    badge: "border-[#6366F1]/30 bg-[#6366F1]/10 text-[#6366F1]",
+    monogram: "RR",
+    logoUrl: "/brands/rr.png",
+  },
 };
 
 export function getBrandMeta(brandNameOrId: string): BrandColorMeta {
   const normalized = (brandNameOrId || "").toLowerCase().trim().replace(/[^a-z]/g, "");
+  if (normalized === "rr") return CANONICAL_BRAND_META.rr;
   for (const [key, meta] of Object.entries(CANONICAL_BRAND_META)) {
     if (normalized.includes(key)) {
       return meta;
@@ -76,7 +91,8 @@ export function getBrandMeta(brandNameOrId: string): BrandColorMeta {
 
 export function getCategoryIconName(category: string): string {
   const c = (category || "").toLowerCase();
-  if (c.includes("legging") || c.includes("pant") || c.includes("bottom")) return "straighten";
+  if (c.includes("t-shirt") || c.includes("tshirt") || c.includes("tee")) return "apparel";
+  if (c.includes("legging") || c.includes("pant") || c.includes("lower") || c.includes("short") || c.includes("bottom")) return "straighten";
   if (c.includes("petticoat") || c.includes("shaper") || c.includes("skirt")) return "styler";
   if (c.includes("bra")) return "checkroom";
   if (c.includes("pantie") || c.includes("panty") || c.includes("brief")) return "dry_cleaning";
@@ -96,10 +112,12 @@ export function BrandMonogramCircle({
 }) {
   const meta = getBrandMeta(brandName);
   const { primaryUrl } = useEntityImages("brand", brandName.toLowerCase());
+  const brandLogo = primaryUrl || meta.logoUrl;
 
   return (
     <button
       type="button"
+      data-brand-monogram={brandName}
       onClick={onClick}
       className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer focus:outline-none"
     >
@@ -111,11 +129,11 @@ export function BrandMonogramCircle({
             : "border-border group-hover:border-primary/50 group-hover:scale-105"
         }`}
       >
-        {primaryUrl ? (
+        {brandLogo ? (
           <img
-            src={primaryUrl}
+            src={brandLogo}
             alt={brandName}
-            className="w-full h-full rounded-full object-cover"
+            className="w-full h-full rounded-full object-contain p-0.5 bg-white"
           />
         ) : (
           <div
@@ -181,13 +199,13 @@ export function ProductTile({
       }}
     >
       <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center font-bold font-mono text-base tracking-wider shadow-soft-xs"
-        style={{
-          backgroundColor: `${meta.hex}22`,
-          color: meta.hex,
-        }}
+        className="w-12 h-12 rounded-xl flex items-center justify-center font-bold font-mono text-base tracking-wider shadow-soft-xs overflow-hidden p-1 bg-white"
       >
-        {meta.monogram}
+        {meta.logoUrl ? (
+          <img src={meta.logoUrl} alt={brand} className="w-full h-full object-contain" />
+        ) : (
+          <span style={{ color: meta.hex }}>{meta.monogram}</span>
+        )}
       </div>
       <span className="text-[11px] font-semibold text-ink-muted mt-2 truncate px-2">
         {brand}
