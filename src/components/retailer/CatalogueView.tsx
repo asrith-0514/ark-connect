@@ -5,10 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
-import { MOCK_BRANDS, MOCK_PRODUCTS } from "@/data/mockData";
+import { MOCK_BRANDS, MOCK_PRODUCTS, SHARED_PRODUCT_CATEGORIES } from "@/data/mockData";
 import {
   RETAILER_PROFILE,
-  SHARED_PRODUCT_CATEGORIES,
   formatINR,
 } from "@/lib/mock/retailer";
 import { Badge } from "@/components/ui/Badge";

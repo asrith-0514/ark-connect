@@ -7,4 +7,5 @@ export * from "./selectors";
 export * from "./retailer";
 export * from "../pdf/generateInvoicePDF";
 export * from "../pdf/generateOrderPDF";
+export { SHARED_PRODUCT_CATEGORIES, type SharedProductCategory } from "./data";
 
