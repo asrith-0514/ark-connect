@@ -1219,6 +1219,88 @@ async function runDataChecks() {
   }
 
   // ===========================================================================
+  // CHECK 17: Strict Demo Gating, Zero Auto-Login & Tally Badge Audit
+  // ===========================================================================
+  {
+    const checkName = "Check 17: Strict Demo Gating, Zero Auto-Login & Tally Badge Audit";
+    const details = [];
+    const errors = [];
+    const SRC_DIR = path.join(__dirname, "../src");
+
+    // 1. Verify src/app/page.tsx has no demo bypass and guards sessionUser
+    const pageContent = fs.readFileSync(path.join(SRC_DIR, "app/page.tsx"), "utf-8");
+    if (pageContent.includes("|| true")) {
+      errors.push("src/app/page.tsx contains hardcoded demo bypass ('|| true').");
+    }
+    if (!pageContent.includes("isDemo && !isExplicitAuth")) {
+      errors.push("src/app/page.tsx mock user instantiation is not guarded by isDemo.");
+    }
+    details.push("Server Route (/): Strict isDemo gating verified (zero hardcoded || true bypass, zero unauthenticated auto-login)");
+
+    // 2. Verify src/app/staff/page.tsx has no demo bypass and guards sessionUser
+    const staffContent = fs.readFileSync(path.join(SRC_DIR, "app/staff/page.tsx"), "utf-8");
+    if (staffContent.includes("|| true")) {
+      errors.push("src/app/staff/page.tsx contains hardcoded demo bypass ('|| true').");
+    }
+    if (!staffContent.includes("isDemo && !isExplicitAuth")) {
+      errors.push("src/app/staff/page.tsx staff session instantiation is not guarded by isDemo.");
+    }
+    details.push("Server Route (/staff): Strict isDemo gating verified (zero hardcoded || true bypass, zero unauthenticated auto-login)");
+
+    // 3. Verify src/lib/mock/retailer.ts isDemoModeEnabled
+    const retailerContent = fs.readFileSync(path.join(SRC_DIR, "lib/mock/retailer.ts"), "utf-8");
+    if (retailerContent.includes("NEXT_PUBLIC_DEMO_MODE")) {
+      errors.push("src/lib/mock/retailer.ts contains NEXT_PUBLIC_DEMO_MODE override; must only be ?demo=true or ?demo=1.");
+    }
+    if (retailerContent.includes('hostname === "localhost"')) {
+      errors.push("src/lib/mock/retailer.ts contains localhost override in isDemoModeEnabled.");
+    }
+    details.push("Demo Mode Utility: Only enabled by explicit ?demo=true or ?demo=1 (no env or localhost override)");
+
+    // 4. Verify src/context/AuthContext.tsx does not auto-login unauthenticated users
+    const authContent = fs.readFileSync(path.join(SRC_DIR, "context/AuthContext.tsx"), "utf-8");
+    if (authContent.includes("setIsDemo(isDemoModeEnabled())")) {
+      errors.push("src/context/AuthContext.tsx re-derives isDemo on the client using isDemoModeEnabled(); must receive from server prop.");
+    }
+    if (!authContent.includes("isDemoActive")) {
+      errors.push("src/context/AuthContext.tsx does not guard client fallback login with isDemoActive.");
+    }
+    details.push("Auth Context: isDemo computed once on server and passed as prop; unauthenticated fallback strictly sets null user");
+
+    // 5. Verify HeaderSwitcher is gated behind isDemo in ClientApp.tsx
+    const clientAppContent = fs.readFileSync(path.join(SRC_DIR, "components/ClientApp.tsx"), "utf-8");
+    const bareHeaderSwitcherMatches = clientAppContent.match(/<HeaderSwitcher\s*\/>/g) || [];
+    const gatedHeaderSwitcherMatches = clientAppContent.match(/\{isDemo\s*&&\s*<HeaderSwitcher\s*\/>\}/g) || [];
+    if (gatedHeaderSwitcherMatches.length < 2 || bareHeaderSwitcherMatches.length > gatedHeaderSwitcherMatches.length) {
+      errors.push(`HeaderSwitcher in ClientApp.tsx is not strictly gated by isDemo (found ${gatedHeaderSwitcherMatches.length} gated out of ${bareHeaderSwitcherMatches.length} total).`);
+    }
+    details.push("Demo Switcher: Rendered strictly behind {isDemo && <HeaderSwitcher />} in both portal layouts");
+
+    // 6. Verify DistributorHeader Tally control
+    const distHeaderContent = fs.readFileSync(path.join(SRC_DIR, "components/distributor/DistributorHeader.tsx"), "utf-8");
+    if (!distHeaderContent.includes("Tally sync: not connected")) {
+      errors.push("src/components/distributor/DistributorHeader.tsx does not contain 'Tally sync: not connected'.");
+    }
+    if (distHeaderContent.includes("Sync Tally") || distHeaderContent.includes("09:42 AM")) {
+      errors.push("src/components/distributor/DistributorHeader.tsx still contains active 'Sync Tally' or '09:42 AM'.");
+    }
+    details.push("Tally Integration: Active 'Sync Tally' replaced with disabled badge 'Tally sync: not connected'");
+
+    // 7. Verify Retailer Demo Controls Gating
+    const myAccountContent = fs.readFileSync(path.join(SRC_DIR, "components/retailer/MyAccountView.tsx"), "utf-8");
+    if (!myAccountContent.includes("{isDemo && (") || myAccountContent.includes("setIsDemo(isDemoModeEnabled())")) {
+      errors.push("src/components/retailer/MyAccountView.tsx Demo State Simulator is not properly gated behind useAuth().isDemo.");
+    }
+    const myOrdersContent = fs.readFileSync(path.join(SRC_DIR, "components/retailer/MyOrdersView.tsx"), "utf-8");
+    if (!myOrdersContent.includes("{isDemo && (") || myOrdersContent.includes("setIsDemo(isDemoModeEnabled())")) {
+      errors.push("src/components/retailer/MyOrdersView.tsx State Demo Switcher is not properly gated behind useAuth().isDemo.");
+    }
+    details.push("Retailer Demo Controls: Account Demo State Simulator and Orders Empty/Skeleton tabs strictly gated behind isDemo");
+
+    recordCheck(checkName, errors.length === 0, details, errors);
+  }
+
+  // ===========================================================================
   // Summary & Reporting
   // ===========================================================================
   console.log(`${colors.bold}SUMMARY REPORT:${colors.reset}\n`);

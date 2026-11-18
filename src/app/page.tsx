@@ -11,7 +11,7 @@ async function HomeContent(props: {
   await connection();
   const searchParams = await props.searchParams;
 
-  const isDemo = searchParams?.demo === "true" || searchParams?.demo === "1" || true;
+  const isDemo = searchParams?.demo === "true" || searchParams?.demo === "1";
 
   // Check secure HTTP cookie session
   const cookieStore = await cookies();
@@ -21,9 +21,12 @@ async function HomeContent(props: {
   const modeRaw = searchParams?.mode || searchParams?.role || searchParams?.portal;
   const modeParam = Array.isArray(modeRaw) ? modeRaw[0] : modeRaw;
   const isExplicitAuth = searchParams?.auth === "true";
+  if (isExplicitAuth) {
+    sessionUser = null;
+  }
 
-  // When demo mode is active or mode is provided, automatically instantiate demo session
-  if (!sessionUser && !isExplicitAuth) {
+  // Demo user is ONLY instantiated when isDemo is explicitly true
+  if (!sessionUser && isDemo && !isExplicitAuth) {
     if (modeParam === "distributor" || modeParam === "wholesaler" || modeParam === "admin" || searchParams?.view === "dashboard") {
       sessionUser = {
         id: "staff-1",
@@ -88,6 +91,7 @@ async function HomeContent(props: {
   return (
     <ClientApp
       initialMode={initialMode}
+      defaultAuthTab={modeParam === "distributor" || modeParam === "wholesaler" || modeParam === "admin" ? "distributor" : "retailer"}
       initialDistributorNav={initialDistributorNav}
       initialRetailerNav={initialRetailerNav}
       initialUser={sessionUser}
