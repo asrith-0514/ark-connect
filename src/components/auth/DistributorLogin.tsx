@@ -280,28 +280,31 @@ export function DistributorLogin({ onSwitchToRetailer }: { onSwitchToRetailer: (
           </form>
         )}
 
-        {/* 1-Click Instant Wholesaler Sign In for Demo */}
-        <div className="mt-6 pt-5 border-t border-border flex flex-col gap-3">
+        {/* 1-Click Instant Wholesaler Sign In (Only when ?demo=true) */}
+        {isDemo && (
+          <div className="mt-6 pt-5 border-t border-border flex flex-col gap-3">
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => handleRoleQuickSelect("owner")}
+              className="w-full py-3 px-4 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm shadow-soft-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            >
+              <Icon name="factory" size={18} />
+              <span>Instant 1-Click Wholesaler Sign In</span>
+            </button>
+          </div>
+        )}
+
+        <div className="mt-4 pt-3 flex items-center justify-between text-xs text-ink-muted border-t border-border/60">
+          <span>Need retailer ordering?</span>
           <button
             type="button"
-            disabled={isSubmitting}
-            onClick={() => handleRoleQuickSelect("owner")}
-            className="w-full py-3 px-4 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm shadow-soft-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            onClick={onSwitchToRetailer}
+            className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0"
           >
-            <Icon name="factory" size={18} />
-            <span>Instant 1-Click Wholesaler Sign In</span>
+            <span>Switch to Retailer Portal</span>
+            <Icon name="arrow_forward" size={13} />
           </button>
-
-          <div className="pt-2 flex items-center justify-between text-xs text-ink-muted border-t border-border/60 mt-1">
-            <span>Need retailer ordering?</span>
-            <a
-              href="/"
-              className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-            >
-              <span>Switch to Retailer Portal</span>
-              <Icon name="arrow_forward" size={13} />
-            </a>
-          </div>
         </div>
       </Card>
     </div>

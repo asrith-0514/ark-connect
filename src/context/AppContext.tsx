@@ -22,7 +22,7 @@ import {
   MOCK_TIER_ARTICLES
 } from "@/data/mockData";
 import confetti from "canvas-confetti";
-import { useCurrentDate, getDaysUntil, isDemoModeEnabled } from "@/lib/mock/retailer";
+import { useCurrentDate, getDaysUntil } from "@/lib/mock/retailer";
 import { useAuth } from "./AuthContext";
 import {
   CommunicationLogEntry,

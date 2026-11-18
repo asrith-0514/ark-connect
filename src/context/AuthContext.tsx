@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { AuthUser, UserType, OtpResult, AuthResult, UserPermissions } from "@/lib/auth/types";
 import { AUTH_TRANSLATIONS, AuthLanguage } from "@/lib/auth/translations";
 import { hasPermission as checkPermission, getRolePermissions } from "@/lib/auth/permissions";
-import { isDemoModeEnabled } from "@/lib/mock/retailer";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -27,20 +26,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({
   children,
   initialUser = null,
+  isDemo = false,
 }: {
   children: React.ReactNode;
   initialUser?: AuthUser | null;
+  isDemo?: boolean;
 }) {
   const [user, setUser] = useState<AuthUser | null>(initialUser);
   const [isLoading, setIsLoading] = useState(!initialUser);
   const [language, setLanguage] = useState<AuthLanguage>("en");
   const [rateLimitSeconds, setRateLimitSeconds] = useState<number>(0);
-  const [isDemo, setIsDemo] = useState(false);
 
-  // Check demo mode from query param or environment
-  useEffect(() => {
-    setIsDemo(isDemoModeEnabled());
-  }, []);
+  // isDemo is computed on the server and passed down as a prop; never re-derived on the client
+  const isDemoActive = Boolean(isDemo);
 
   // Countdown timer for active rate limits
   useEffect(() => {
@@ -67,8 +65,13 @@ export function AuthProvider({
           const data = await res.json();
           if (isMounted) {
             if (data?.user) {
-              setUser(data.user);
-            } else {
+              const search = typeof window !== "undefined" ? window.location.search : "";
+              if (!search.includes("auth=true")) {
+                setUser(data.user);
+              } else {
+                setUser(null);
+              }
+            } else if (isDemoActive) {
               const search = typeof window !== "undefined" ? window.location.search : "";
               const isDistributor = search.includes("mode=distributor") || search.includes("role=distributor") || search.includes("portal=distributor") || search.includes("view=dashboard");
               if (isDistributor) {
@@ -96,6 +99,8 @@ export function AuthProvider({
                   sessionExpiry: 9999999999999,
                 });
               }
+            } else {
+              setUser(null);
             }
           }
         }
@@ -110,7 +115,7 @@ export function AuthProvider({
     return () => {
       isMounted = false;
     };
-  }, [initialUser]);
+  }, [initialUser, isDemoActive]);
 
   const t = useCallback(
     (key: keyof typeof AUTH_TRANSLATIONS.en): string => {

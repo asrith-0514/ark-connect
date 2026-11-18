@@ -29,31 +29,6 @@ export default function DistributorHeader() {
     return d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
   }, [currentDate]);
 
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncDone, setSyncDone] = useState(false);
-  const [lastSyncedTime, setLastSyncedTime] = useState<string>("Today, 09:42 AM");
-  const [syncToast, setSyncToast] = useState<{ show: boolean; success: boolean; message: string } | null>(null);
-
-  const handleSyncTally = () => {
-    setIsSyncing(true);
-    setTimeout(() => {
-      setIsSyncing(false);
-      setSyncDone(true);
-      const timeStr = `Today, ${new Date().toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}`;
-      setLastSyncedTime(timeStr);
-      setSyncToast({
-        show: true,
-        success: true,
-        message: "Tally Prime ERP synchronized successfully. 28 retailer ledgers and 64 vouchers updated.",
-      });
-      setTimeout(() => setSyncDone(false), 2500);
-      setTimeout(() => setSyncToast(null), 4000);
-    }, 1200);
-  };
-
   return (
     <header className="h-16 bg-surface/90 backdrop-blur-md border-b border-border sticky top-0 z-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-4 shadow-soft-sm min-w-0">
       {/* Global Search command bar trigger with Ctrl+K in glass style */}
@@ -77,7 +52,7 @@ export default function DistributorHeader() {
         </button>
       </div>
 
-      {/* Month Selector, Sync Tally Ghost Button, and Theme Toggle */}
+      {/* Month Selector, Tally Badge, and Theme Toggle */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Single month picker dropdown */}
         <div className="flex items-center gap-1.5 bg-surface-raised hover:bg-surface px-3 py-1.5 rounded-md border border-border text-xs font-semibold shrink-0 transition-colors shadow-soft-sm">
@@ -102,41 +77,14 @@ export default function DistributorHeader() {
           </select>
         </div>
 
-        {/* Sync Tally as Ghost Button with Last-Synced Text */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleSyncTally}
-            disabled={isSyncing}
-            className={`h-9 px-3 rounded-md font-medium text-xs flex items-center justify-center gap-1.5 transition-colors border-0 shrink-0 cursor-pointer ${
-              syncDone
-                ? "bg-success/15 text-success"
-                : "text-ink-muted hover:text-ink hover:bg-surface-raised"
-            }`}
-            title={`Last synced with Tally Prime: ${lastSyncedTime}`}
-          >
-            {isSyncing ? (
-              <>
-                <Icon name="sync" size={15} className="animate-spin text-primary" />
-                <span className="hidden md:inline">Syncing...</span>
-              </>
-            ) : syncDone ? (
-              <>
-                <Icon name="check_circle" size={15} className="text-success" />
-                <span className="hidden md:inline text-success font-semibold">Synced</span>
-              </>
-            ) : (
-              <>
-                <Icon name="sync" size={15} className="text-ink-muted" />
-                <span className="hidden md:inline">Sync Tally</span>
-              </>
-            )}
-          </button>
-
-          {/* Last-synced timestamp indicator */}
-          <span className="hidden xl:inline-block text-[11px] text-ink-muted font-mono whitespace-nowrap">
-            Last: <strong className="text-ink font-semibold">{lastSyncedTime}</strong>
-          </span>
+        {/* Tally sync: not connected badge */}
+        <div
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface-raised border border-border text-xs text-ink-muted opacity-60 cursor-not-allowed select-none shrink-0"
+          title="Tally synchronization is not connected"
+        >
+          <Icon name="cloud_off" size={14} className="text-ink-muted" />
+          <span className="hidden sm:inline">Tally sync: not connected</span>
+          <span className="sm:hidden">Not connected</span>
         </div>
 
         {/* Theme Toggle Button */}
@@ -162,25 +110,6 @@ export default function DistributorHeader() {
           </button>
         </div>
       </div>
-
-      {/* Sync Tally Toast Notification */}
-      {syncToast && syncToast.show && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-md bg-surface border border-border text-ink shadow-soft-xl animate-in fade-in slide-in-from-bottom-5 duration-300 max-w-md">
-          <span className="w-8 h-8 rounded-md bg-success/15 text-success flex items-center justify-center shrink-0">
-            <Icon name="check_circle" size={18} />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-ink">Tally Sync Complete</p>
-            <p className="text-[11px] text-ink-muted truncate mt-0.5">{syncToast.message}</p>
-          </div>
-          <button
-            onClick={() => setSyncToast(null)}
-            className="w-6 h-6 rounded-md text-ink-muted hover:text-ink flex items-center justify-center cursor-pointer shrink-0"
-          >
-            <Icon name="close" size={15} />
-          </button>
-        </div>
-      )}
     </header>
   );
 }

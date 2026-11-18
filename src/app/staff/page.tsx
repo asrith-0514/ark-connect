@@ -11,7 +11,7 @@ async function StaffContent(props: {
   await connection();
   const searchParams = await props.searchParams;
 
-  const isDemo = searchParams?.demo === "true" || searchParams?.demo === "1" || true;
+  const isDemo = searchParams?.demo === "true" || searchParams?.demo === "1";
 
   // Check secure HTTP cookie session
   const cookieStore = await cookies();
@@ -24,9 +24,12 @@ async function StaffContent(props: {
   }
 
   const isExplicitAuth = searchParams?.auth === "true";
+  if (isExplicitAuth) {
+    sessionUser = null;
+  }
 
-  // When demo mode is active or staff route is visited, automatically instantiate staff demo session
-  if (!sessionUser && !isExplicitAuth) {
+  // Staff demo session is ONLY instantiated when isDemo is explicitly true
+  if (!sessionUser && isDemo && !isExplicitAuth) {
     sessionUser = {
       id: "staff-1",
       type: "distributor",
@@ -40,8 +43,12 @@ async function StaffContent(props: {
     };
   }
 
-  let initialMode: "distributor" | "auth" = "distributor";
-  if (!sessionUser && isExplicitAuth) {
+  let initialMode: "distributor" | "auth" = "auth";
+  if (sessionUser) {
+    initialMode = "distributor";
+  } else if (isDemo && !isExplicitAuth) {
+    initialMode = "distributor";
+  } else {
     initialMode = "auth";
   }
 
@@ -58,6 +65,7 @@ async function StaffContent(props: {
   return (
     <ClientApp
       initialMode={initialMode}
+      defaultAuthTab="distributor"
       initialDistributorNav={initialDistributorNav}
       initialRetailerNav="home"
       initialUser={sessionUser}

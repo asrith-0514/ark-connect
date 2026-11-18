@@ -8,7 +8,6 @@ import {
   RetailerContact,
   getRetailerFinancials,
   formatINR,
-  isDemoModeEnabled,
 } from "@/lib/mock/retailer";
 import { useAuth } from "@/context/AuthContext";
 import { RetailerRequestType, ComplaintType } from "@/lib/mock";
@@ -24,7 +23,7 @@ export default function MyAccountView() {
     complaints,
     addComplaint,
   } = useApp();
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
   const effectiveRetailerId = user?.retailerId || "ret-1";
 
   // Filter requests and complaints for this logged-in retailer only
@@ -125,13 +124,11 @@ export default function MyAccountView() {
 
   // Simulated states: loading / empty / error
   const [viewState, setViewState] = useState<"ready" | "loading" | "error" | "empty">("ready");
-  const [isDemo, setIsDemo] = useState(false);
   const [downloadingDoc, setDownloadingDoc] = useState<string | null>(null);
 
   const financials = getRetailerFinancials(undefined, undefined, currentDate);
 
   useEffect(() => {
-    setIsDemo(isDemoModeEnabled());
     if (typeof window !== "undefined") {
       const stateParam = new URLSearchParams(window.location.search).get("account_state");
       if (stateParam === "loading") setViewState("loading");

@@ -37,6 +37,7 @@ export const MATERIAL_TO_LUCIDE_MAP: Record<string, keyof typeof LucideIcons> = 
   replay: "RotateCcw",
   autorenew: "RefreshCw",
   sync: "RefreshCw",
+  cloud_off: "CloudOff",
   lock: "Lock",
   block: "Ban",
   logout: "LogOut",

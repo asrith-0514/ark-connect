@@ -601,18 +601,9 @@ export function getOrderingCycle(date = getCurrentDate()): { cycleName: string; 
 // 8. Demo Mode Utility
 // ---------------------------------------------------------------------------
 export function isDemoModeEnabled(): boolean {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true" || process.env.NEXT_PUBLIC_DEMO_MODE === "1") {
-    return true;
-  }
   if (typeof window !== "undefined") {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("demo") === "true" || params.get("demo") === "1") {
-      return true;
-    }
-    // In local development or prototype testing, always enable demo switcher & seamless account switching
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      return true;
-    }
+    return params.get("demo") === "true" || params.get("demo") === "1";
   }
   return false;
 }

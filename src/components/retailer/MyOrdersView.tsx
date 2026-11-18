@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import { Order } from "@/data/mockData";
-import { formatINR, isDemoModeEnabled, RETAILER_PROFILE } from "@/lib/mock/retailer";
+import { formatINR, RETAILER_PROFILE } from "@/lib/mock/retailer";
 import { Badge, StatusChip } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -24,7 +24,7 @@ export default function MyOrdersView() {
     addToCart,
     setIsReviewOrderOpen,
   } = useApp();
-  const { user } = useAuth();
+  const { user, isDemo } = useAuth();
 
   const [activeTab, setActiveTab] = useState<string>(orderTabFilter || "all");
   const [demoState, setDemoState] = useState<"orders" | "empty" | "skeleton">("orders");
@@ -33,7 +33,6 @@ export default function MyOrdersView() {
   const [searchPO, setSearchPO] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [copiedLR, setCopiedLR] = useState<boolean>(false);
-  const [isDemo, setIsDemo] = useState(false);
 
   const activeRetailerId = user?.type === "retailer" ? (user.retailerId || "ret-1") : "ret-1";
   const activeRetailerCode = user?.type === "retailer" ? (user.retailerCode || "RET-0001") : "RET-0001";
@@ -54,7 +53,6 @@ export default function MyOrdersView() {
   }, [orderTabFilter]);
 
   useEffect(() => {
-    setIsDemo(isDemoModeEnabled());
     if (typeof window !== "undefined") {
       const stateParam = new URLSearchParams(window.location.search).get("state");
       if (stateParam === "empty") setDemoState("empty");

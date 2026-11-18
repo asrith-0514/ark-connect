@@ -45,7 +45,7 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ArkMonogram } from "@/components/ui/ArkLogo";
 import { Icon } from "@/components/ui/Icon";
 
-function MainApp() {
+function MainApp({ defaultAuthTab }: { defaultAuthTab?: "retailer" | "distributor" }) {
   const {
     portalMode,
     setPortalMode,
@@ -59,14 +59,15 @@ function MainApp() {
 
   const { user, isLoading, isDemo, hasPermission, logout, quickDemoLogin } = useAuth();
 
-  // Auto-align session with portal mode during demo switching
+  // Align portal mode with authenticated user type
   useEffect(() => {
-    if (user && user.type === "retailer" && portalMode === "distributor") {
-      quickDemoLogin("owner");
-    } else if (user && user.type === "distributor" && portalMode === "retailer") {
-      quickDemoLogin("retailer", "RET-0001");
+    if (!user) return;
+    if (user.type === "distributor" && portalMode !== "distributor") {
+      setPortalMode("distributor");
+    } else if (user.type === "retailer" && portalMode !== "retailer") {
+      setPortalMode("retailer");
     }
-  }, [portalMode, user?.type]);
+  }, [user?.type]);
 
   // 1. Initial authentication loading state (Splash Screen with Tagline)
   if (isLoading) {
@@ -92,7 +93,7 @@ function MainApp() {
   if (!user) {
     return (
       <AuthScreen
-        defaultTab={portalMode === "distributor" ? "distributor" : "retailer"}
+        defaultTab={defaultAuthTab || (portalMode === "distributor" ? "distributor" : "retailer")}
       />
     );
   }
@@ -134,7 +135,7 @@ function MainApp() {
             type="button"
             onClick={() => {
               setPortalMode("retailer");
-              window.location.href = "/";
+              window.location.href = isDemo ? "/?demo=true" : "/";
             }}
             className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-ink-muted hover:text-ink font-semibold text-xs cursor-pointer transition-colors"
           >
@@ -182,7 +183,7 @@ function MainApp() {
             type="button"
             onClick={() => {
               setPortalMode("distributor");
-              window.location.href = "/staff";
+              window.location.href = isDemo ? "/staff?demo=true" : "/staff";
             }}
             className="w-full sm:w-auto px-4 py-2.5 rounded-lg text-ink-muted hover:text-ink font-semibold text-xs cursor-pointer transition-colors"
           >
@@ -211,7 +212,7 @@ function MainApp() {
         /* ================= RETAILER PORTAL (ARK CONNECT) ================= */
         <div className="flex flex-col min-h-screen bg-background">
           <div id="retailer-sticky-header-wrapper" className="sticky top-0 z-40 w-full">
-            <HeaderSwitcher />
+            {isDemo && <HeaderSwitcher />}
             <RetailerHeader />
           </div>
 
@@ -270,7 +271,7 @@ function MainApp() {
       ) : (
         /* ================= DISTRIBUTOR BACKOFFICE (ARK DISTRIBUTORS) ================= */
         <div className="flex flex-col min-h-screen bg-background">
-          <HeaderSwitcher />
+          {isDemo && <HeaderSwitcher />}
           <div className="flex flex-1 min-h-0 bg-background relative items-start">
             {/* Fixed Left Sidebar (240px expanded / 72px collapsed) */}
             <DistributorSidebar />
@@ -420,27 +421,32 @@ function MainApp() {
 
 export function ClientApp({
   initialMode,
+  defaultAuthTab,
   initialDistributorNav,
   initialRetailerNav,
   initialUser = null,
   isDemo = false,
 }: {
   initialMode?: "retailer" | "distributor" | "auth";
+  defaultAuthTab?: "retailer" | "distributor";
   initialDistributorNav?: string;
   initialRetailerNav?: string;
   initialUser?: AuthUser | null;
   isDemo?: boolean;
 }) {
-  const effectiveMode = initialMode === "auth" ? "retailer" : (initialMode || "retailer");
+  const effectiveMode =
+    initialMode === "auth"
+      ? (defaultAuthTab === "distributor" ? "distributor" : "retailer")
+      : (initialMode || "retailer");
 
   return (
-    <AuthProvider initialUser={initialUser}>
+    <AuthProvider initialUser={initialUser} isDemo={isDemo}>
       <AppProvider
         initialMode={effectiveMode}
         initialDistributorNav={initialDistributorNav}
         initialRetailerNav={initialRetailerNav}
       >
-        <MainApp />
+        <MainApp defaultAuthTab={defaultAuthTab} />
       </AppProvider>
     </AuthProvider>
   );
